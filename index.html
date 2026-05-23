@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Issue管理主檔</title>
+<style>
+  :root {
+    --O-bg: #E1F5EE; --O-fg: #085041;
+    --N-bg: #E6F1FB; --N-fg: #0C447C;
+    --CV-bg: #FAEEDA; --CV-fg: #633806;
+    --I-bg: #FBEAF0; --I-fg: #72243E;
+    --P-bg: #F5F5F5; --P-fg: #444;
+    --com-bg: #F1EFE8; --com-fg: #444441;
+    --L-bg: #E1F5EE; --L-fg: #085041;
+    --Z-bg: #E6F1FB; --Z-fg: #0C447C;
+    --M-bg: #FAEEDA; --M-fg: #633806;
+    --C-bg: #FBEAF0; --C-fg: #72243E;
+    --X-bg: #EEECEA; --X-fg: #5F5E5A;
+    --S-bg: #DCF0FB; --S-fg: #185FA5;
+    --IP-bg: #FEF0DC; --IP-fg: #854F0B;
+    --border: #DEDEDE;
+    --hdr-bg: #F0F0F0;
+    --sec-bg: #EBEBEB;
+    --mtg-bg: #E4E4E4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Microsoft JhengHei', 'PingFang TC', 'Noto Sans TC', sans-serif; font-size: 11px; color: #333; background: #FAFAFA; padding: 16px; }
+  h1 { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 12px; letter-spacing: 0.03em; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 2px; margin-bottom: 0; }
+  .tab { padding: 6px 18px; cursor: pointer; font-size: 11px; font-weight: 500; border: 1px solid var(--border); border-bottom: none; border-radius: 4px 4px 0 0; background: #EBEBEB; color: #666; transition: all 0.15s; }
+  .tab.active { background: #fff; color: #333; border-color: var(--border); }
+  .panel { display: none; border: 1px solid var(--border); background: #fff; border-radius: 0 4px 4px 4px; overflow-x: auto; }
+  .panel.active { display: block; }
+
+  /* Table */
+  table { border-collapse: collapse; width: 100%; font-size: 10px; }
+  th, td { border: 0.5px solid var(--border); padding: 4px 6px; vertical-align: middle; line-height: 1.35; }
+  th { font-weight: 600; font-size: 9px; color: #666; background: var(--hdr-bg); white-space: nowrap; }
+  .sec { background: var(--sec-bg); font-size: 9px; font-weight: 600; color: #555; text-align: left; padding: 5px 8px; border-top: 1.5px solid #C0C0C0; letter-spacing: 0.02em; }
+
+  /* Group cells */
+  .grp { font-weight: 600; text-align: center; font-size: 9px; vertical-align: middle; line-height: 1.4; }
+  .grp-com { background: var(--com-bg); color: var(--com-fg); }
+  .grp-L   { background: var(--L-bg);   color: var(--L-fg); }
+  .grp-Z   { background: var(--Z-bg);   color: var(--Z-fg); }
+  .grp-M   { background: var(--M-bg);   color: var(--M-fg); }
+  .grp-C   { background: var(--C-bg);   color: var(--C-fg); }
+  .grp-X   { background: var(--X-bg);   color: var(--X-fg); }
+  .grp-S   { background: var(--S-bg);   color: var(--S-fg); }
+  .grp-IP  { background: var(--IP-bg);  color: var(--IP-fg); }
+
+  /* Axis cells */
+  .ax { text-align: center; font-weight: 700; font-size: 9px; width: 22px; }
+  .ax-O  { background: var(--O-bg);  color: var(--O-fg); }
+  .ax-N  { background: var(--N-bg);  color: var(--N-fg); }
+  .ax-CV { background: var(--CV-bg); color: var(--CV-fg); }
+  .ax-I  { background: var(--I-bg);  color: var(--I-fg); }
+  .ax-P  { background: var(--P-bg);  color: var(--P-fg); }
+
+  .num { text-align: center; font-size: 9px; font-weight: 600; width: 48px; color: #555; white-space: nowrap; }
+  .lbl { color: #222; font-weight: 500; }
+  .dept { text-align: center; font-size: 9px; color: #555; white-space: nowrap; }
+  .pc { text-align: center; font-size: 9px; color: #555; white-space: nowrap; }
+
+  /* B table */
+  .mc { font-weight: 600; text-align: center; font-size: 10px; background: var(--mtg-bg); color: #333; vertical-align: middle; white-space: nowrap; }
+  .pgc { font-weight: 500; font-size: 10px; background: var(--hdr-bg); color: #333; text-align: center; vertical-align: middle; white-space: nowrap; }
+
+  /* Tags */
+  .tag { display: inline-block; padding: 1px 5px; border-radius: 3px; margin: 1px 2px 1px 0; white-space: nowrap; font-size: 9px; font-weight: 500; }
+  .tag-O  { background: var(--O-bg);  color: var(--O-fg); }
+  .tag-N  { background: var(--N-bg);  color: var(--N-fg); }
+  .tag-CV { background: var(--CV-bg); color: var(--CV-fg); }
+  .tag-I  { background: var(--I-bg);  color: var(--I-fg); }
+  .tag-P  { background: var(--P-bg);  color: var(--P-fg); }
+
+  /* Print */
+  @media print {
+    .tabs { display: none; }
+    .panel { display: block !important; border: none; page-break-after: always; }
+    body { padding: 8px; }
+  }
+</style>
+</head>
+<body>
+<h1>🗂 Issue管理主檔</h1>
+
+<div class="tabs">
+  <div class="tab active" onclick="show('A',event)">A：Issue管理主檔</div>
+  <div class="tab" onclick="show('B',event)">B：會議-頁面-Issue表</div>
+</div>
+
+<!-- ===== A ===== -->
+<div class="panel active" id="panel-A">
+<table>
+<thead>
+  <tr>
+    <th style="width:64px;">區分</th>
+    <th style="width:22px;">軸</th>
+    <th style="width:48px;">編號</th>
+    <th style="min-width:140px;">Issue</th>
+    <th style="width:62px;">處</th>
+    <th style="width:62px;">組</th>
+    <th style="width:40px;">戰略負責人</th>
+    <th style="width:90px;">管理頁面</th>
+    <th style="width:76px;">確認會議</th>
+  </tr>
+</thead>
+<tbody>
+  <tr><td colspan="9" class="sec">■ 共通Issue（橫軸管理）</td></tr>
+  <tr><td class="grp grp-com" rowspan="19">共通</td><td class="ax ax-O">O</td><td class="num">共-1</td><td class="lbl">交叉銷售·客單價提升</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">交叉銷售</td><td class="pc">經營戰略組會</td></tr>
+  <tr><td class="ax ax-O">O</td><td class="num">共-2</td><td class="lbl">官方WEB</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">官方WEB</td><td class="pc">整合溝通</td></tr>
+  <tr><td class="ax ax-O">O</td><td class="num">共-3</td><td class="lbl">YOUTUBE</td><td class="dept">商品事業</td><td class="dept">學習商品開發</td><td class="dept">育菱</td><td class="pc">YOUTUBE</td><td class="pc">商品溝通</td></tr>
+  <tr><td class="ax ax-O">O</td><td class="num">共-4</td><td class="lbl">SNS</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">SNS</td><td class="pc">整合溝通</td></tr>
+  <tr><td class="ax ax-N">N</td><td class="num">共-5</td><td class="lbl">BCL註冊用戶擴大</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">少琪</td><td class="pc">BCL擴大</td><td class="pc">經營戰略組會</td></tr>
+  <tr><td class="ax ax-N">N</td><td class="num">共-6</td><td class="lbl">忠誠用戶擴大</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">少琪</td><td class="pc">LBCL</td><td class="pc">經營戰略組會</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">共-7</td><td class="lbl">LC8T</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">LC8T</td><td class="pc">LC8T-資訊</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">共-8</td><td class="lbl">LC8T-ACTS</td><td class="dept">CX計劃</td><td class="dept">LTV戰略</td><td class="dept">育菱</td><td class="pc">LC8T-ACTS</td><td class="pc">CX溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">共-9</td><td class="lbl">LC8T-AWRT</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">LC8T-AWRT</td><td class="pc">整合溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">共-10</td><td class="lbl">LC8T-ATLT</td><td class="dept">CX計劃</td><td class="dept">LTV戰略</td><td class="dept">育菱</td><td class="pc">LC8T-ATLT</td><td class="pc">CX溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">共-11</td><td class="lbl">LiveChat運營改善</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">LiveChat</td><td class="pc">整合溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">共-12</td><td class="lbl">LINE客服運營改善</td><td class="dept">CX計劃</td><td class="dept">LTV戰略</td><td class="dept">育菱</td><td class="pc">LINE客服</td><td class="pc">CX溝通</td></tr>
+  <tr><td class="ax ax-I">I</td><td class="num">共-13</td><td class="lbl">庫存管理-降低風險</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">詩雅</td><td class="pc">庫存風險</td><td class="pc">靜中美</td></tr>
+  <tr><td class="ax ax-I">I</td><td class="num">共-14</td><td class="lbl">共同費用合理化·系統</td><td class="dept">資訊事業</td><td class="dept">資訊</td><td class="dept">詩雅</td><td class="pc">系統ROI</td><td class="pc">資訊溝通</td></tr>
+  <tr><td class="ax ax-I">I</td><td class="num">共-15</td><td class="lbl">共同費用合理化·物流</td><td class="dept">總管理</td><td class="dept">統籌整合</td><td class="dept">詩雅</td><td class="pc">物流ROI</td><td class="pc">總管理溝通</td></tr>
+  <tr><td class="ax ax-I">I</td><td class="num">共-16</td><td class="lbl">共同費用合理化·其他</td><td class="dept">總管理</td><td class="dept">統籌整合</td><td class="dept">詩雅</td><td class="pc">其他ROI</td><td class="pc">總管理溝通</td></tr>
+  <tr><td class="ax ax-I">I</td><td class="num">共-17</td><td class="lbl">經營Issue管理</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">詩雅</td><td class="pc">經營Issue管理</td><td class="pc">綢繆帷幄</td></tr>
+  <tr><td class="ax ax-P">P</td><td class="num">共-18</td><td class="lbl">經營可視化儀表板建置</td><td class="dept">財務</td><td class="dept">財務</td><td class="dept">詩雅</td><td class="pc">經營儀表板</td><td class="pc">財務溝通</td></tr>
+  <tr><td class="ax ax-P">P</td><td class="num">共-19</td><td class="lbl">合約確認會議</td><td class="dept">總管理</td><td class="dept">統籌整合</td><td class="dept">詩雅</td><td class="pc">合約管理</td><td class="pc">合約管理</td></tr>
+
+  <tr><td colspan="9" class="sec">■ 個別Issue（縱軸·依SKU管理）</td></tr>
+  <tr><td class="grp grp-L" rowspan="6">L<br>學習商品</td><td class="ax ax-O">O</td><td class="num">L-1</td><td class="lbl">SKU擴大·進化</td><td class="dept">商品事業</td><td class="dept">學習商品開發</td><td class="dept">育菱</td><td class="pc">學習商品企劃</td><td class="pc">商品溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">L-2</td><td class="lbl">WEB銷售擴大</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">學習商品銷售</td><td class="pc">整合溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">L-3</td><td class="lbl">KOL銷售擴大</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">學習商品銷售</td><td class="pc">整合溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">L-4</td><td class="lbl">EC銷售擴大</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">學習商品銷售</td><td class="pc">整合溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">L-5</td><td class="lbl">海外代理商擴大</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">學習商品銷售</td><td class="pc">整合溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">L-6</td><td class="lbl">TM銷售擴大</td><td class="dept">CX計劃</td><td class="dept">LTV戰略</td><td class="dept">育菱</td><td class="pc">TM銷售</td><td class="pc">CX溝通</td></tr>
+
+  <tr><td class="grp grp-Z" rowspan="6">Z<br>周邊商品</td><td class="ax ax-O">O</td><td class="num">Z-1</td><td class="lbl">SKU擴大·進化</td><td class="dept">商品事業</td><td class="dept">品牌授權策略</td><td class="dept">育菱</td><td class="pc">周邊商品企劃</td><td class="pc">商品溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">Z-2</td><td class="lbl">WEB銷售擴大</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">周邊商品銷售</td><td class="pc">整合溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">Z-3</td><td class="lbl">KOL銷售擴大</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">周邊商品銷售</td><td class="pc">整合溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">Z-4</td><td class="lbl">EC銷售擴大</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">周邊商品銷售</td><td class="pc">整合溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">Z-5</td><td class="lbl">海外代理商擴大</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">周邊商品銷售</td><td class="pc">整合溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">Z-6</td><td class="lbl">舞台劇現場銷售擴大</td><td class="dept">商品事業</td><td class="dept">表演活動</td><td class="dept">育菱</td><td class="pc">舞台劇</td><td class="pc">商品溝通</td></tr>
+
+  <tr><td class="grp grp-M" rowspan="4">M<br>Mirafeel</td><td class="ax ax-O">O</td><td class="num">M-1</td><td class="lbl">SKU擴大·進化</td><td class="dept">商品事業</td><td class="dept">品牌授權策略</td><td class="dept">育菱</td><td class="pc">Mirafeel</td><td class="pc">靜中美</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">M-2</td><td class="lbl">WEB銷售擴大</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">Mirafeel</td><td class="pc">靜中美</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">M-3</td><td class="lbl">TM銷售擴大</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">Mirafeel</td><td class="pc">靜中美</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">M-4</td><td class="lbl">KOL銷售擴大</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">Mirafeel</td><td class="pc">靜中美</td></tr>
+
+  <tr><td class="grp grp-C" rowspan="2">C<br>共創SKU</td><td class="ax ax-O">O</td><td class="num">C-1</td><td class="lbl">SKU擴大·進化</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">共創SKU開發</td><td class="pc">靜中美</td></tr>
+  <tr><td class="ax ax-O">O</td><td class="num">C-2</td><td class="lbl">KK-AI巧虎</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">KK-AI巧虎</td><td class="pc">AI巧虎</td></tr>
+
+  <tr><td class="grp grp-X" rowspan="2">X<br>跨境A&amp;B</td><td class="ax ax-O">O</td><td class="num">X-1</td><td class="lbl">SKU擴大·進化</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">PLAN_A&amp;B</td><td class="pc">靜中美</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">X-2</td><td class="lbl">WEB銷售擴大</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">PLAN_A&amp;B</td><td class="pc">靜中美</td></tr>
+
+  <tr><td class="grp grp-S" rowspan="4">S<br>舞台劇</td><td class="ax ax-O">O</td><td class="num">S-1</td><td class="lbl">SKU擴大·進化</td><td class="dept">商品事業</td><td class="dept">表演活動</td><td class="dept">育菱</td><td class="pc">舞台劇</td><td class="pc">商品溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">S-2</td><td class="lbl">BCL銷售擴大</td><td class="dept">商品事業</td><td class="dept">表演活動</td><td class="dept">育菱</td><td class="pc">舞台劇</td><td class="pc">商品溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">S-3</td><td class="lbl">其他通路銷售擴大</td><td class="dept">商品事業</td><td class="dept">表演活動</td><td class="dept">育菱</td><td class="pc">舞台劇</td><td class="pc">商品溝通</td></tr>
+  <tr><td class="ax ax-CV">CV</td><td class="num">S-4</td><td class="lbl">B2C銷售擴大</td><td class="dept">商品事業</td><td class="dept">表演活動</td><td class="dept">育菱</td><td class="pc">舞台劇</td><td class="pc">商品溝通</td></tr>
+
+  <tr><td class="grp grp-IP" rowspan="3">IP<br>IP授權</td><td class="ax ax-O">O</td><td class="num">IP-1</td><td class="lbl">MD</td><td class="dept">商品事業</td><td class="dept">品牌授權策略</td><td class="dept">育菱</td><td class="pc">IP授權</td><td class="pc">商品溝通</td></tr>
+  <tr><td class="ax ax-O">O</td><td class="num">IP-2</td><td class="lbl">動畫</td><td class="dept">商品事業</td><td class="dept">品牌授權策略</td><td class="dept">育菱</td><td class="pc">IP授權</td><td class="pc">商品溝通</td></tr>
+  <tr><td class="ax ax-O">O</td><td class="num">IP-3</td><td class="lbl">空間授權</td><td class="dept">商品事業</td><td class="dept">品牌授權策略</td><td class="dept">育菱</td><td class="pc">IP授權</td><td class="pc">商品溝通</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ===== B ===== -->
+<div class="panel" id="panel-B">
+<table>
+<thead>
+  <tr>
+    <th style="width:82px;">會議</th>
+    <th style="width:110px;">管理頁面</th>
+    <th>Issue</th>
+  </tr>
+</thead>
+<tbody>
+  <!-- 經營戰略組會: 3行 -->
+  <tr><td class="mc" rowspan="3">經營戰略組會</td><td class="pgc">交叉銷售</td><td><span class="tag tag-O">共-1 交叉銷售·客單價提升</span></td></tr>
+  <tr><td class="pgc">BCL擴大</td><td><span class="tag tag-N">共-5 BCL註冊用戶擴大</span></td></tr>
+  <tr><td class="pgc">LBCL</td><td><span class="tag tag-N">共-6 忠誠用戶擴大</span></td></tr>
+  <!-- 整合溝通: 6行 -->
+  <tr><td class="mc" rowspan="6">整合溝通</td><td class="pgc">官方WEB</td><td><span class="tag tag-O">共-2 官方WEB</span></td></tr>
+  <tr><td class="pgc">SNS</td><td><span class="tag tag-O">共-4 SNS</span></td></tr>
+  <tr><td class="pgc">LC8T-AWRT</td><td><span class="tag tag-CV">共-9 LC8T-AWRT</span></td></tr>
+  <tr><td class="pgc">LiveChat</td><td><span class="tag tag-CV">共-11 LiveChat運營改善</span></td></tr>
+  <tr><td class="pgc">學習商品銷售</td><td><span class="tag tag-CV">L-2 WEB</span> <span class="tag tag-CV">L-3 KOL</span> <span class="tag tag-CV">L-4 EC</span> <span class="tag tag-CV">L-5 海外代理商</span></td></tr>
+  <tr><td class="pgc">周邊商品銷售</td><td><span class="tag tag-CV">Z-2 WEB</span> <span class="tag tag-CV">Z-3 KOL</span> <span class="tag tag-CV">Z-4 EC</span> <span class="tag tag-CV">Z-5 海外代理商</span></td></tr>
+  <!-- 商品溝通: 5行 -->
+  <tr><td class="mc" rowspan="5">商品溝通</td><td class="pgc">YOUTUBE</td><td><span class="tag tag-O">共-3 YOUTUBE</span></td></tr>
+  <tr><td class="pgc">學習商品企劃</td><td><span class="tag tag-O">L-1 SKU擴大·進化</span></td></tr>
+  <tr><td class="pgc">周邊商品企劃</td><td><span class="tag tag-O">Z-1 SKU擴大·進化</span></td></tr>
+  <tr><td class="pgc">舞台劇</td><td><span class="tag tag-O">S-1 SKU擴大</span> <span class="tag tag-CV">S-2 BCL銷售</span> <span class="tag tag-CV">S-3 其他通路</span> <span class="tag tag-CV">S-4 B2C銷售</span> <span class="tag tag-CV">Z-6 現場銷售</span></td></tr>
+  <tr><td class="pgc">IP授權</td><td><span class="tag tag-O">IP-1 MD</span> <span class="tag tag-O">IP-2 動畫</span> <span class="tag tag-O">IP-3 空間授權</span></td></tr>
+  <!-- LC8T-資訊: 1行 -->
+  <tr><td class="mc">LC8T-資訊</td><td class="pgc">LC8T</td><td><span class="tag tag-CV">共-7 LC8T</span></td></tr>
+  <!-- CX溝通: 4行 -->
+  <tr><td class="mc" rowspan="4">CX溝通</td><td class="pgc">LC8T-ACTS</td><td><span class="tag tag-CV">共-8 LC8T-ACTS</span></td></tr>
+  <tr><td class="pgc">LC8T-ATLT</td><td><span class="tag tag-CV">共-10 LC8T-ATLT</span></td></tr>
+  <tr><td class="pgc">LINE客服</td><td><span class="tag tag-CV">共-12 LINE客服運營改善</span></td></tr>
+  <tr><td class="pgc">TM銷售</td><td><span class="tag tag-CV">L-6 TM銷售擴大</span></td></tr>
+  <!-- 靜中美: 4行 -->
+  <tr><td class="mc" rowspan="4">靜中美</td><td class="pgc">庫存風險</td><td><span class="tag tag-I">共-13 庫存管理-降低風險</span></td></tr>
+  <tr><td class="pgc">Mirafeel</td><td><span class="tag tag-O">M-1 SKU擴大</span> <span class="tag tag-CV">M-2 WEB</span> <span class="tag tag-CV">M-3 TM</span> <span class="tag tag-CV">M-4 KOL</span></td></tr>
+  <tr><td class="pgc">共創SKU開發</td><td><span class="tag tag-O">C-1 SKU擴大·進化</span></td></tr>
+  <tr><td class="pgc">PLAN_A&amp;B</td><td><span class="tag tag-O">X-1 SKU擴大</span> <span class="tag tag-CV">X-2 WEB銷售</span></td></tr>
+  <!-- AI巧虎: 1行 -->
+  <tr><td class="mc">AI巧虎</td><td class="pgc">KK-AI巧虎</td><td><span class="tag tag-O">C-2 KK-AI巧虎</span></td></tr>
+  <!-- 資訊溝通: 1行 -->
+  <tr><td class="mc">資訊溝通</td><td class="pgc">系統ROI</td><td><span class="tag tag-I">共-14 共同費用合理化·系統</span></td></tr>
+  <!-- 總管理溝通: 2行 -->
+  <tr><td class="mc" rowspan="2">總管理溝通</td><td class="pgc">物流ROI</td><td><span class="tag tag-I">共-15 共同費用合理化·物流</span></td></tr>
+  <tr><td class="pgc">其他ROI</td><td><span class="tag tag-I">共-16 共同費用合理化·其他</span></td></tr>
+  <!-- 財務溝通: 1行 -->
+  <tr><td class="mc">財務溝通</td><td class="pgc">經營儀表板</td><td><span class="tag tag-P">共-18 經營可視化儀表板建置</span></td></tr>
+  <!-- 綢繆帷幄: 1行 -->
+  <tr><td class="mc">綢繆帷幄</td><td class="pgc">經營Issue管理</td><td><span class="tag tag-I">共-17 經營Issue管理</span></td></tr>
+  <!-- 合約管理: 1行 -->
+  <tr><td class="mc">合約管理</td><td class="pgc">合約管理</td><td><span class="tag tag-P">共-19 合約確認會議</span></td></tr>
+</tbody>
+</table>
+</table>
+</div>
+
+<script>
+function show(id, e) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  e.target.classList.add('active');
+}
+</script>
+</body>
+</html>
