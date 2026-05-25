@@ -44,7 +44,36 @@
   .tab.active:nth-child(1) { background: #A8EFCB; }
   .tab.active:nth-child(2) { background: #B6D7FB; }
   .tab.active:nth-child(3) { background: #FFCB8E; }
+  .tab.active:nth-child(4) { background: #FBBDD3; }
+  .tab.active:nth-child(5) { background: #D6CDF7; }
   .tab.active { color: #000; box-shadow: 0 -2px 6px rgba(0,0,0,0.04); }
+
+  /* Console (Tab E) */
+  .console { padding: 18px 20px; }
+  .console h2 { font-size: 14px; font-weight: 800; margin-bottom: 6px; color: #000; letter-spacing: 0.02em; }
+  .console .desc { font-size: 12px; color: #555; margin-bottom: 14px; line-height: 1.6; }
+  .con-section { border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; margin-bottom: 14px; background: #FDFCF7; }
+  .con-section .section-title { font-size: 13px; font-weight: 800; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px dashed var(--border); display: flex; align-items: center; gap: 8px; }
+  .con-section .section-title .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; }
+  .con-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+  .btn { display: inline-block; padding: 8px 16px; border-radius: 5px; border: 1px solid #BFB8A4; background: #fff; color: #000; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .btn:hover { background: #F0EBDC; }
+  .btn-primary { background: #A8EFCB; border-color: #5FC591; }
+  .btn-primary:hover { background: #8FE5B8; }
+  .btn-warn { background: #FFCB8E; border-color: #E0A055; }
+  .btn-warn:hover { background: #FFB969; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .file-info { font-size: 12px; color: #555; padding: 4px 8px; background: #fff; border: 1px dashed #CFC8B5; border-radius: 4px; }
+  .log { background: #1E1E1E; color: #DDD; font-family: 'Menlo','Consolas',monospace; font-size: 11px; padding: 10px 12px; border-radius: 4px; max-height: 160px; overflow-y: auto; line-height: 1.5; }
+  .log .log-info { color: #9CDCFE; }
+  .log .log-ok { color: #B5CEA8; }
+  .log .log-err { color: #F48771; }
+  .log .log-warn { color: #DCDCAA; }
+  .preview-wrap { max-height: 320px; overflow: auto; border: 1px solid var(--border); border-radius: 4px; }
+  .preview-wrap table { font-size: 11px; }
+  .preview-wrap th { position: sticky; top: 0; z-index: 1; }
+  .stats { font-size: 12px; color: #333; padding: 6px 10px; background: #F7F4EC; border-radius: 3px; display: inline-block; }
+  .hidden { display: none !important; }
   .panel { display: none; border: 1px solid var(--border); background: #fff; border-radius: 0 4px 4px 4px; overflow-x: auto; }
   .panel.active { display: block; }
 
@@ -128,6 +157,7 @@
   <div class="tab" onclick="show('B',event)">B：會議-頁面-Issue表</div>
   <div class="tab" onclick="show('C',event)">C：部門別</div>
   <div class="tab" onclick="show('D',event)">D：行事曆</div>
+  <div class="tab" onclick="show('E',event)">E：匯入/匯出</div>
 </div>
 
 <!-- ===== A ===== -->
@@ -302,13 +332,306 @@
 </table>
 </div>
 
+<!-- ===== E：匯入/匯出 Console ===== -->
+<div class="panel" id="panel-E">
+  <div class="console">
+    <h2>Issue管理主檔 — 匯入 / 匯出 主控台</h2>
+    <div class="desc">
+      此主控台可將 <b>A：Issue管理主檔</b> 的內容匯出為 Excel 檔案，或從 Excel 匯入並覆蓋目前的主檔資料。<br>
+      Excel 欄位順序：<code>區分 / 軸 / 編號 / Issue / Issue短縮 / 處 / 組 / 戰略負責人 / 管理頁面(JIG-組名) / 確認會議 / 會議時間</code>
+    </div>
+
+    <!-- Export -->
+    <div class="con-section">
+      <div class="section-title">
+        <span class="badge" style="background:#A8EFCB;">EXPORT</span>
+        匯出至 Excel
+      </div>
+      <div class="con-row">
+        <button class="btn btn-primary" onclick="exportXlsx()">📥 匯出目前主檔 (.xlsx)</button>
+        <span class="stats" id="exportStats">目前資料：— 筆</span>
+      </div>
+    </div>
+
+    <!-- Import -->
+    <div class="con-section">
+      <div class="section-title">
+        <span class="badge" style="background:#FFCB8E;">IMPORT</span>
+        從 Excel 匯入
+      </div>
+      <div class="con-row">
+        <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)" style="font-size:12px;">
+        <span class="file-info" id="fileInfo">尚未選擇檔案</span>
+      </div>
+      <div class="con-row" id="importActions" style="display:none;">
+        <button class="btn btn-warn" onclick="applyImport()">✅ 套用至 A 主檔（覆蓋）</button>
+        <button class="btn" onclick="cancelImport()">取消</button>
+        <span class="stats" id="importStats"></span>
+      </div>
+      <div id="previewArea" class="hidden" style="margin-top:10px;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:6px;">預覽（前 20 列）：</div>
+        <div class="preview-wrap"><table id="previewTable"></table></div>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="con-section">
+      <div class="section-title">
+        <span class="badge" style="background:#D6CDF7;">LOG</span>
+        執行記錄
+      </div>
+      <div class="log" id="logArea"><span class="log-info">[系統] 主控台就緒。</span></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
+// ===== Tab switch =====
 function show(id, e) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('panel-' + id).classList.add('active');
   e.target.classList.add('active');
 }
+
+// ===== Data model & rendering for Tab A =====
+const GROUP_DEF = {
+  '共通': { key:'com', label:'共通',           cls:'grp-com' },
+  'L':    { key:'L',   label:'L<br>學習商品',   cls:'grp-L' },
+  'Z':    { key:'Z',   label:'Z<br>周邊商品',   cls:'grp-Z' },
+  'M':    { key:'M',   label:'M<br>Mirafeel',  cls:'grp-M' },
+  'C':    { key:'C',   label:'C<br>共創SKU',   cls:'grp-C' },
+  'X':    { key:'X',   label:'X<br>跨境A&amp;B',cls:'grp-X' },
+  'S':    { key:'S',   label:'S<br>舞台劇',     cls:'grp-S' },
+  'IP':   { key:'IP',  label:'IP<br>IP授權',    cls:'grp-IP' }
+};
+const AXIS_CLASS = { 'O':'ax-O','N':'ax-N','CV':'ax-CV','I':'ax-I','P':'ax-P' };
+const COLS = ['區分','軸','編號','Issue','Issue短縮','處','組','戰略負責人','管理頁面','確認會議','會議時間'];
+
+let issueData = [];   // array of row objects
+let pendingData = null;
+
+// Parse the initial Table A tbody into issueData
+function parseInitialTable() {
+  const tbody = document.querySelector('#panel-A tbody');
+  const rows = tbody.querySelectorAll('tr');
+  let curGroup = '';
+  const out = [];
+  rows.forEach(tr => {
+    if (tr.querySelector('td.sec')) return;
+    const tds = tr.querySelectorAll('td');
+    let idx = 0;
+    if (tds[0].classList.contains('grp')) {
+      curGroup = tds[0].innerText.split('\n')[0].trim();
+      idx = 1;
+    }
+    if (tds.length - idx < 9) return;
+    out.push({
+      '區分': curGroup,
+      '軸':   tds[idx].innerText.trim(),
+      '編號': tds[idx+1].innerText.trim(),
+      'Issue': tds[idx+2].innerText.trim(),
+      'Issue短縮': '',
+      '處':   tds[idx+3].innerText.trim(),
+      '組':   tds[idx+4].innerText.trim(),
+      '戰略負責人': tds[idx+5].innerText.trim(),
+      '管理頁面':   tds[idx+6].innerText.trim(),
+      '確認會議':   tds[idx+7].innerText.trim(),
+      '會議時間':   tds[idx+8].innerText.trim()
+    });
+  });
+  return out;
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderTableA() {
+  const tbody = document.querySelector('#panel-A tbody');
+  // Group rows by 區分 (preserve order)
+  const groups = [];
+  issueData.forEach(r => {
+    const g = r['區分'] || '';
+    const last = groups[groups.length - 1];
+    if (last && last.key === g) last.rows.push(r);
+    else groups.push({ key: g, rows: [r] });
+  });
+
+  let html = '';
+  let commonHeaderEmitted = false;
+  let individualHeaderEmitted = false;
+  groups.forEach(g => {
+    const def = GROUP_DEF[g.key] || { key:'?', label: escapeHtml(g.key), cls:'grp-com' };
+    if (g.key === '共通' && !commonHeaderEmitted) {
+      html += '<tr><td colspan="10" class="sec">■ 共通Issue（橫軸管理）</td></tr>';
+      commonHeaderEmitted = true;
+    } else if (g.key !== '共通' && !individualHeaderEmitted) {
+      html += '<tr><td colspan="10" class="sec">■ 個別Issue（縱軸·依SKU管理）</td></tr>';
+      individualHeaderEmitted = true;
+    }
+    g.rows.forEach((r, i) => {
+      const axCls = AXIS_CLASS[r['軸']] || '';
+      html += '<tr>';
+      if (i === 0) {
+        html += `<td class="grp ${def.cls}" rowspan="${g.rows.length}">${def.label}</td>`;
+      }
+      html += `<td class="ax ${axCls}">${escapeHtml(r['軸'])}</td>`;
+      html += `<td class="num">${escapeHtml(r['編號'])}</td>`;
+      html += `<td class="lbl">${escapeHtml(r['Issue'])}</td>`;
+      html += `<td class="dept">${escapeHtml(r['處'])}</td>`;
+      html += `<td class="dept">${escapeHtml(r['組'])}</td>`;
+      html += `<td class="dept">${escapeHtml(r['戰略負責人'])}</td>`;
+      html += `<td class="pc">${escapeHtml(r['管理頁面'])}</td>`;
+      html += `<td class="pc">${escapeHtml(r['確認會議'])}</td>`;
+      html += `<td class="pc">${escapeHtml(r['會議時間'])}</td>`;
+      html += '</tr>';
+    });
+  });
+  tbody.innerHTML = html;
+  updateExportStats();
+}
+
+function updateExportStats() {
+  document.getElementById('exportStats').textContent = `目前資料：${issueData.length} 筆`;
+}
+
+// ===== Log helpers =====
+function log(msg, type) {
+  const el = document.getElementById('logArea');
+  const ts = new Date().toLocaleTimeString('zh-TW', { hour12:false });
+  const cls = 'log-' + (type || 'info');
+  el.innerHTML += `<br><span class="${cls}">[${ts}] ${escapeHtml(msg)}</span>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+// ===== Export =====
+function exportXlsx() {
+  try {
+    const wsData = [COLS.slice()];
+    issueData.forEach(r => {
+      wsData.push(COLS.map(c => r[c] || ''));
+    });
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    ws['!cols'] = [
+      {wch:8},{wch:5},{wch:8},{wch:40},{wch:20},
+      {wch:12},{wch:14},{wch:12},{wch:20},{wch:20},{wch:12}
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Issue主檔');
+    const ts = new Date().toISOString().slice(0,10).replace(/-/g,'');
+    const fname = `Issue主檔_${ts}.xlsx`;
+    XLSX.writeFile(wb, fname);
+    log(`匯出成功：${fname}（${issueData.length} 筆）`, 'ok');
+  } catch (err) {
+    log('匯出失敗：' + err.message, 'err');
+  }
+}
+
+// ===== Import =====
+function handleFile(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  document.getElementById('fileInfo').textContent =
+    `${file.name}（${(file.size/1024).toFixed(1)} KB）`;
+  log(`讀取檔案：${file.name}`, 'info');
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const wb = XLSX.read(e.target.result, { type:'array' });
+      const sheetName = wb.SheetNames.includes('Issue主檔')
+        ? 'Issue主檔' : wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+      if (rows.length < 2) throw new Error('檔案無資料列');
+      const headers = rows[0].map(h => String(h).trim());
+      const colIdx = {};
+      COLS.forEach(c => {
+        let i = headers.indexOf(c);
+        if (i < 0 && c === '管理頁面') i = headers.findIndex(h => h.startsWith('管理頁面'));
+        colIdx[c] = i;
+      });
+      const required = ['區分','軸','編號','Issue'];
+      const missing = required.filter(c => colIdx[c] < 0);
+      if (missing.length) throw new Error('缺少必要欄位：' + missing.join(', '));
+
+      const data = [];
+      let lastGroup = '';
+      for (let r = 1; r < rows.length; r++) {
+        const row = rows[r];
+        if (!row || row.every(v => v === '' || v == null)) continue;
+        const gRaw = String(row[colIdx['區分']] || '').trim();
+        if (gRaw) lastGroup = gRaw;
+        const obj = {};
+        COLS.forEach(c => {
+          obj[c] = colIdx[c] >= 0 ? String(row[colIdx[c]] ?? '').trim() : '';
+        });
+        obj['區分'] = lastGroup;
+        if (!obj['編號'] && !obj['Issue']) continue;
+        data.push(obj);
+      }
+      pendingData = data;
+      log(`解析成功：工作表「${sheetName}」共 ${data.length} 筆`, 'ok');
+      showPreview(data);
+      document.getElementById('importActions').style.display = 'flex';
+      document.getElementById('importStats').textContent = `待套用：${data.length} 筆`;
+    } catch (err) {
+      log('解析失敗：' + err.message, 'err');
+      pendingData = null;
+      document.getElementById('importActions').style.display = 'none';
+      document.getElementById('previewArea').classList.add('hidden');
+    }
+  };
+  reader.onerror = () => log('檔案讀取錯誤', 'err');
+  reader.readAsArrayBuffer(file);
+}
+
+function showPreview(data) {
+  const tbl = document.getElementById('previewTable');
+  let html = '<thead><tr>';
+  COLS.forEach(c => html += `<th>${escapeHtml(c)}</th>`);
+  html += '</tr></thead><tbody>';
+  data.slice(0, 20).forEach(r => {
+    html += '<tr>';
+    COLS.forEach(c => html += `<td>${escapeHtml(r[c])}</td>`);
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  tbl.innerHTML = html;
+  document.getElementById('previewArea').classList.remove('hidden');
+}
+
+function applyImport() {
+  if (!pendingData) return;
+  if (!confirm(`將以 ${pendingData.length} 筆資料覆蓋目前的 A 主檔，是否繼續？`)) return;
+  issueData = pendingData;
+  pendingData = null;
+  renderTableA();
+  document.getElementById('importActions').style.display = 'none';
+  document.getElementById('previewArea').classList.add('hidden');
+  document.getElementById('fileInput').value = '';
+  document.getElementById('fileInfo').textContent = '尚未選擇檔案';
+  log(`已套用至 A 主檔（${issueData.length} 筆）。請切換至 A 頁籤確認。`, 'ok');
+}
+
+function cancelImport() {
+  pendingData = null;
+  document.getElementById('importActions').style.display = 'none';
+  document.getElementById('previewArea').classList.add('hidden');
+  document.getElementById('fileInput').value = '';
+  document.getElementById('fileInfo').textContent = '尚未選擇檔案';
+  log('已取消匯入。', 'warn');
+}
+
+// ===== Init =====
+document.addEventListener('DOMContentLoaded', () => {
+  issueData = parseInitialTable();
+  updateExportStats();
+  log(`初始化完成，從 A 主檔讀取 ${issueData.length} 筆資料。`, 'ok');
+});
 </script>
 </body>
 </html>
