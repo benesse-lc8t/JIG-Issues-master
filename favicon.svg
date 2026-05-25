@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E8EEF5"/>
+    </linearGradient>
+    <linearGradient id="txt" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#93D4F7"/>
+      <stop offset="100%" stop-color="#3D9FDF"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#B0C8E0" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+  <!-- Background rounded square -->
+  <rect width="120" height="120" rx="26" fill="url(#bg)" filter="url(#shadow)"/>
+  <!-- JIG text -->
+  <text x="60" y="78"
+    text-anchor="middle"
+    font-family="'Helvetica Neue', Arial, sans-serif"
+    font-weight="900"
+    font-size="52"
+    fill="url(#txt)"
+    letter-spacing="-1">JIG</text>
+</svg>
