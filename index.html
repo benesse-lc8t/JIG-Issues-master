@@ -449,6 +449,41 @@ function escapeHtml(s) {
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+// Day-of-week + time parsing helpers
+const DAY_ORDER = { '一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'日':7 };
+function parseDayTime(s) {
+  if (!s) return { day:9, h:99, m:99, key: 99999999, time:'' };
+  const m = String(s).match(/週([一二三四五六日])\s*(\d{1,2})[:：](\d{2})/);
+  if (!m) return { day:9, h:99, m:99, key: 99999999, time: String(s) };
+  const day = DAY_ORDER[m[1]] || 9;
+  const hh = parseInt(m[2],10), mm = parseInt(m[3],10);
+  return {
+    day, h:hh, m:mm, key: day*10000 + hh*100 + mm,
+    dayName: m[1], time: String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0')
+  };
+}
+function tagSpan(r) {
+  const cls = 'tag tag-' + (r['軸'] || '');
+  const short = r['Issue短縮'] || r['Issue'] || '';
+  const num = r['編號'] || '';
+  return `<span class="${cls}">${escapeHtml((num ? num + ' ' : '') + short)}</span>`;
+}
+
+// Harvest 編號 → 短縮 map from existing static B/C/D tags (for initial state)
+function harvestShortNames() {
+  const map = {};
+  document.querySelectorAll('#panel-B .tag, #panel-C .tag, #panel-D .tag').forEach(el => {
+    const txt = el.textContent.trim();
+    const i = txt.indexOf(' ');
+    if (i > 0) {
+      const num = txt.slice(0, i).trim();
+      const short = txt.slice(i+1).trim();
+      if (num && short && !map[num]) map[num] = short;
+    }
+  });
+  return map;
+}
+
 function renderTableA() {
   const tbody = document.querySelector('#panel-A tbody');
   // Group rows by 區分 (preserve order)
@@ -496,6 +531,140 @@ function renderTableA() {
 
 function updateExportStats() {
   document.getElementById('exportStats').textContent = `目前資料：${issueData.length} 筆`;
+}
+
+// ===== Tab B: 會議 → 管理頁面 → Issues =====
+function renderTableB() {
+  const tbody = document.querySelector('#panel-B tbody');
+  const meetMap = new Map();
+  issueData.forEach(r => {
+    const key = (r['確認會議']||'') + '|' + (r['會議時間']||'');
+    if (!meetMap.has(key)) meetMap.set(key, {
+      meeting: r['確認會議']||'', time: r['會議時間']||'',
+      sortKey: parseDayTime(r['會議時間']||'').key, pages: new Map()
+    });
+    const o = meetMap.get(key);
+    const pg = r['管理頁面'] || '';
+    if (!o.pages.has(pg)) o.pages.set(pg, []);
+    o.pages.get(pg).push(r);
+  });
+  const meets = [...meetMap.values()].sort((a,b) => a.sortKey - b.sortKey);
+  let html = '';
+  meets.forEach(meet => {
+    const pgs = [...meet.pages.entries()];
+    pgs.forEach(([pg, items], i) => {
+      html += '<tr>';
+      if (i === 0) {
+        html += `<td class="mc" rowspan="${pgs.length}">${escapeHtml(meet.meeting)}</td>`;
+        html += `<td class="pc" rowspan="${pgs.length}">${escapeHtml(meet.time)}</td>`;
+      }
+      html += `<td class="pgc">${escapeHtml(pg)}</td>`;
+      html += `<td><div class="iss-grid">${items.map(tagSpan).join('')}</div></td>`;
+      html += '</tr>';
+    });
+  });
+  tbody.innerHTML = html;
+}
+
+// ===== Tab C: 處 → 管理頁面 → 會議+時間 → Issues =====
+function renderTableC() {
+  const tbody = document.querySelector('#panel-C tbody');
+  const deptMap = new Map();
+  issueData.forEach(r => {
+    const d = r['處'] || '';
+    if (!deptMap.has(d)) deptMap.set(d, new Map());
+    const sk = (r['管理頁面']||'') + '|' + (r['確認會議']||'') + '|' + (r['會議時間']||'');
+    const pm = deptMap.get(d);
+    if (!pm.has(sk)) pm.set(sk, {
+      page: r['管理頁面']||'', meeting: r['確認會議']||'',
+      time: r['會議時間']||'', items: []
+    });
+    pm.get(sk).items.push(r);
+  });
+  let html = '';
+  [...deptMap.entries()].forEach(([dept, pgMap]) => {
+    const subs = [...pgMap.values()];
+    // Group consecutive same page → rowspan on 管理頁面 column
+    const pageGroups = [];
+    subs.forEach(s => {
+      const last = pageGroups[pageGroups.length-1];
+      if (last && last.page === s.page) last.entries.push(s);
+      else pageGroups.push({ page:s.page, entries:[s] });
+    });
+    const totalRows = subs.length;
+    let deptCellEmitted = false;
+    pageGroups.forEach(pg => {
+      pg.entries.forEach((e, j) => {
+        html += '<tr>';
+        if (!deptCellEmitted) {
+          html += `<td class="mc" rowspan="${totalRows}">${escapeHtml(dept)}</td>`;
+          deptCellEmitted = true;
+        }
+        if (j === 0) {
+          html += `<td class="pgc" rowspan="${pg.entries.length}">${escapeHtml(pg.page)}</td>`;
+        }
+        html += `<td class="pgc">${escapeHtml(e.meeting)}</td>`;
+        html += `<td class="pc">${escapeHtml(e.time)}</td>`;
+        html += `<td><div class="iss-grid">${e.items.map(tagSpan).join('')}</div></td>`;
+        html += '</tr>';
+      });
+    });
+  });
+  tbody.innerHTML = html;
+}
+
+// ===== Tab D: weekly calendar (AM/PM × 週一〜週五) =====
+function renderTableD() {
+  const tbody = document.querySelector('#panel-D tbody');
+  const cells = { AM:{1:[],2:[],3:[],4:[],5:[]}, PM:{1:[],2:[],3:[],4:[],5:[]} };
+  const meetMap = new Map();
+  issueData.forEach(r => {
+    const dt = parseDayTime(r['會議時間']||'');
+    if (dt.day < 1 || dt.day > 5) return;
+    const key = (r['確認會議']||'') + '|' + (r['會議時間']||'');
+    if (!meetMap.has(key)) meetMap.set(key, {
+      meeting: r['確認會議']||'', dt, pages: new Set(), items: []
+    });
+    const o = meetMap.get(key);
+    if (r['管理頁面']) o.pages.add(r['管理頁面']);
+    o.items.push(r);
+  });
+  [...meetMap.values()].forEach(m => {
+    const period = m.dt.h < 12 ? 'AM' : 'PM';
+    cells[period][m.dt.day].push(m);
+  });
+  ['AM','PM'].forEach(p => {
+    for (let d=1; d<=5; d++) cells[p][d].sort((a,b) => a.dt.key - b.dt.key);
+  });
+  function renderCell(meets) {
+    if (!meets.length) return '<td style="background:#FBF9F4;"></td>';
+    let h = '<td class="cal-cell">';
+    meets.forEach(m => {
+      const pages = [...m.pages].join(' / ');
+      h += '<div class="cal-mtg">';
+      h += `<div class="cal-mtg-time">${escapeHtml(m.dt.time)}</div>`;
+      h += `<div class="cal-mtg-name">${escapeHtml(m.meeting)}</div>`;
+      h += `<div class="cal-mtg-jig">${escapeHtml(pages)}</div>`;
+      h += `<div class="cal-tags">${m.items.map(tagSpan).join('')}</div>`;
+      h += '</div>';
+    });
+    h += '</td>';
+    return h;
+  }
+  let html = '';
+  ['AM','PM'].forEach(p => {
+    html += `<tr><td class="mc" style="vertical-align:middle;">${p}</td>`;
+    for (let d=1; d<=5; d++) html += renderCell(cells[p][d]);
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function renderAll() {
+  renderTableA();
+  renderTableB();
+  renderTableC();
+  renderTableD();
 }
 
 // ===== Log helpers =====
@@ -609,7 +778,7 @@ function applyImport() {
   if (!confirm(`將以 ${pendingData.length} 筆資料覆蓋目前的 A 主檔，是否繼續？`)) return;
   issueData = pendingData;
   pendingData = null;
-  renderTableA();
+  renderAll();
   document.getElementById('importActions').style.display = 'none';
   document.getElementById('previewArea').classList.add('hidden');
   document.getElementById('fileInput').value = '';
@@ -629,8 +798,16 @@ function cancelImport() {
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', () => {
   issueData = parseInitialTable();
+  // Pre-populate Issue短縮 by harvesting tags from existing B/C/D static HTML
+  const shortMap = harvestShortNames();
+  let filled = 0;
+  issueData.forEach(r => {
+    if (!r['Issue短縮'] && shortMap[r['編號']]) {
+      r['Issue短縮'] = shortMap[r['編號']]; filled++;
+    }
+  });
   updateExportStats();
-  log(`初始化完成，從 A 主檔讀取 ${issueData.length} 筆資料。`, 'ok');
+  log(`初始化完成，從 A 主檔讀取 ${issueData.length} 筆資料；自動補入 ${filled} 筆 Issue短縮。`, 'ok');
 });
 </script>
 </body>
