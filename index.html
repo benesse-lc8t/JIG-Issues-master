@@ -43,6 +43,10 @@
   button, input, select, textarea, a { font-family: var(--font); }
   code { font-family: var(--font); font-weight: 600; font-size: 0.92em; background: #F2EEE3; padding: 1px 6px; border-radius: 4px; letter-spacing: 0.01em; }
   h1 { font-size: 18px; font-weight: 800; color: #000; margin-bottom: 14px; letter-spacing: 0.03em; }
+  .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .admin-btn { padding: 6px 12px; font-size: 12px; font-weight: 700; border: 1px solid #BFB8A4; border-radius: 5px; background: #F7F4EC; color: #666; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .admin-btn:hover { background: #ECE6D6; color: #000; }
+  .admin-btn.active { background: #D6CDF7; color: #000; border-color: #B7A9E8; }
 
   /* Tabs */
   .tabs { display: flex; gap: 4px; margin-bottom: 0; }
@@ -137,21 +141,24 @@
 
   /* Print */
   @media print {
-    .tabs { display: none; }
+    .tabs, .admin-btn { display: none; }
     .panel { display: block !important; border: none; page-break-after: always; }
+    #panel-E { display: none !important; }
     body { padding: 8px; }
   }
 </style>
 </head>
 <body>
-<h1>TBBS-經營Issue管理系統</h1>
+<div class="topbar">
+  <h1>TBBS-經營Issue管理系統</h1>
+  <button id="adminBtn" class="admin-btn" onclick="show('E',event)" title="僅供管理者使用：資料來源設定">⚙ 管理者專用</button>
+</div>
 
 <div class="tabs">
   <div class="tab active" onclick="show('A',event)">A：Issue管理主檔</div>
   <div class="tab" onclick="show('B',event)">B：會議-頁面-Issue表</div>
   <div class="tab" onclick="show('C',event)">C：部門別</div>
   <div class="tab" onclick="show('D',event)">D：行事曆</div>
-  <div class="tab" onclick="show('E',event)">E：資料來源</div>
 </div>
 
 <!-- ===== A ===== -->
@@ -360,8 +367,10 @@
 function show(id, e) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const admin = document.getElementById('adminBtn');
+  if (admin) admin.classList.remove('active');
   document.getElementById('panel-' + id).classList.add('active');
-  e.target.classList.add('active');
+  if (e && e.target) e.target.classList.add('active');
 }
 
 // ===== Data model & rendering for Tab A =====
