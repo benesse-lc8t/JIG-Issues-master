@@ -356,6 +356,7 @@
       </div>
       <div class="con-row">
         <button class="btn btn-primary" onclick="loadFromSheet()">🔄 從雲端重新載入</button>
+        <a class="btn" id="sheetLink" href="#" target="_blank" rel="noopener">📝 開啟試算表編輯</a>
         <span class="stats" id="cloudStatus">—</span>
       </div>
     </div>
@@ -403,6 +404,9 @@ function sheetCsvUrls() {
   if (!SHEET_ID) return [];
   const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
   return [`${base}&sheet=${encodeURIComponent(SHEET_NAME)}`, base];
+}
+function sheetEditUrl() {
+  return SHEET_ID ? `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit` : '';
 }
 function setCloudStatus(text) {
   const el = document.getElementById('cloudStatus');
@@ -736,6 +740,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   issueData.forEach(r => {
     if (!r['Issue短縮'] && shortNameMap[r['編號']]) r['Issue短縮'] = shortNameMap[r['編號']];
   });
+  const link = document.getElementById('sheetLink');
+  const editUrl = sheetEditUrl();
+  if (link) {
+    if (editUrl) link.href = editUrl;
+    else link.style.display = 'none';
+  }
   // 從共用 Google 試算表載入最新資料（覆蓋內建）
   await loadFromSheet();
 });
