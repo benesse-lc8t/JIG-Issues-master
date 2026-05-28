@@ -344,6 +344,22 @@
       Excel 欄位順序：<code>區分 / 軸 / 編號 / Issue / Issue短縮 / 處 / 組 / 戰略負責人 / 管理頁面(JIG-組名) / 確認會議 / 會議時間</code>
     </div>
 
+    <!-- Cloud source -->
+    <div class="con-section">
+      <div class="section-title">
+        <span class="badge" style="background:#B6D7FB;">CLOUD</span>
+        雲端資料來源（Google 試算表）
+      </div>
+      <div class="desc" style="margin-bottom:10px;">
+        設定後，本頁每次開啟時會自動從共用的 Google 試算表載入最新資料，全員看到的內容即時同步。<br>
+        設定方式請見原始碼中 <code>SHEET_ID</code> 的說明。
+      </div>
+      <div class="con-row">
+        <button class="btn btn-primary" onclick="loadFromSheet()">🔄 從雲端重新載入</button>
+        <span class="stats" id="cloudStatus">—</span>
+      </div>
+    </div>
+
     <!-- Export -->
     <div class="con-section">
       <div class="section-title">
@@ -414,6 +430,30 @@ const COLS = ['區分','軸','編號','Issue','Issue短縮','處','組','戰略�
 
 let issueData = [];   // array of row objects
 let pendingData = null;
+let shortNameMap = {}; // 編號 → Issue短縮（從內建 B/C/D 標籤擷取，作為雲端資料缺漏時的補值）
+
+// ===== 雲端資料來源（Google 試算表）=====
+// 設定方式：
+//   1. 將 Issue 主檔做成一個 Google 試算表，第 1 列為欄位標題（與上方欄位順序一致）。
+//   2. 檔案 → 共用 → 變更為「知道連結的任何人－檢視者」。
+//   3. 從網址 https://docs.google.com/spreadsheets/d/【這一段就是 ID】/edit 複製 ID，貼到下方 SHEET_ID。
+//   4. 工作表（分頁）名稱需與 SHEET_NAME 一致（預設：Issue主檔）。
+// 若 SHEET_ID 留空，則沿用 HTML 內建的 A 主檔資料（從前的行為）。
+const SHEET_ID = '';
+const SHEET_NAME = 'Issue主檔';
+function sheetCsvUrl() {
+  if (!SHEET_ID) return '';
+  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+}
+function setCloudStatus(text) {
+  const el = document.getElementById('cloudStatus');
+  if (el) el.textContent = text;
+}
+function fillShortNames(data) {
+  data.forEach(r => {
+    if (!r['Issue短縮'] && shortNameMap[r['編號']]) r['Issue短縮'] = shortNameMap[r['編號']];
+  });
+}
 
 // Parse the initial Table A tbody into issueData
 function parseInitialTable() {
@@ -679,6 +719,70 @@ function log(msg, type) {
   el.scrollTop = el.scrollHeight;
 }
 
+// ===== 列陣列 → 資料物件（匯入與雲端載入共用）=====
+function rowsToData(rows) {
+  if (rows.length < 2) throw new Error('檔案無資料列');
+  const headers = rows[0].map(h => String(h).trim());
+  const colIdx = {};
+  COLS.forEach(c => {
+    let i = headers.indexOf(c);
+    if (i < 0 && c === '管理頁面') i = headers.findIndex(h => h.startsWith('管理頁面'));
+    colIdx[c] = i;
+  });
+  const required = ['區分','軸','編號','Issue'];
+  const missing = required.filter(c => colIdx[c] < 0);
+  if (missing.length) throw new Error('缺少必要欄位：' + missing.join(', '));
+
+  const data = [];
+  let lastGroup = '';
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (!row || row.every(v => v === '' || v == null)) continue;
+    const gRaw = String(row[colIdx['區分']] || '').trim();
+    if (gRaw) lastGroup = gRaw;
+    const obj = {};
+    COLS.forEach(c => {
+      obj[c] = colIdx[c] >= 0 ? String(row[colIdx[c]] ?? '').trim() : '';
+    });
+    obj['區分'] = lastGroup;
+    if (!obj['編號'] && !obj['Issue']) continue;
+    data.push(obj);
+  }
+  return data;
+}
+
+// ===== 從 Google 試算表載入（唯一資料來源）=====
+async function loadFromSheet() {
+  const url = sheetCsvUrl();
+  if (!url) {
+    setCloudStatus('ℹ️ 尚未設定雲端來源（請於原始碼填入 SHEET_ID），目前顯示內建資料');
+    return false;
+  }
+  try {
+    log('從雲端載入中…', 'info');
+    setCloudStatus('⏳ 載入中…');
+    const res = await fetch(url + '&_=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const csv = await res.text();
+    const wb = XLSX.read(csv, { type: 'string' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+    const data = rowsToData(rows);
+    fillShortNames(data);
+    issueData = data;
+    renderAll();
+    updateExportStats();
+    const ts = new Date().toLocaleString('zh-TW', { hour12:false });
+    log(`雲端載入成功：${data.length} 筆（工作表「${SHEET_NAME}」）。`, 'ok');
+    setCloudStatus(`✅ 雲端最新（${data.length} 筆）· ${ts}`);
+    return true;
+  } catch (err) {
+    log('雲端載入失敗：' + err.message + '（改用內建資料）', 'err');
+    setCloudStatus('⚠️ 雲端載入失敗，顯示內建資料：' + err.message);
+    return false;
+  }
+}
+
 // ===== Export =====
 function exportXlsx() {
   try {
@@ -718,33 +822,7 @@ function handleFile(ev) {
         ? 'Issue主檔' : wb.SheetNames[0];
       const ws = wb.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
-      if (rows.length < 2) throw new Error('檔案無資料列');
-      const headers = rows[0].map(h => String(h).trim());
-      const colIdx = {};
-      COLS.forEach(c => {
-        let i = headers.indexOf(c);
-        if (i < 0 && c === '管理頁面') i = headers.findIndex(h => h.startsWith('管理頁面'));
-        colIdx[c] = i;
-      });
-      const required = ['區分','軸','編號','Issue'];
-      const missing = required.filter(c => colIdx[c] < 0);
-      if (missing.length) throw new Error('缺少必要欄位：' + missing.join(', '));
-
-      const data = [];
-      let lastGroup = '';
-      for (let r = 1; r < rows.length; r++) {
-        const row = rows[r];
-        if (!row || row.every(v => v === '' || v == null)) continue;
-        const gRaw = String(row[colIdx['區分']] || '').trim();
-        if (gRaw) lastGroup = gRaw;
-        const obj = {};
-        COLS.forEach(c => {
-          obj[c] = colIdx[c] >= 0 ? String(row[colIdx[c]] ?? '').trim() : '';
-        });
-        obj['區分'] = lastGroup;
-        if (!obj['編號'] && !obj['Issue']) continue;
-        data.push(obj);
-      }
+      const data = rowsToData(rows);
       pendingData = data;
       log(`解析成功：工作表「${sheetName}」共 ${data.length} 筆`, 'ok');
       showPreview(data);
@@ -780,6 +858,7 @@ function applyImport() {
   if (!pendingData) return;
   if (!confirm(`將以 ${pendingData.length} 筆資料覆蓋目前的 A 主檔，是否繼續？`)) return;
   issueData = pendingData;
+  fillShortNames(issueData);
   pendingData = null;
   renderAll();
   document.getElementById('importActions').style.display = 'none';
@@ -799,18 +878,20 @@ function cancelImport() {
 }
 
 // ===== Init =====
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   issueData = parseInitialTable();
-  // Pre-populate Issue短縮 by harvesting tags from existing B/C/D static HTML
-  const shortMap = harvestShortNames();
+  // 從內建 B/C/D 標籤擷取 編號→短縮 對照，作為雲端／匯入資料缺漏時的補值
+  shortNameMap = harvestShortNames();
   let filled = 0;
   issueData.forEach(r => {
-    if (!r['Issue短縮'] && shortMap[r['編號']]) {
-      r['Issue短縮'] = shortMap[r['編號']]; filled++;
+    if (!r['Issue短縮'] && shortNameMap[r['編號']]) {
+      r['Issue短縮'] = shortNameMap[r['編號']]; filled++;
     }
   });
   updateExportStats();
   log(`初始化完成，從 A 主檔讀取 ${issueData.length} 筆資料；自動補入 ${filled} 筆 Issue短縮。`, 'ok');
+  // 若已設定雲端來源，開啟時自動載入最新資料（覆蓋內建）
+  await loadFromSheet();
 });
 </script>
 </body>
