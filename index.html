@@ -160,7 +160,7 @@
   <div class="tab" onclick="show('B',event)">B：會議-頁面-Issue表</div>
   <div class="tab" onclick="show('C',event)">C：部門別</div>
   <div class="tab" onclick="show('D',event)">D：行事曆</div>
-  <div class="tab" onclick="show('E',event)">E：匯入/匯出</div>
+  <div class="tab" onclick="show('E',event)">E：資料來源</div>
 </div>
 
 <!-- ===== A ===== -->
@@ -335,13 +335,13 @@
 </table>
 </div>
 
-<!-- ===== E：匯入/匯出 Console ===== -->
+<!-- ===== E：資料來源 Console ===== -->
 <div class="panel" id="panel-E">
   <div class="console">
-    <h2>Issue管理主檔 — 匯入 / 匯出 主控台</h2>
+    <h2>Issue管理主檔 — 資料來源</h2>
     <div class="desc">
-      此主控台可將 <b>A：Issue管理主檔</b> 的內容匯出為 Excel 檔案，或從 Excel 匯入並覆蓋目前的主檔資料。<br>
-      Excel 欄位順序：<code>區分 / 軸 / 編號 / Issue / Issue短縮 / 處 / 組 / 戰略負責人 / 管理頁面(JIG-組名) / 確認會議 / 會議時間</code>
+      本頁的所有資料皆來自共用的 <b>Google 試算表</b>。在試算表中新增或修改 Issue 後，重新整理本頁（或按下方按鈕）即可讓全員看到最新內容。<br>
+      試算表欄位順序：<code>區分 / 軸 / 編號 / Issue / Issue短縮 / 處 / 組 / 戰略負責人 / 管理頁面(JIG-組名) / 確認會議 / 會議時間</code>
     </div>
 
     <!-- Cloud source -->
@@ -358,48 +358,6 @@
         <button class="btn btn-primary" onclick="loadFromSheet()">🔄 從雲端重新載入</button>
         <span class="stats" id="cloudStatus">—</span>
       </div>
-    </div>
-
-    <!-- Export -->
-    <div class="con-section">
-      <div class="section-title">
-        <span class="badge" style="background:#A8EFCB;">EXPORT</span>
-        匯出至 Excel
-      </div>
-      <div class="con-row">
-        <button class="btn btn-primary" onclick="exportXlsx()">📥 匯出目前主檔 (.xlsx)</button>
-        <span class="stats" id="exportStats">目前資料：— 筆</span>
-      </div>
-    </div>
-
-    <!-- Import -->
-    <div class="con-section">
-      <div class="section-title">
-        <span class="badge" style="background:#FFCB8E;">IMPORT</span>
-        從 Excel 匯入
-      </div>
-      <div class="con-row">
-        <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)" style="font-size:12px;">
-        <span class="file-info" id="fileInfo">尚未選擇檔案</span>
-      </div>
-      <div class="con-row" id="importActions" style="display:none;">
-        <button class="btn btn-warn" onclick="applyImport()">✅ 套用至 A 主檔（覆蓋）</button>
-        <button class="btn" onclick="cancelImport()">取消</button>
-        <span class="stats" id="importStats"></span>
-      </div>
-      <div id="previewArea" class="hidden" style="margin-top:10px;">
-        <div style="font-size:12px;font-weight:700;margin-bottom:6px;">預覽（前 20 列）：</div>
-        <div class="preview-wrap"><table id="previewTable"></table></div>
-      </div>
-    </div>
-
-    <!-- Log -->
-    <div class="con-section">
-      <div class="section-title">
-        <span class="badge" style="background:#D6CDF7;">LOG</span>
-        執行記錄
-      </div>
-      <div class="log" id="logArea"><span class="log-info">[系統] 主控台就緒。</span></div>
     </div>
   </div>
 </div>
@@ -429,7 +387,6 @@ const AXIS_CLASS = { 'O':'ax-O','N':'ax-N','CV':'ax-CV','I':'ax-I','P':'ax-P' };
 const COLS = ['區分','軸','編號','Issue','Issue短縮','處','組','戰略負責人','管理頁面','確認會議','會議時間'];
 
 let issueData = [];   // array of row objects
-let pendingData = null;
 let shortNameMap = {}; // 編號 → Issue短縮（從內建 B/C/D 標籤擷取，作為雲端資料缺漏時的補值）
 
 // ===== 雲端資料來源（Google 試算表）=====
@@ -571,11 +528,6 @@ function renderTableA() {
     });
   });
   tbody.innerHTML = html;
-  updateExportStats();
-}
-
-function updateExportStats() {
-  document.getElementById('exportStats').textContent = `目前資料：${issueData.length} 筆`;
 }
 
 // ===== Tab B: 會議 → 管理頁面 → Issues =====
@@ -712,16 +664,7 @@ function renderAll() {
   renderTableD();
 }
 
-// ===== Log helpers =====
-function log(msg, type) {
-  const el = document.getElementById('logArea');
-  const ts = new Date().toLocaleTimeString('zh-TW', { hour12:false });
-  const cls = 'log-' + (type || 'info');
-  el.innerHTML += `<br><span class="${cls}">[${ts}] ${escapeHtml(msg)}</span>`;
-  el.scrollTop = el.scrollHeight;
-}
-
-// ===== 列陣列 → 資料物件（匯入與雲端載入共用）=====
+// ===== 列陣列 → 資料物件（雲端載入用）=====
 function rowsToData(rows) {
   if (rows.length < 2) throw new Error('檔案無資料列');
   const headers = rows[0].map(h => String(h).trim());
@@ -760,7 +703,6 @@ async function loadFromSheet() {
     setCloudStatus('ℹ️ 尚未設定雲端來源（請於原始碼填入 SHEET_ID），目前顯示內建資料');
     return false;
   }
-  log('從雲端載入中…', 'info');
   setCloudStatus('⏳ 載入中…');
   let lastErr = null;
   for (const url of urls) {
@@ -775,128 +717,26 @@ async function loadFromSheet() {
       fillShortNames(data);
       issueData = data;
       renderAll();
-      updateExportStats();
       const ts = new Date().toLocaleString('zh-TW', { hour12:false });
-      log(`雲端載入成功：${data.length} 筆。`, 'ok');
       setCloudStatus(`✅ 雲端最新（${data.length} 筆）· ${ts}`);
       return true;
     } catch (err) {
       lastErr = err;
     }
   }
-  log('雲端載入失敗：' + (lastErr && lastErr.message) + '（改用內建資料）', 'err');
   setCloudStatus('⚠️ 雲端載入失敗，顯示內建資料：' + (lastErr && lastErr.message));
   return false;
-}
-
-// ===== Export =====
-function exportXlsx() {
-  try {
-    const wsData = [COLS.slice()];
-    issueData.forEach(r => {
-      wsData.push(COLS.map(c => r[c] || ''));
-    });
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-    ws['!cols'] = [
-      {wch:8},{wch:5},{wch:8},{wch:40},{wch:20},
-      {wch:12},{wch:14},{wch:12},{wch:20},{wch:20},{wch:12}
-    ];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Issue主檔');
-    const ts = new Date().toISOString().slice(0,10).replace(/-/g,'');
-    const fname = `Issue主檔_${ts}.xlsx`;
-    XLSX.writeFile(wb, fname);
-    log(`匯出成功：${fname}（${issueData.length} 筆）`, 'ok');
-  } catch (err) {
-    log('匯出失敗：' + err.message, 'err');
-  }
-}
-
-// ===== Import =====
-function handleFile(ev) {
-  const file = ev.target.files[0];
-  if (!file) return;
-  document.getElementById('fileInfo').textContent =
-    `${file.name}（${(file.size/1024).toFixed(1)} KB）`;
-  log(`讀取檔案：${file.name}`, 'info');
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const wb = XLSX.read(e.target.result, { type:'array' });
-      const sheetName = wb.SheetNames.includes('Issue主檔')
-        ? 'Issue主檔' : wb.SheetNames[0];
-      const ws = wb.Sheets[sheetName];
-      const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
-      const data = rowsToData(rows);
-      pendingData = data;
-      log(`解析成功：工作表「${sheetName}」共 ${data.length} 筆`, 'ok');
-      showPreview(data);
-      document.getElementById('importActions').style.display = 'flex';
-      document.getElementById('importStats').textContent = `待套用：${data.length} 筆`;
-    } catch (err) {
-      log('解析失敗：' + err.message, 'err');
-      pendingData = null;
-      document.getElementById('importActions').style.display = 'none';
-      document.getElementById('previewArea').classList.add('hidden');
-    }
-  };
-  reader.onerror = () => log('檔案讀取錯誤', 'err');
-  reader.readAsArrayBuffer(file);
-}
-
-function showPreview(data) {
-  const tbl = document.getElementById('previewTable');
-  let html = '<thead><tr>';
-  COLS.forEach(c => html += `<th>${escapeHtml(c)}</th>`);
-  html += '</tr></thead><tbody>';
-  data.slice(0, 20).forEach(r => {
-    html += '<tr>';
-    COLS.forEach(c => html += `<td>${escapeHtml(r[c])}</td>`);
-    html += '</tr>';
-  });
-  html += '</tbody>';
-  tbl.innerHTML = html;
-  document.getElementById('previewArea').classList.remove('hidden');
-}
-
-function applyImport() {
-  if (!pendingData) return;
-  if (!confirm(`將以 ${pendingData.length} 筆資料覆蓋目前的 A 主檔，是否繼續？`)) return;
-  issueData = pendingData;
-  fillShortNames(issueData);
-  pendingData = null;
-  renderAll();
-  document.getElementById('importActions').style.display = 'none';
-  document.getElementById('previewArea').classList.add('hidden');
-  document.getElementById('fileInput').value = '';
-  document.getElementById('fileInfo').textContent = '尚未選擇檔案';
-  log(`已套用至 A 主檔（${issueData.length} 筆）。請切換至 A 頁籤確認。`, 'ok');
-}
-
-function cancelImport() {
-  pendingData = null;
-  document.getElementById('importActions').style.display = 'none';
-  document.getElementById('previewArea').classList.add('hidden');
-  document.getElementById('fileInput').value = '';
-  document.getElementById('fileInfo').textContent = '尚未選擇檔案';
-  log('已取消匯入。', 'warn');
 }
 
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', async () => {
   issueData = parseInitialTable();
-  // 從內建 B/C/D 標籤擷取 編號→短縮 對照，作為雲端／匯入資料缺漏時的補值
+  // 從內建 B/C/D 標籤擷取 編號→短縮 對照，作為雲端資料缺漏時的補值
   shortNameMap = harvestShortNames();
-  let filled = 0;
   issueData.forEach(r => {
-    if (!r['Issue短縮'] && shortNameMap[r['編號']]) {
-      r['Issue短縮'] = shortNameMap[r['編號']]; filled++;
-    }
+    if (!r['Issue短縮'] && shortNameMap[r['編號']]) r['Issue短縮'] = shortNameMap[r['編號']];
   });
-  updateExportStats();
-  log(`初始化完成，從 A 主檔讀取 ${issueData.length} 筆資料；自動補入 ${filled} 筆 Issue短縮。`, 'ok');
-  // 若已設定雲端來源，開啟時自動載入最新資料（覆蓋內建）
+  // 從共用 Google 試算表載入最新資料（覆蓋內建）
   await loadFromSheet();
 });
 </script>
