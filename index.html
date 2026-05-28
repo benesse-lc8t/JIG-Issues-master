@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     /* Vivid tag/axis colors (主役) — text black for readability */
@@ -31,6 +31,7 @@
 
     /* Structural neutrals (素朴) */
     --border: #E5E1D8;
+    --font: 'Inter', 'Noto Sans TC', 'Microsoft JhengHei', 'PingFang TC', 'Source Han Sans TC', sans-serif;
     --hdr-bg: #F7F4EC;
     --sec-bg: #EFEBE0;
     --mtg-bg: #FFFFFF;
@@ -38,7 +39,9 @@
     --body-bg: #FBF9F4;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', 'PingFang TC', 'Source Han Sans TC', sans-serif; font-weight: 500; font-size: 13px; color: #000; background: var(--body-bg); padding: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  body { font-family: var(--font); font-weight: 500; font-size: 13px; color: #000; background: var(--body-bg); padding: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  button, input, select, textarea, a { font-family: var(--font); }
+  code { font-family: var(--font); font-weight: 600; font-size: 0.92em; background: #F2EEE3; padding: 1px 6px; border-radius: 4px; letter-spacing: 0.01em; }
   h1 { font-size: 18px; font-weight: 800; color: #000; margin-bottom: 14px; letter-spacing: 0.03em; }
 
   /* Tabs */
@@ -63,20 +66,8 @@
   .btn:hover { background: #F0EBDC; }
   .btn-primary { background: #A8EFCB; border-color: #5FC591; }
   .btn-primary:hover { background: #8FE5B8; }
-  .btn-warn { background: #FFCB8E; border-color: #E0A055; }
-  .btn-warn:hover { background: #FFB969; }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .file-info { font-size: 12px; color: #555; padding: 4px 8px; background: #fff; border: 1px dashed #CFC8B5; border-radius: 4px; }
-  .log { background: #1E1E1E; color: #DDD; font-family: 'Menlo','Consolas',monospace; font-size: 11px; padding: 10px 12px; border-radius: 4px; max-height: 160px; overflow-y: auto; line-height: 1.5; }
-  .log .log-info { color: #9CDCFE; }
-  .log .log-ok { color: #B5CEA8; }
-  .log .log-err { color: #F48771; }
-  .log .log-warn { color: #DCDCAA; }
-  .preview-wrap { max-height: 320px; overflow: auto; border: 1px solid var(--border); border-radius: 4px; }
-  .preview-wrap table { font-size: 11px; }
-  .preview-wrap th { position: sticky; top: 0; z-index: 1; }
   .stats { font-size: 12px; color: #333; padding: 6px 10px; background: #F7F4EC; border-radius: 3px; display: inline-block; }
-  .hidden { display: none !important; }
   .panel { display: none; border: 1px solid var(--border); background: #fff; border-radius: 0 4px 4px 4px; overflow-x: auto; }
   .panel.active { display: block; }
 
