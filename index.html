@@ -439,11 +439,13 @@ let shortNameMap = {}; // 編號 → Issue短縮（從內建 B/C/D 標籤擷取�
 //   3. 從網址 https://docs.google.com/spreadsheets/d/【這一段就是 ID】/edit 複製 ID，貼到下方 SHEET_ID。
 //   4. 工作表（分頁）名稱需與 SHEET_NAME 一致（預設：Issue主檔）。
 // 若 SHEET_ID 留空，則沿用 HTML 內建的 A 主檔資料（從前的行為）。
-const SHEET_ID = '';
+const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 const SHEET_NAME = 'Issue主檔';
-function sheetCsvUrl() {
-  if (!SHEET_ID) return '';
-  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+// 先以工作表名稱抓取；若分頁名不符則退而抓取第一個分頁。
+function sheetCsvUrls() {
+  if (!SHEET_ID) return [];
+  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+  return [`${base}&sheet=${encodeURIComponent(SHEET_NAME)}`, base];
 }
 function setCloudStatus(text) {
   const el = document.getElementById('cloudStatus');
@@ -753,34 +755,38 @@ function rowsToData(rows) {
 
 // ===== 從 Google 試算表載入（唯一資料來源）=====
 async function loadFromSheet() {
-  const url = sheetCsvUrl();
-  if (!url) {
+  const urls = sheetCsvUrls();
+  if (!urls.length) {
     setCloudStatus('ℹ️ 尚未設定雲端來源（請於原始碼填入 SHEET_ID），目前顯示內建資料');
     return false;
   }
-  try {
-    log('從雲端載入中…', 'info');
-    setCloudStatus('⏳ 載入中…');
-    const res = await fetch(url + '&_=' + Date.now(), { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const csv = await res.text();
-    const wb = XLSX.read(csv, { type: 'string' });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
-    const data = rowsToData(rows);
-    fillShortNames(data);
-    issueData = data;
-    renderAll();
-    updateExportStats();
-    const ts = new Date().toLocaleString('zh-TW', { hour12:false });
-    log(`雲端載入成功：${data.length} 筆（工作表「${SHEET_NAME}」）。`, 'ok');
-    setCloudStatus(`✅ 雲端最新（${data.length} 筆）· ${ts}`);
-    return true;
-  } catch (err) {
-    log('雲端載入失敗：' + err.message + '（改用內建資料）', 'err');
-    setCloudStatus('⚠️ 雲端載入失敗，顯示內建資料：' + err.message);
-    return false;
+  log('從雲端載入中…', 'info');
+  setCloudStatus('⏳ 載入中…');
+  let lastErr = null;
+  for (const url of urls) {
+    try {
+      const res = await fetch(url + '&_=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const csv = await res.text();
+      const wb = XLSX.read(csv, { type: 'string' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+      const data = rowsToData(rows);
+      fillShortNames(data);
+      issueData = data;
+      renderAll();
+      updateExportStats();
+      const ts = new Date().toLocaleString('zh-TW', { hour12:false });
+      log(`雲端載入成功：${data.length} 筆。`, 'ok');
+      setCloudStatus(`✅ 雲端最新（${data.length} 筆）· ${ts}`);
+      return true;
+    } catch (err) {
+      lastErr = err;
+    }
   }
+  log('雲端載入失敗：' + (lastErr && lastErr.message) + '（改用內建資料）', 'err');
+  setCloudStatus('⚠️ 雲端載入失敗，顯示內建資料：' + (lastErr && lastErr.message));
+  return false;
 }
 
 // ===== Export =====
