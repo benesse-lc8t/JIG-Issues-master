@@ -777,9 +777,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.10.0';
+const APP_VERSION = '0.10.1';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '停滯警報タブにインライン編集機能を追加（狀態/備註/更新日を直接書き換え、Apps Script Web App 経由で Sheet に即反映）。';
+const APP_NOTE  = '編集 API URL を埋め込み・本番有効化（インライン編集が動作）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -831,7 +831,7 @@ const TASK_SHEET_NAME    = 'Task一覽'; // legacy 名（Phase 2 で完全に Mi
 // 2. 取得した URL を下記 SHEET_WRITE_URL に入れる
 // 3. WRITE_TOKEN は Apps Script 側と同じ値（変更は両方一斉に）
 // SHEET_WRITE_URL が空文字のときは編集機能は無効（読み取りのみ）
-const SHEET_WRITE_URL = ''; // ← デプロイ後に Web App URL を入れる
+const SHEET_WRITE_URL = 'https://script.google.com/macros/s/AKfycbwFzygB3rdUY1teaUoyiBMr49i-nPLk2qctlLkYPa8RuhoUq9eOuUNM1qKYDBu5xBo33A/exec';
 const WRITE_TOKEN     = 'JIG-WRITE-TBBS-2026';
 // 先以工作表名稱抓取；若分頁名不符則退而抓取第一個分頁。
 function sheetCsvUrls() {
