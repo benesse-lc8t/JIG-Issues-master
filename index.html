@@ -83,6 +83,9 @@
 
   /* Group cells */
   .grp { font-weight: 700; text-align: center; font-size: 11px; vertical-align: middle; line-height: 1.4; }
+  /* 區分の連続行は上罫線を消して「同じ區分」が視覚的にマージされて見えるようにする
+     （rowspan ではなく毎行 1 セルにしている理由：rowspan は隠れた Task 行と相性が悪い） */
+  .grp.grp-cont { border-top-color: transparent !important; color: transparent; }
   .grp-com { background: var(--com-bg); color: var(--com-fg); }
   .grp-L   { background: var(--L-bg);   color: var(--L-fg); }
   .grp-Z   { background: var(--Z-bg);   color: var(--Z-fg); }
@@ -403,9 +406,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.3.0';
+const APP_VERSION = '0.4.0';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'バージョン管理 開始 — デプロイ確認用に右上に版號表示';
+const APP_NOTE  = '列ずれ修正：rowspan を全廃し各行 14 セル固定、區分は CSS で視覚マージ';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -603,9 +606,49 @@ function buildIssueTree(rows) {
   return issues;
 }
 
+// 1 行を 14 セル固定で生成する共通ヘルパー
+// 設計：rowspan を使わないことで、隠れ Task 行と rowspan の組合せで起きる
+// ブラウザの列計算ズレを根本的に避ける。區分は毎行 1 セル emit し、
+// 連続行は CSS (.grp-cont) で text 透明 + border-top 透明 = 視覚的にマージ。
+function renderRow(r, def, opts) {
+  const isFirstOfGroup = !!opts.isFirstOfGroup;
+  const isTask = !!opts.isTask;
+  const parentNum = opts.parentNum || '';
+  const axCls = AXIS_CLASS[r['軸']] || '';
+  const num = (r['編號'] || '').trim();
+  const hasTasks = !!opts.hasTasks;
+  const toggleCls = hasTasks ? 'toggle' : 'toggle no-children';
+  const toggleAttr = hasTasks ? ` onclick="toggleTasks(this, '${escapeAttr(num)}')"` : '';
+  const toggleSym = hasTasks ? '▶' : '';
+
+  const trAttrs = isTask
+    ? ` class="task-row hidden" data-parent="${escapeAttr(parentNum)}"`
+    : '';
+  const grpCls = isFirstOfGroup ? `grp ${def.cls}` : `grp ${def.cls} grp-cont`;
+  const grpContent = isFirstOfGroup ? def.label : (def.label || '');
+
+  let h = `<tr${trAttrs}>`;
+  h += `<td class="${grpCls}">${grpContent}</td>`;                                  // 1 區分
+  h += `<td class="ax ${axCls}">${escapeHtml(r['軸'])}</td>`;                       // 2 軸
+  h += `<td class="num num-cell"><span class="${toggleCls}"${toggleAttr}>${toggleSym}</span>${escapeHtml(num)}</td>`; // 3 編號
+  h += `<td class="lbl">${escapeHtml(r['Issue'])}</td>`;                            // 4 Issue
+  h += `<td class="dept">${escapeHtml(r['處'])}</td>`;                              // 5 處
+  h += `<td class="dept">${escapeHtml(r['組'])}</td>`;                              // 6 組
+  h += `<td class="dept">${escapeHtml(r['戰略負責人'])}</td>`;                      // 7 戰略負責人
+  h += `<td class="pc">${escapeHtml(r['管理頁面'])}</td>`;                          // 8 管理頁面
+  h += `<td class="pc">${escapeHtml(r['確認會議'])}</td>`;                          // 9 確認會議
+  h += `<td class="pc">${escapeHtml(r['會議時間'])}</td>`;                          // 10 會議時間
+  h += `<td class="st">${statusBadge(r['狀態'])}</td>`;                             // 11 狀態
+  h += `<td class="memo">${escapeHtml(r['事務局備註'])}</td>`;                      // 12 事務局備註
+  h += freshnessCell(r['更新日']);                                                  // 13 更新
+  h += confluenceCell(r['Confluence URL']);                                          // 14 📄
+  h += '</tr>';
+  return h;
+}
+
 function renderTableA() {
   const tbody = document.querySelector('#panel-A tbody');
-  // Group rows by 區分 (preserve order). Issue/Task は親Issueの區分グループ内に置く。
+  // Issue/Task 階層を組み立て、區分でグループ化（順序維持）
   const groups = [];
   const tree = buildIssueTree(issueData);
   tree.forEach(node => {
@@ -615,8 +658,7 @@ function renderTableA() {
     else groups.push({ key: g, nodes: [node] });
   });
 
-  // セクション見出しは「共通／個別」両方が存在する場合のみ出す。
-  // 新データ体系で 區分=共通 が無い場合は見出しを出さない（古い枠を押し付けない）。
+  // セクション見出しは「共通／個別」両方ある場合のみ
   const hasCommon = groups.some(g => g.key === '共通');
   const hasOther  = groups.some(g => g.key !== '共通');
   const showSectionHeaders = hasCommon && hasOther;
@@ -633,57 +675,23 @@ function renderTableA() {
       html += '<tr><td colspan="14" class="sec">■ 個別Issue（縱軸·依SKU管理）</td></tr>';
       individualHeaderEmitted = true;
     }
-    // 區分セルの rowspan：Issue + Task の総行数
-    const totalRowsInGroup = g.nodes.reduce((sum, n) => sum + 1 + n.tasks.length, 0);
-    let cellsEmitted = 0;
+    let isFirst = true;
     g.nodes.forEach(node => {
-      const r = node.row;
-      const axCls = AXIS_CLASS[r['軸']] || '';
-      const num = (r['編號'] || '').trim();
-      const hasTasks = node.tasks.length > 0;
-      const toggleCls = hasTasks ? 'toggle' : 'toggle no-children';
-      const toggleAttr = hasTasks ? ` onclick="toggleTasks(this, '${escapeAttr(num)}')"` : '';
-      const toggleSym = hasTasks ? '▶' : '';
-
-      html += '<tr>';
-      if (cellsEmitted === 0) {
-        html += `<td class="grp ${def.cls}" rowspan="${totalRowsInGroup}">${def.label}</td>`;
-      }
-      html += `<td class="ax ${axCls}">${escapeHtml(r['軸'])}</td>`;
-      html += `<td class="num num-cell"><span class="${toggleCls}"${toggleAttr}>${toggleSym}</span>${escapeHtml(num)}</td>`;
-      html += `<td class="lbl">${escapeHtml(r['Issue'])}</td>`;
-      html += `<td class="dept">${escapeHtml(r['處'])}</td>`;
-      html += `<td class="dept">${escapeHtml(r['組'])}</td>`;
-      html += `<td class="dept">${escapeHtml(r['戰略負責人'])}</td>`;
-      html += `<td class="pc">${escapeHtml(r['管理頁面'])}</td>`;
-      html += `<td class="pc">${escapeHtml(r['確認會議'])}</td>`;
-      html += `<td class="pc">${escapeHtml(r['會議時間'])}</td>`;
-      html += `<td class="st">${statusBadge(r['狀態'])}</td>`;
-      html += `<td class="memo">${escapeHtml(r['事務局備註'])}</td>`;
-      html += freshnessCell(r['更新日']);
-      html += confluenceCell(r['Confluence URL']);
-      html += '</tr>';
-      cellsEmitted++;
-
-      // Task 行（デフォ折りたたみ）
+      const num = (node.row['編號'] || '').trim();
+      html += renderRow(node.row, def, {
+        isFirstOfGroup: isFirst,
+        isTask: false,
+        hasTasks: node.tasks.length > 0,
+        parentNum: num
+      });
+      isFirst = false;
       node.tasks.forEach(t => {
-        const taCls = AXIS_CLASS[t['軸']] || axCls;
-        html += `<tr class="task-row hidden" data-parent="${escapeAttr(num)}">`;
-        html += `<td class="ax ${taCls}">${escapeHtml(t['軸'])}</td>`;
-        html += `<td class="num num-cell"><span class="toggle no-children"></span>${escapeHtml(t['編號'])}</td>`;
-        html += `<td class="lbl">${escapeHtml(t['Issue'])}</td>`;
-        html += `<td class="dept">${escapeHtml(t['處'])}</td>`;
-        html += `<td class="dept">${escapeHtml(t['組'])}</td>`;
-        html += `<td class="dept">${escapeHtml(t['戰略負責人'])}</td>`;
-        html += `<td class="pc">${escapeHtml(t['管理頁面'])}</td>`;
-        html += `<td class="pc">${escapeHtml(t['確認會議'])}</td>`;
-        html += `<td class="pc">${escapeHtml(t['會議時間'])}</td>`;
-        html += `<td class="st">${statusBadge(t['狀態'])}</td>`;
-        html += `<td class="memo">${escapeHtml(t['事務局備註'])}</td>`;
-        html += freshnessCell(t['更新日']);
-        html += confluenceCell(t['Confluence URL']);
-        html += '</tr>';
-        cellsEmitted++;
+        html += renderRow(t, def, {
+          isFirstOfGroup: false,
+          isTask: true,
+          hasTasks: false,
+          parentNum: num
+        });
       });
     });
   });
