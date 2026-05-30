@@ -430,9 +430,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.8.0';
+const APP_VERSION = '0.8.1';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '「擔當」列を組と戰略負責人の間に追加。上部に擔當フィルタも追加（自分のものに素早くフォーカス）。Sheet 側で擔當列が無くても動作（空欄表示）。';
+const APP_NOTE  = 'Mission の擔當は親から継承せず空欄のまま表示（戰略負責人は引き続き継承）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1104,7 +1104,7 @@ async function loadMissionsAndMerge(issues) {
           'Issue短縮':  '',
           '處':         (parentRow && parentRow['處']) || '',
           '組':         (parentRow && parentRow['組']) || '',
-          '擔當':       get('擔當') || (parentRow && parentRow['擔當']) || '',
+          '擔當':       get('擔當'),   // Mission の擔當は親から継承しない。未入力なら空欄表示
           '戰略負責人': get('戰略負責人') || (parentRow && parentRow['戰略負責人']) || '',
           '管理頁面':   (parentRow && parentRow['管理頁面']) || '',
           '確認會議':   (parentRow && parentRow['確認會議']) || '',
