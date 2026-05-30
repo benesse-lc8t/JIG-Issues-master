@@ -204,22 +204,22 @@
 <table>
 <thead>
   <tr>
-    <th style="width:64px;">區分</th>
-    <th style="width:22px;">軸</th>
-    <th style="width:64px;">編號</th>
-    <th style="min-width:140px;">Issue</th>
-    <th style="width:62px;">處</th>
-    <th style="width:62px;">組</th>
-    <th style="width:40px;">戰略負責人</th>
-    <th style="width:90px;">管理頁面</th><th style="width:90px;">確認會議</th><th style="width:60px;">會議時間</th>
-    <th style="width:62px;">狀態</th>
+    <th style="width:74px;">編號</th>
+    <th style="min-width:160px;">Issue / Task</th>
+    <th style="width:64px;">處</th>
+    <th style="width:64px;">組</th>
+    <th style="width:48px;">戰略負責人</th>
+    <th style="width:96px;">管理頁面</th>
+    <th style="width:96px;">確認會議</th>
+    <th style="width:62px;">會議時間</th>
+    <th style="width:64px;">狀態</th>
     <th style="min-width:140px;">事務局備註</th>
     <th style="width:56px;">更新</th>
     <th style="width:28px;" title="Confluence">📄</th>
   </tr>
 </thead>
 <tbody>
-<tr><td colspan="14" class="sec">■ 共通Issue（橫軸管理）</td></tr>
+<tr><td colspan="12" class="sec">■ 共通Issue（橫軸管理）</td></tr>
 <tr><td class="grp grp-com" rowspan="24">共通</td><td class="ax ax-O">O</td><td class="num">共-1</td><td class="lbl">交叉銷售·客單價提升</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">JIG-經營戰略</td><td class="pc">經營戰略組會</td><td class="pc">週三15:30</td></tr>
 <tr><td class="ax ax-O">O</td><td class="num">共-2</td><td class="lbl">官方網站體驗強化·轉換提升</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">JIG-通路整合</td><td class="pc">整合溝通-通路整合</td><td class="pc">週二15:30</td></tr>
 <tr><td class="ax ax-O">O</td><td class="num">共-3</td><td class="lbl">YOUTUBE內容強化·各事業業績貢獻·訂閱者擴大</td><td class="dept">商品事業</td><td class="dept">學習商品開發</td><td class="dept">育菱</td><td class="pc">JIG-學習商品開發</td><td class="pc">商品溝通-YT</td><td class="pc">週二14:30</td></tr>
@@ -244,7 +244,7 @@
 <tr><td class="ax ax-P">P</td><td class="num">共-22</td><td class="lbl">跨部門Issue調整方針討論</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">JIG-育菱工作一覽</td><td class="pc">育菱1on1</td><td class="pc">週四09:30</td></tr>
 <tr><td class="ax ax-P">P</td><td class="num">共-23</td><td class="lbl">業績確認以及經營會準備</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">詩雅</td><td class="pc">JIG-詩雅工作一覽</td><td class="pc">業績確認</td><td class="pc">週一14:00</td></tr>
 <tr><td class="ax ax-P">P</td><td class="num">共-24</td><td class="lbl">AI經營能力提升</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">詩雅</td><td class="pc">JIG-AIC</td><td class="pc">AIC會議</td><td class="pc">週五10:00</td></tr>
-<tr><td colspan="14" class="sec">■ 個別Issue（縱軸·依SKU管理）</td></tr>
+<tr><td colspan="12" class="sec">■ 個別Issue（縱軸·依SKU管理）</td></tr>
 <tr><td class="grp grp-L" rowspan="6">L<br>學習商品</td><td class="ax ax-O">O</td><td class="num">L-1</td><td class="lbl">學習商品-SKU擴大·進化</td><td class="dept">商品事業</td><td class="dept">學習商品開發</td><td class="dept">育菱</td><td class="pc">JIG-學習商品開發</td><td class="pc">商品溝通-學習商品</td><td class="pc">週二14:30</td></tr>
 <tr><td class="ax ax-CV">CV</td><td class="num">L-2</td><td class="lbl">學習商品-WEB銷售擴大</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">JIG-數位行銷</td><td class="pc">整合溝通-數位行銷</td><td class="pc">週二15:30</td></tr>
 <tr><td class="ax ax-CV">CV</td><td class="num">L-3</td><td class="lbl">學習商品-KOL銷售擴大</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">JIG-數位行銷</td><td class="pc">整合溝通-數位行銷</td><td class="pc">週二15:30</td></tr>
@@ -406,9 +406,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.4.0';
+const APP_VERSION = '0.5.0';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '列ずれ修正：rowspan を全廃し各行 14 セル固定、區分は CSS で視覚マージ';
+const APP_NOTE  = '區分・軸の列を撤去（12列構成）／Task一覧シートからTaskを読込み・親に紐づけ表示';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -449,11 +449,17 @@ let shortNameMap = {}; // 編號 → Issue短縮（從內建 B/C/D 標籤擷取�
 // 若 SHEET_ID 留空，則沿用 HTML 內建的 A 主檔資料（從前的行為）。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 const SHEET_NAME = 'Issue主檔';
+const TASK_SHEET_NAME = 'Task一覧'; // 1 枚集約型の Task シート（v0.5.0〜）
 // 先以工作表名稱抓取；若分頁名不符則退而抓取第一個分頁。
 function sheetCsvUrls() {
   if (!SHEET_ID) return [];
   const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
   return [`${base}&sheet=${encodeURIComponent(SHEET_NAME)}`, base];
+}
+function taskSheetCsvUrl() {
+  if (!SHEET_ID) return null;
+  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+  return `${base}&sheet=${encodeURIComponent(TASK_SHEET_NAME)}`;
 }
 function sheetEditUrl() {
   return SHEET_ID ? `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit` : '';
@@ -606,15 +612,10 @@ function buildIssueTree(rows) {
   return issues;
 }
 
-// 1 行を 14 セル固定で生成する共通ヘルパー
-// 設計：rowspan を使わないことで、隠れ Task 行と rowspan の組合せで起きる
-// ブラウザの列計算ズレを根本的に避ける。區分は毎行 1 セル emit し、
-// 連続行は CSS (.grp-cont) で text 透明 + border-top 透明 = 視覚的にマージ。
-function renderRow(r, def, opts) {
-  const isFirstOfGroup = !!opts.isFirstOfGroup;
+// 1 行を 12 セル固定で生成する共通ヘルパー（v0.5.0：區分・軸を撤去）
+function renderRow(r, opts) {
   const isTask = !!opts.isTask;
   const parentNum = opts.parentNum || '';
-  const axCls = AXIS_CLASS[r['軸']] || '';
   const num = (r['編號'] || '').trim();
   const hasTasks = !!opts.hasTasks;
   const toggleCls = hasTasks ? 'toggle' : 'toggle no-children';
@@ -624,74 +625,40 @@ function renderRow(r, def, opts) {
   const trAttrs = isTask
     ? ` class="task-row hidden" data-parent="${escapeAttr(parentNum)}"`
     : '';
-  const grpCls = isFirstOfGroup ? `grp ${def.cls}` : `grp ${def.cls} grp-cont`;
-  const grpContent = isFirstOfGroup ? def.label : (def.label || '');
 
   let h = `<tr${trAttrs}>`;
-  h += `<td class="${grpCls}">${grpContent}</td>`;                                  // 1 區分
-  h += `<td class="ax ${axCls}">${escapeHtml(r['軸'])}</td>`;                       // 2 軸
-  h += `<td class="num num-cell"><span class="${toggleCls}"${toggleAttr}>${toggleSym}</span>${escapeHtml(num)}</td>`; // 3 編號
-  h += `<td class="lbl">${escapeHtml(r['Issue'])}</td>`;                            // 4 Issue
-  h += `<td class="dept">${escapeHtml(r['處'])}</td>`;                              // 5 處
-  h += `<td class="dept">${escapeHtml(r['組'])}</td>`;                              // 6 組
-  h += `<td class="dept">${escapeHtml(r['戰略負責人'])}</td>`;                      // 7 戰略負責人
-  h += `<td class="pc">${escapeHtml(r['管理頁面'])}</td>`;                          // 8 管理頁面
-  h += `<td class="pc">${escapeHtml(r['確認會議'])}</td>`;                          // 9 確認會議
-  h += `<td class="pc">${escapeHtml(r['會議時間'])}</td>`;                          // 10 會議時間
-  h += `<td class="st">${statusBadge(r['狀態'])}</td>`;                             // 11 狀態
-  h += `<td class="memo">${escapeHtml(r['事務局備註'])}</td>`;                      // 12 事務局備註
-  h += freshnessCell(r['更新日']);                                                  // 13 更新
-  h += confluenceCell(r['Confluence URL']);                                          // 14 📄
+  h += `<td class="num num-cell"><span class="${toggleCls}"${toggleAttr}>${toggleSym}</span>${escapeHtml(num)}</td>`; // 1 編號
+  h += `<td class="lbl">${escapeHtml(r['Issue'])}</td>`;                            // 2 Issue / Task
+  h += `<td class="dept">${escapeHtml(r['處'])}</td>`;                              // 3 處
+  h += `<td class="dept">${escapeHtml(r['組'])}</td>`;                              // 4 組
+  h += `<td class="dept">${escapeHtml(r['戰略負責人'])}</td>`;                      // 5 戰略負責人
+  h += `<td class="pc">${escapeHtml(r['管理頁面'])}</td>`;                          // 6 管理頁面
+  h += `<td class="pc">${escapeHtml(r['確認會議'])}</td>`;                          // 7 確認會議
+  h += `<td class="pc">${escapeHtml(r['會議時間'])}</td>`;                          // 8 會議時間
+  h += `<td class="st">${statusBadge(r['狀態'])}</td>`;                             // 9 狀態
+  h += `<td class="memo">${escapeHtml(r['事務局備註'])}</td>`;                      // 10 事務局備註
+  h += freshnessCell(r['更新日']);                                                  // 11 更新
+  h += confluenceCell(r['Confluence URL']);                                          // 12 📄
   h += '</tr>';
   return h;
 }
 
 function renderTableA() {
   const tbody = document.querySelector('#panel-A tbody');
-  // Issue/Task 階層を組み立て、區分でグループ化（順序維持）
-  const groups = [];
   const tree = buildIssueTree(issueData);
-  tree.forEach(node => {
-    const g = node.row['區分'] || '';
-    const last = groups[groups.length - 1];
-    if (last && last.key === g) last.nodes.push(node);
-    else groups.push({ key: g, nodes: [node] });
-  });
-
-  // セクション見出しは「共通／個別」両方ある場合のみ
-  const hasCommon = groups.some(g => g.key === '共通');
-  const hasOther  = groups.some(g => g.key !== '共通');
-  const showSectionHeaders = hasCommon && hasOther;
-
   let html = '';
-  let commonHeaderEmitted = false;
-  let individualHeaderEmitted = false;
-  groups.forEach(g => {
-    const def = GROUP_DEF[g.key] || { key:'?', label: escapeHtml(g.key), cls:'grp-com' };
-    if (showSectionHeaders && g.key === '共通' && !commonHeaderEmitted) {
-      html += '<tr><td colspan="14" class="sec">■ 共通Issue（橫軸管理）</td></tr>';
-      commonHeaderEmitted = true;
-    } else if (showSectionHeaders && g.key !== '共通' && !individualHeaderEmitted) {
-      html += '<tr><td colspan="14" class="sec">■ 個別Issue（縱軸·依SKU管理）</td></tr>';
-      individualHeaderEmitted = true;
-    }
-    let isFirst = true;
-    g.nodes.forEach(node => {
-      const num = (node.row['編號'] || '').trim();
-      html += renderRow(node.row, def, {
-        isFirstOfGroup: isFirst,
-        isTask: false,
-        hasTasks: node.tasks.length > 0,
+  tree.forEach(node => {
+    const num = (node.row['編號'] || '').trim();
+    html += renderRow(node.row, {
+      isTask: false,
+      hasTasks: node.tasks.length > 0,
+      parentNum: num
+    });
+    node.tasks.forEach(t => {
+      html += renderRow(t, {
+        isTask: true,
+        hasTasks: false,
         parentNum: num
-      });
-      isFirst = false;
-      node.tasks.forEach(t => {
-        html += renderRow(t, def, {
-          isFirstOfGroup: false,
-          isTask: true,
-          hasTasks: false,
-          parentNum: num
-        });
       });
     });
   });
@@ -881,6 +848,66 @@ function rowsToData(rows) {
   return data;
 }
 
+// ===== Task 一覧シート（任意）から Task を取得して issueData にマージ =====
+// Task 行は以下の方針で扱う：
+//   - 種別 = 'Task' を強制
+//   - 親 Issue から 處/組/管理頁面/確認會議/會議時間/區分/軸 を継承（Task行が空のとき）
+//   - 戰略負責人 は Task 行自身の値を優先（親と違う担当も許容）
+async function loadTasksAndMerge(issues) {
+  const url = taskSheetCsvUrl();
+  if (!url) return issues;
+  try {
+    const res = await fetch(url + '&_=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return issues; // Task シートが無くてもエラーにしない
+    const csv = await res.text();
+    const wb = XLSX.read(csv, { type: 'string' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+    if (rows.length < 2) return issues;
+    const headers = rows[0].map(h => String(h).trim());
+    const idx = {};
+    ['編號','Task','Issue','親編號','戰略負責人','狀態','事務局備註','更新日','Confluence URL']
+      .forEach(c => { idx[c] = headers.indexOf(c); });
+    const issueByNum = new Map();
+    issues.forEach(r => issueByNum.set((r['編號']||'').trim(), r));
+    const tasks = [];
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row || row.every(v => v === '' || v == null)) continue;
+      const get = c => idx[c] >= 0 ? String(row[idx[c]] ?? '').trim() : '';
+      const num = get('編號');
+      // Issue または Task いずれの列名でも内容を拾う
+      const content = get('Task') || get('Issue');
+      const parent = get('親編號');
+      if (!num && !content) continue;
+      const parentRow = issueByNum.get(parent) || {};
+      tasks.push({
+        '區分':       parentRow['區分'] || '',
+        '軸':         parentRow['軸'] || '',
+        '編號':       num,
+        'Issue':      content,                                    // Task の説明文を Issue 列に詰める（描画ロジック共有のため）
+        'Issue短縮':  '',
+        '處':         parentRow['處'] || '',
+        '組':         parentRow['組'] || '',
+        '戰略負責人': get('戰略負責人') || parentRow['戰略負責人'] || '',
+        '管理頁面':   parentRow['管理頁面'] || '',
+        '確認會議':   parentRow['確認會議'] || '',
+        '會議時間':   parentRow['會議時間'] || '',
+        '種別':       'Task',
+        '親編號':     parent,
+        'Confluence URL': get('Confluence URL') || parentRow['Confluence URL'] || '',
+        '狀態':       get('狀態'),
+        '事務局備註': get('事務局備註'),
+        '更新日':     get('更新日'),
+      });
+    }
+    return issues.concat(tasks);
+  } catch (e) {
+    console.warn('[task] 載入失敗（任意のためスキップ）:', e.message);
+    return issues;
+  }
+}
+
 // ===== 從 Google 試算表載入（唯一資料來源）=====
 async function loadFromSheet() {
   const urls = sheetCsvUrls();
@@ -898,12 +925,18 @@ async function loadFromSheet() {
       const wb = XLSX.read(csv, { type: 'string' });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
-      const data = rowsToData(rows);
+      let data = rowsToData(rows);
+      // Task 一覧シートからの Task を結合（任意・存在しなくてもよい）
+      const taskCountBefore = data.filter(r => (r['種別']||'') === 'Task').length;
+      data = await loadTasksAndMerge(data);
+      const taskCountAfter = data.filter(r => (r['種別']||'') === 'Task').length;
+      const taskAdded = taskCountAfter - taskCountBefore;
       fillShortNames(data);
       issueData = data;
       renderAll();
       const ts = new Date().toLocaleString('zh-TW', { hour12:false });
-      setCloudStatus(`✅ 雲端最新（${data.length} 筆）· ${ts}`);
+      const issueCount = data.filter(r => (r['種別']||'Issue') !== 'Task').length;
+      setCloudStatus(`✅ 雲端最新（Issue ${issueCount} / Task ${taskCountAfter}）· ${ts}`);
       return true;
     } catch (err) {
       lastErr = err;
