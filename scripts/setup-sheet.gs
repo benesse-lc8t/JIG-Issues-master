@@ -77,19 +77,46 @@ function onOpen() {
 // 更新日が明示されていればそちらを優先（手動補正可）。
 function doPost(e) {
   try {
-    if (!e || !e.postData || !e.postData.contents) return _writeJson({ ok: false, error: 'no_payload' });
+    console.log('=== doPost start ===');
+    console.log('e.postData:', e && e.postData ? JSON.stringify({ type: e.postData.type, length: (e.postData.contents||'').length }) : 'null');
+    if (!e || !e.postData || !e.postData.contents) {
+      console.log('  → no_payload');
+      return _writeJson({ ok: false, error: 'no_payload' });
+    }
     let data;
     try { data = JSON.parse(e.postData.contents); }
-    catch (_) { return _writeJson({ ok: false, error: 'invalid_json' }); }
+    catch (_) {
+      console.log('  → invalid_json. raw =', e.postData.contents.slice(0, 200));
+      return _writeJson({ ok: false, error: 'invalid_json' });
+    }
+    console.log('  parsed payload:', JSON.stringify({
+      mission: data.mission, hasStatus: '狀態' in data, hasRemark: '備註' in data,
+      hasDate: '更新日' in data, tokenMatch: data.token === WRITE_TOKEN
+    }));
 
-    if (!data || data.token !== WRITE_TOKEN) return _writeJson({ ok: false, error: 'forbidden' });
+    if (!data || data.token !== WRITE_TOKEN) {
+      console.log('  → forbidden (token mismatch)');
+      return _writeJson({ ok: false, error: 'forbidden' });
+    }
 
     const missionId = String(data.mission || '').trim();
-    if (!missionId) return _writeJson({ ok: false, error: 'mission_required' });
+    if (!missionId) {
+      console.log('  → mission_required');
+      return _writeJson({ ok: false, error: 'mission_required' });
+    }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (!ss) {
+      console.log('  → no_active_spreadsheet (script may be standalone, not Sheet-bound)');
+      return _writeJson({ ok: false, error: 'no_active_spreadsheet' });
+    }
+    console.log('  spreadsheet:', ss.getName(), ' id:', ss.getId());
+    console.log('  available sheets:', ss.getSheets().map(s => s.getName()).join(' / '));
     const sheet = ss.getSheetByName(MISSION_SHEET_FOR_WRITE);
-    if (!sheet) return _writeJson({ ok: false, error: 'mission_sheet_not_found' });
+    if (!sheet) {
+      console.log('  → mission_sheet_not_found (looking for', MISSION_SHEET_FOR_WRITE, ')');
+      return _writeJson({ ok: false, error: 'mission_sheet_not_found', sheetName: MISSION_SHEET_FOR_WRITE });
+    }
 
     // 編號（A 列）で行を特定
     const lastRow = sheet.getLastRow();
@@ -99,9 +126,15 @@ function doPost(e) {
     for (let i = 0; i < ids.length; i++) {
       if (String(ids[i][0]).trim() === missionId) { rowIdx = i + 2; break; }
     }
-    if (rowIdx < 0) return _writeJson({ ok: false, error: 'mission_not_found', mission: missionId });
+    if (rowIdx < 0) {
+      console.log('  → mission_not_found:', missionId);
+      console.log('  sample IDs in sheet:', ids.slice(0, 5).map(r => JSON.stringify(r[0])).join(', '));
+      return _writeJson({ ok: false, error: 'mission_not_found', mission: missionId });
+    }
+    console.log('  row index:', rowIdx);
 
     const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => String(h).trim());
+    console.log('  headers:', JSON.stringify(headers));
     const changes = {};
     let touchedContent = false;
 
@@ -110,6 +143,7 @@ function doPost(e) {
       const v = String(data['狀態']).trim();
       if (v && !ALLOWED_STATUS.has(v)) return _writeJson({ ok: false, error: 'invalid_status', value: v });
       const col = headers.indexOf(WRITE_FIELDS['狀態']) + 1;
+      console.log('  狀態 col index:', col, '(WRITE_FIELDS["狀態"]=', WRITE_FIELDS['狀態'], ')');
       if (col > 0) {
         sheet.getRange(rowIdx, col).setValue(v);
         changes['狀態'] = v;
@@ -120,6 +154,7 @@ function doPost(e) {
     // 備註
     if (Object.prototype.hasOwnProperty.call(data, '備註')) {
       const col = headers.indexOf(WRITE_FIELDS['備註']) + 1;
+      console.log('  備註 col index:', col, '(WRITE_FIELDS["備註"]=', WRITE_FIELDS['備註'], ')');
       if (col > 0) {
         sheet.getRange(rowIdx, col).setValue(String(data['備註']));
         changes['備註'] = String(data['備註']);
@@ -140,14 +175,18 @@ function doPost(e) {
     }
     if (updValue) {
       const col = headers.indexOf(WRITE_FIELDS['更新日']) + 1;
+      console.log('  更新日 col index:', col);
       if (col > 0) {
         sheet.getRange(rowIdx, col).setValue(updValue);
         changes['更新日'] = Utilities.formatDate(updValue, Session.getScriptTimeZone() || 'Asia/Taipei', 'yyyy-MM-dd');
       }
     }
 
+    SpreadsheetApp.flush(); // 即時反映を保証
+    console.log('  → ok, changes:', JSON.stringify(changes));
     return _writeJson({ ok: true, mission: missionId, row: rowIdx, changes });
   } catch (err) {
+    console.log('  → exception:', String(err && err.stack || err));
     return _writeJson({ ok: false, error: 'exception', message: String(err && err.message || err) });
   }
 }
