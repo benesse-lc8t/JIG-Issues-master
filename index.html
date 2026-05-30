@@ -62,9 +62,9 @@
   .tab:hover { background: #F1F3F4; color: #202124; }
   .tab.active { font-weight: 700; box-shadow: 0 -2px 8px rgba(0,0,0,0.08); transform: translateY(-1px); }
   .tab.active:nth-child(1) { background: #4285F4; color: #fff;     border-color: #1A73E8; } /* Issue & Mission */
-  .tab.active:nth-child(2) { background: #FBBC04; color: #202124; border-color: #F9AB00; } /* 會議議程 */
-  .tab.active:nth-child(3) { background: #34A853; color: #fff;     border-color: #1E8E3E; } /* 停滯警報 */
-  .tab.active:nth-child(4) { background: #00ACC1; color: #fff;     border-color: #00838F; } /* 儀表板 */
+  .tab.active:nth-child(2) { background: #EA4335; color: #fff;     border-color: #C5221F; } /* Mission進度 */
+  .tab.active:nth-child(3) { background: #FBBC04; color: #202124; border-color: #F9AB00; } /* 會議議程 */
+  .tab.active:nth-child(4) { background: #00ACC1; color: #fff;     border-color: #00838F; } /* DASHBOARD */
 
   /* topbar 右肩のアクション群（管理者ボタンと人物ボタンを縦に並べる） */
   .topbar-actions { display: flex; flex-direction: column; gap: 4px; align-items: stretch; }
@@ -77,7 +77,7 @@
   /* Panel：active タブと連動した色アクセントを上端に持たせる */
   #panel-A.active { border-top: 3px solid #4285F4; }
   #panel-B.active { border-top: 3px solid #FBBC04; }
-  #panel-C.active { border-top: 3px solid #34A853; }
+  #panel-C.active { border-top: 3px solid #EA4335; }
   #panel-D.active { border-top: 3px solid #EA4335; }
   #panel-E.active { border-top: 3px solid #9334E6; }
   #panel-F.active { border-top: 3px solid #00ACC1; }
@@ -332,7 +332,7 @@
   .simple-table td.conf-icon a:hover { opacity: 1; }
   .simple-table td.conf-icon img { width: 14px; height: 14px; vertical-align: middle; }
 
-  /* 編集可能セル（停滯警報タブ） */
+  /* 編集可能セル（Mission進度タブ） */
   .simple-table td.cell-editable { cursor: pointer; position: relative; }
   .simple-table td.cell-editable:hover { background: #FFF9DB !important; outline: 1px solid #F9AB00; outline-offset: -1px; }
   .simple-table td.cell-editable::after { content: '✎'; position: absolute; top: 1px; right: 2px; font-size: 8px; color: transparent; }
@@ -445,8 +445,8 @@
 
 <div class="tabs">
   <div class="tab active" onclick="show('A',event)">Issue &amp; Mission</div>
+  <div class="tab" onclick="show('C',event)">Mission進度</div>
   <div class="tab" onclick="show('B',event)">會議議程</div>
-  <div class="tab" onclick="show('C',event)">停滯警報</div>
   <div class="tab" onclick="show('F',event)">DASHBOARD</div>
 </div>
 
@@ -538,10 +538,10 @@
   </table>
 </div>
 
-<!-- ===== C：停滯警報（Mission 専用・インライン編集対応） ===== -->
+<!-- ===== C：Mission進度（Mission 専用・インライン編集対応） ===== -->
 <div class="panel" id="panel-C">
   <div style="padding:6px 14px; background:#FEF7E0; border-bottom:1px solid #F9AB00; font-size:10px; color:#B06000;">
-    💡 <b>狀態</b> セルをクリック ／ <b>備註</b> セルをダブルクリック ／ <b>更新</b> セルをクリックで編集できます（保存は Sheet に即反映）
+    💡 <b>狀態</b> セルをクリック ／ <b>Mission進度</b> セルをダブルクリック ／ <b>更新</b> セルをクリックで編集できます（保存は Sheet に即反映）
   </div>
   <div class="ctrl-bar">
     <select id="filterDeptC"><option value="">處：全部</option></select>
@@ -577,7 +577,7 @@
         <th style="width:76px;">處</th>
         <th style="width:90px;">組</th>
         <th style="width:76px;">擔當</th>
-        <th style="min-width:120px;">備註</th>
+        <th style="min-width:120px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
         <th style="width:34px;">🔗</th>
@@ -631,7 +631,7 @@
         <th style="width:76px;">處</th>
         <th style="width:90px;">組</th>
         <th style="width:110px;">角色</th>
-        <th style="min-width:140px;">備註</th>
+        <th style="min-width:140px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
         <th style="width:34px;">🔗</th>
@@ -685,7 +685,7 @@
         <th style="width:76px;">處</th>
         <th style="width:90px;">組</th>
         <th style="width:110px;">角色</th>
-        <th style="min-width:140px;">備註</th>
+        <th style="min-width:140px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
         <th style="width:34px;">🔗</th>
@@ -805,7 +805,7 @@ const GROUP_DEF = {
 const AXIS_CLASS = { 'O':'ax-O','N':'ax-N','CV':'ax-CV','I':'ax-I','P':'ax-P' };
 const COLS = ['區分','軸','編號','Issue','Issue短縮','處','組','戰略負責人','管理頁面','確認會議','會議時間'];
 // 拡張列：Sheet に存在すれば読み込む。欠けていてもエラーにせず空文字とする。
-const OPTIONAL_COLS = ['種別','親編號','擔當','Confluence URL','狀態','事務局備註','更新日'];
+const OPTIONAL_COLS = ['種別','親編號','擔當','Confluence URL','狀態','事務局備註','Mission進度','更新日'];
 const STATUS_VALUES = new Set(['未開始','策劃中','需確認','進行中','結案','完成']); // '完成' は旧ラベル互換
 
 let issueData = [];   // array of row objects
@@ -824,7 +824,7 @@ const SHEET_NAME = 'Issue主檔';
 const MISSION_SHEET_NAME = 'Mission一覽';
 const TASK_SHEET_NAME    = 'Task一覽'; // legacy 名（Phase 2 で完全に Mission へ移行予定）
 
-// 編集 API（停滯警報タブのインライン編集に使用）
+// 編集 API（Mission進度タブのインライン編集に使用）
 // 1. scripts/setup-sheet.gs の doPost を Web App としてデプロイ
 //    （Apps Script エディタ → デプロイ → 新しいデプロイ → ウェブアプリ
 //     実行ユーザー：自分、アクセス：全員）
@@ -1331,7 +1331,7 @@ function applyLocalEdit(missionId, changes) {
   const row = issueData.find(r => (r['編號']||'').trim() === missionId);
   if (!row) return;
   if (changes['狀態']    !== undefined) row['狀態']        = changes['狀態'];
-  if (changes['備註']    !== undefined) row['事務局備註'] = changes['備註'];
+  if (changes['備註']    !== undefined) row['Mission進度'] = changes['備註'];
   if (changes['更新日']  !== undefined) row['更新日']     = changes['更新日'];
 }
 
@@ -1424,7 +1424,7 @@ function startRemarkEdit(td, missionId) {
     applyLocalEdit(missionId, result.changes || { '備註': v });
     td.textContent = v;
     flashSaved(td);
-    toast(`已儲存：${missionId} 備註`, 'success');
+    toast(`已儲存：${missionId} Mission進度`, 'success');
     setTimeout(() => renderTableC(), 300);
   };
   ta.addEventListener('blur', commit);
@@ -1515,7 +1515,7 @@ function simpleRow(r, opts) {
   const isMission = ((r['種別']||'Issue') === 'Mission' || (r['種別']||'') === 'Task');
   const num = (r['編號']||'').trim();
   const dept = (r['處']||'').trim();
-  const remark = (r['事務局備註']||'').trim();
+  const remark = (r['Mission進度'] || r['事務局備註'] || '').trim();
   const ownerField = opts.ownerField || '戰略負責人';
   const owner = (r[ownerField]||'').trim();
   const cls = opts.rowClass || '';
@@ -1746,7 +1746,7 @@ function renderTableB() {
   }
 }
 
-// ===== Tab C：停滯警報（Mission を更新日が古い順に、親 Issue 列付き、フィルタ可）=====
+// ===== Tab C：Mission進度（Mission を更新日が古い順に、親 Issue 列付き、フィルタ可）=====
 let _filtersWiredC = false;
 function setupTabCFilters() {
   populateDeptGroupOwner('C', null);
@@ -2125,7 +2125,7 @@ async function loadMissionsAndMerge(issues) {
         continue;
       }
       const idx = {};
-      ['編號','Mission','Task','Issue','親編號','擔當','戰略負責人','狀態','事務局備註','更新日','Confluence URL']
+      ['編號','Mission','Task','Issue','親編號','擔當','戰略負責人','狀態','Mission進度','事務局備註','更新日','Confluence URL']
         .forEach(c => { idx[c] = headers.indexOf(c); });
       const issueByNum = new Map();
       issues.forEach(r => issueByNum.set((r['編號']||'').trim(), r));
@@ -2158,9 +2158,10 @@ async function loadMissionsAndMerge(issues) {
           '種別':       'Mission',
           '親編號':     parent,
           'Confluence URL': get('Confluence URL') || (parentRow && parentRow['Confluence URL']) || '',
-          '狀態':       get('狀態'),
-          '事務局備註': get('事務局備註'),
-          '更新日':     get('更新日'),
+          '狀態':        get('狀態'),
+          'Mission進度': get('Mission進度'),
+          '事務局備註':  get('事務局備註'),
+          '更新日':      get('更新日'),
         });
       }
       const m = `sheet "${t.name}": ${missions.length} 件読込 / 親一致 ${Object.keys(parentHits).length} / 親不明 ${parentMisses.length}`;

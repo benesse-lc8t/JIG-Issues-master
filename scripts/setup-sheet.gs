@@ -51,7 +51,7 @@ const MISSION_HEADERS = [
   '親編號',        // C
   '戰略負責人',    // D
   '狀態',          // E
-  '事務局備註',    // F
+  'Mission進度',   // F
   '更新日',        // G
   'Confluence URL' // H
 ];
@@ -65,7 +65,7 @@ const MISSION_SHEET_FOR_WRITE = 'Mission一覽';
 // ダッシュボード側のキー → Sheet 列名のマッピング
 const WRITE_FIELDS = {
   '狀態':   '狀態',
-  '備註':   '事務局備註',
+  '備註':   'Mission進度',
   '更新日': '更新日'
 };
 const ALLOWED_STATUS = new Set(STATUS_VALUES);
