@@ -211,6 +211,8 @@
   .ctrl-bar .ctrl-clear { padding: 4px 8px; font-size: 8px; font-weight: 500; border: 1px solid var(--border); border-radius: 3px; background: #fff; cursor: pointer; color: var(--g-grey); transition: all 0.15s; height: 24px; line-height: 1; }
   .ctrl-bar .ctrl-clear:hover { background: var(--g-grey-bg); color: #202124; }
   .ctrl-bar .ctrl-count { margin-left: auto; font-size: 8px; color: var(--g-grey); }
+  .ctrl-bar .ctrl-toggle { display: inline-flex; align-items: center; gap: 4px; font-size: 9px; color: #3C4043; cursor: pointer; user-select: none; white-space: nowrap; }
+  .ctrl-bar .ctrl-toggle input { accent-color: var(--g-blue); width: 11px; height: 11px; }
   .row-hidden { display: none !important; }
 
   /* Confluence cell（管理頁面の位置に配置） */
@@ -325,6 +327,10 @@
   .simple-table .role-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 700; letter-spacing: 0.03em; margin-right: 3px; white-space: nowrap; }
   .simple-table .role-owner     { background: #FEF7E0; color: #B06000; border: 1px solid #F9AB00; } /* 擔當 = 橙 */
   .simple-table .role-strategic { background: #F3E8FD; color: #7026A6; border: 1px solid #9334E6; } /* 戰略負責人 = 紫 */
+  .simple-table td.conf-icon { text-align: center; padding: 2px 4px; width: 32px; }
+  .simple-table td.conf-icon a { display: inline-block; opacity: 0.85; transition: opacity 0.15s; }
+  .simple-table td.conf-icon a:hover { opacity: 1; }
+  .simple-table td.conf-icon img { width: 14px; height: 14px; vertical-align: middle; }
   /* 親 Issue セル（最初の行のみ表示、以降は空白） */
   .simple-table .parent-cell { font-size: 10px; line-height: 1.3; padding: 2px 8px; white-space: nowrap; overflow: hidden; }
   .simple-table .parent-cell .pc-num { display: inline-block; padding: 1px 5px; border-radius: 8px; font-size: 9px; font-weight: 700; background: #E8EAED; color: #3C4043; margin-right: 4px; vertical-align: middle; }
@@ -382,7 +388,9 @@
 
   /* DASHBOARD リスト（停滞・最近活躍） */
   .dash-list { display: flex; flex-direction: column; gap: 3px; }
-  .dash-list-row { display: grid; grid-template-columns: 90px 1fr 70px 80px 60px; gap: 10px; padding: 6px 12px; background: #F8F9FA; border-radius: 5px; font-size: 11px; align-items: center; }
+  .dash-list-row { display: grid; grid-template-columns: 90px 1fr 70px 80px 60px 26px; gap: 10px; padding: 6px 12px; background: #F8F9FA; border-radius: 5px; font-size: 11px; align-items: center; }
+  .dash-list-row .dl-conf img { width: 14px; height: 14px; vertical-align: middle; opacity: 0.85; }
+  .dash-list-row .dl-conf a:hover img { opacity: 1; }
   .dash-list-row.dl-stale { background: #FCE8E6; }
   .dash-list-row.dl-warn  { background: #FEF7E0; }
   .dash-list-row .dl-id { font-weight: 700; color: #5F6368; font-size: 10px; white-space: nowrap; }
@@ -428,7 +436,9 @@
   <button type="button" class="ctrl-clear" id="expandAllA">▶ 全部展開</button>
   <label><input type="checkbox" id="toggleMtgA">顯示會議欄</label>
   <span class="ctrl-sep"></span>
-  <button type="button" class="ctrl-clear" id="clearFilterA">清除</button>
+  <label class="ctrl-toggle"><input type="checkbox" class="toggle-closed">顯示結案</label>
+    <span class="ctrl-sep"></span>
+    <button type="button" class="ctrl-clear" id="clearFilterA">清除</button>
   <span class="ctrl-count" id="filterCountA"></span>
 </div>
 <table id="tableA" class="hide-mtg">
@@ -479,6 +489,8 @@
       <option value="none">未設定</option>
     </select>
     <span class="ctrl-sep"></span>
+    <label class="ctrl-toggle"><input type="checkbox" class="toggle-closed">顯示結案</label>
+    <span class="ctrl-sep"></span>
     <button type="button" class="ctrl-clear" id="clearFilterB">清除</button>
     <span class="ctrl-count" id="filterCountB"></span>
   </div>
@@ -494,6 +506,7 @@
         <th style="min-width:120px;">備註</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
+        <th style="width:34px;">🔗</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -525,6 +538,8 @@
       <option value="none">未設定</option>
     </select>
     <span class="ctrl-sep"></span>
+    <label class="ctrl-toggle"><input type="checkbox" class="toggle-closed">顯示結案</label>
+    <span class="ctrl-sep"></span>
     <button type="button" class="ctrl-clear" id="clearFilterC">清除</button>
     <span class="ctrl-count" id="filterCountC"></span>
   </div>
@@ -540,6 +555,7 @@
         <th style="min-width:120px;">備註</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
+        <th style="width:34px;">🔗</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -576,6 +592,8 @@
       <option value="none">未設定</option>
     </select>
     <span class="ctrl-sep"></span>
+    <label class="ctrl-toggle"><input type="checkbox" class="toggle-closed">顯示結案</label>
+    <span class="ctrl-sep"></span>
     <button type="button" class="ctrl-clear" id="clearFilterD">清除</button>
     <span class="ctrl-count" id="filterCountD"></span>
   </div>
@@ -591,6 +609,7 @@
         <th style="min-width:140px;">備註</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
+        <th style="width:34px;">🔗</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -627,6 +646,8 @@
       <option value="none">未設定</option>
     </select>
     <span class="ctrl-sep"></span>
+    <label class="ctrl-toggle"><input type="checkbox" class="toggle-closed">顯示結案</label>
+    <span class="ctrl-sep"></span>
     <button type="button" class="ctrl-clear" id="clearFilterE">清除</button>
     <span class="ctrl-count" id="filterCountE"></span>
   </div>
@@ -642,6 +663,7 @@
         <th style="min-width:140px;">備註</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
+        <th style="width:34px;">🔗</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -730,9 +752,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.9.11';
+const APP_VERSION = '0.9.12';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'B/C/D/E 行密度を A Mission 同等に。C は Sheet 自然順に。儀表板→DASHBOARD 改名＋全面再設計（Pipeline／KPI／停滯 Top10／最近活躍 Top10）。';
+const APP_NOTE  = '全タブの Mission に Confluence リンク追加（favicon クリッカブル）。「顯示結案」トグル（全タブ連動・既定 OFF）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1027,7 +1049,7 @@ function renderRow(r, opts) {
   const cls = isMission ? `mission-row hidden mc-${deptColorKey}` : 'issue-row';
   let trAttrs = ` class="${cls}"`;
   if (isMission) trAttrs += ` data-parent="${escapeAttr(parentNum)}"`;
-  trAttrs += ` data-dept="${escapeAttr(dept)}" data-group="${escapeAttr(grp)}" data-owner="${escapeAttr(owner)}" data-search="${escapeAttr(searchStr)}"`;
+  trAttrs += ` data-dept="${escapeAttr(dept)}" data-group="${escapeAttr(grp)}" data-owner="${escapeAttr(owner)}" data-status="${escapeAttr((r['狀態']||'').trim())}" data-search="${escapeAttr(searchStr)}"`;
 
   // Mission 行は編號をバッジ表示（親處色で塗りつぶし）
   const numHtml = isMission
@@ -1157,6 +1179,7 @@ function applyTabAFilters() {
   const d = (document.getElementById('filterDeptA')?.value || '').trim();
   const g = (document.getElementById('filterGroupA')?.value || '').trim();
   const o = (document.getElementById('filterOwnerA')?.value || '').trim();
+  const showClosed = getShowClosed();
   const tbody = document.querySelector('#panel-A tbody');
   if (!tbody) return;
 
@@ -1164,11 +1187,14 @@ function applyTabAFilters() {
   const visibleIssueNums = new Set();
   let shownCount = 0;
   tbody.querySelectorAll('tr.issue-row').forEach(tr => {
-    const rowDept  = tr.dataset.dept  || '';
-    const rowGrp   = tr.dataset.group || '';
-    const rowOwner = tr.dataset.owner || '';
-    const rowTxt   = tr.dataset.search || '';
-    const match = (!d || rowDept === d)
+    const rowDept   = tr.dataset.dept   || '';
+    const rowGrp    = tr.dataset.group  || '';
+    const rowOwner  = tr.dataset.owner  || '';
+    const rowStatus = tr.dataset.status || '';
+    const rowTxt    = tr.dataset.search || '';
+    const closedHide = !showClosed && (rowStatus === '結案' || rowStatus === '完成');
+    const match = !closedHide
+               && (!d || rowDept === d)
                && (!g || rowGrp  === g)
                && (!o || rowOwner === o)
                && (!q || rowTxt.includes(q));
@@ -1180,20 +1206,21 @@ function applyTabAFilters() {
     }
   });
 
-  // Task 行：親 Issue が表示中なら、検索条件にもマッチさせる（部門は親に追随）
+  // Mission 行：親 Issue が表示中なら、検索条件にもマッチさせる（部門は親に追随）
   tbody.querySelectorAll('tr.mission-row').forEach(tr => {
-    const parent = tr.dataset.parent || '';
-    const rowTxt = tr.dataset.search || '';
+    const parent    = tr.dataset.parent || '';
+    const rowStatus = tr.dataset.status || '';
+    const rowTxt    = tr.dataset.search || '';
     const parentVisible = visibleIssueNums.has(parent);
     const matchSearch = !q || rowTxt.includes(q);
-    // Task 行は親が見えていて、かつ検索条件にもマッチする必要がある
-    const shouldShow = parentVisible && matchSearch;
+    const closedHide = !showClosed && (rowStatus === '結案' || rowStatus === '完成');
+    const shouldShow = parentVisible && matchSearch && !closedHide;
     tr.classList.toggle('row-hidden', !shouldShow);
   });
 
   const total = tbody.querySelectorAll('tr.issue-row').length;
   const countEl = document.getElementById('filterCountA');
-  if (countEl) countEl.textContent = (q || d || g) ? `顯示 ${shownCount} / ${total} 筆` : '';
+  if (countEl) countEl.textContent = (q || d || g || o || !showClosed) ? `顯示 ${shownCount} / ${total} 筆` : '';
 }
 
 function escapeAttr(s) {
@@ -1280,6 +1307,14 @@ function simpleRow(r, opts) {
   }
   h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;
   h += freshnessCell(r['更新日']);
+  if (opts.showConf) {
+    const url = (r['Confluence URL']||'').trim();
+    if (url) {
+      h += `<td class="conf-icon"><a href="${escapeAttr(url)}" target="_blank" rel="noopener" title="${escapeAttr(url)}"><img src="${CONF_FAVICON}" alt="" onerror="this.style.display=\'none\'"></a></td>`;
+    } else {
+      h += '<td class="conf-icon"></td>';
+    }
+  }
   h += '</tr>';
   return h;
 }
@@ -1304,6 +1339,27 @@ function makeParentInfo(missionRow, issueMap, prevParentNum) {
   const parentRow = issueMap.get(num);
   const name = parentRow ? (parentRow['Issue']||'') : '';
   return { num, name, show: num !== prevParentNum };
+}
+
+// ===== 結案 表示トグル（全タブ連動）=====
+let _showClosed = false;
+function getShowClosed() { return _showClosed; }
+function setShowClosed(v) {
+  _showClosed = !!v;
+  document.querySelectorAll('.toggle-closed').forEach(cb => { cb.checked = _showClosed; });
+  renderAll();
+}
+function isClosedStatus(s) {
+  const v = (s||'').trim();
+  return v === '結案' || v === '完成';
+}
+function wireClosedToggles() {
+  document.querySelectorAll('.toggle-closed').forEach(cb => {
+    if (cb._wired) return;
+    cb._wired = true;
+    cb.checked = _showClosed;
+    cb.addEventListener('change', e => setShowClosed(e.target.checked));
+  });
 }
 
 // ===== フィルタ用共通：日数からカテゴリへ =====
@@ -1392,9 +1448,11 @@ function renderTableB() {
   const issueMap = buildIssueMap();
   const meetMap = new Map();
   let totalAll = 0, totalShown = 0;
+  const showClosed = getShowClosed();
   issueData.forEach(r => {
     if (!isMissionDatum(r)) return;
     totalAll++;
+    if (!showClosed && isClosedStatus(r['狀態'])) return;
     if (fDept   && (r['處']||'').trim()   !== fDept)   return;
     if (fGroup  && (r['組']||'').trim()   !== fGroup)  return;
     if (fOwner  && (r['擔當']||'').trim() !== fOwner)  return;
@@ -1413,15 +1471,15 @@ function renderTableB() {
   let html = '';
   meets.forEach(g => {
     g.items.sort((a, b) => (a['親編號']||'').localeCompare(b['親編號']||''));
-    html += `<tr class="mtg-header"><th colspan="9">📅 ${escapeHtml(g.meeting)}<span class="mtg-time">${escapeHtml(g.time)}</span> · ${g.items.length} 件</th></tr>`;
+    html += `<tr class="mtg-header"><th colspan="10">📅 ${escapeHtml(g.meeting)}<span class="mtg-time">${escapeHtml(g.time)}</span> · ${g.items.length} 件</th></tr>`;
     let prevParent = null;
     g.items.forEach(r => {
       const parent = makeParentInfo(r, issueMap, prevParent);
-      html += simpleRow(r, { ownerField: '擔當', parent, showGroup: true });
+      html += simpleRow(r, { ownerField: '擔當', parent, showGroup: true, showConf: true });
       prevParent = parent.num;
     });
   });
-  if (!html) html = '<tr><td colspan="9" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>';
+  if (!html) html = '<tr><td colspan="10" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>';
   tbody.innerHTML = html;
 
   const countEl = document.getElementById('filterCountB');
@@ -1474,8 +1532,10 @@ function renderTableC() {
     });
   const totalCount = decorated.length;
 
+  const showClosed = getShowClosed();
   // フィルタ適用
   const filtered = decorated.filter(({ row: r, days }) => {
+    if (!showClosed && isClosedStatus(r['狀態'])) return false;
     if (fDept   && (r['處']||'').trim()   !== fDept)   return false;
     if (fGroup  && (r['組']||'').trim()   !== fGroup)  return false;
     if (fOwner  && (r['擔當']||'').trim() !== fOwner)  return false;
@@ -1509,10 +1569,10 @@ function renderTableC() {
                    : days != null && days > 7  ? 'stalled-yellow'
                    : '';
     const parent = makeParentInfo(r, issueMap, prevParent);
-    html += simpleRow(r, { ownerField: '擔當', parent, rowClass, showGroup: true });
+    html += simpleRow(r, { ownerField: '擔當', parent, rowClass, showGroup: true, showConf: true });
     prevParent = parent.num;
   });
-  if (!html) html = `<tr><td colspan="9" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>`;
+  if (!html) html = `<tr><td colspan="10" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>`;
   tbody.innerHTML = html;
 
   const countEl = document.getElementById('filterCountC');
@@ -1567,8 +1627,10 @@ function renderPersonView(panelKey, personName) {
   });
   const totalAll = decorated.length;
 
+  const showClosed = getShowClosed();
   // フィルタ適用
   const filtered = decorated.filter(({ row: r, isOwner, isStrategic }) => {
+    if (!showClosed && isClosedStatus(r['狀態'])) return false;
     if (fDept   && (r['處']||'').trim() !== fDept)   return false;
     if (fGroup  && (r['組']||'').trim() !== fGroup)  return false;
     if (!matchStatus(fStatus, (r['狀態']||'').trim())) return false;
@@ -1593,7 +1655,7 @@ function renderPersonView(panelKey, personName) {
     if (ownerOnly)     breakdown.push(`擔當 ${ownerOnly}`);
     if (strategicOnly) breakdown.push(`戰略負責人 ${strategicOnly}`);
     if (both)          breakdown.push(`兩者 ${both}`);
-    html += `<tr class="sec-row"><th colspan="9">▶ ${escapeHtml(personName)} 相關 Mission · 顯示 ${filtered.length} 筆${breakdown.length ? `（${breakdown.join(' / ')}）` : ''}</th></tr>`;
+    html += `<tr class="sec-row"><th colspan="10">▶ ${escapeHtml(personName)} 相關 Mission · 顯示 ${filtered.length} 筆${breakdown.length ? `（${breakdown.join(' / ')}）` : ''}</th></tr>`;
     let prevParent = null;
     filtered.forEach(({ row: r, isOwner, isStrategic }) => {
       const parent = makeParentInfo(r, issueMap, prevParent);
@@ -1601,11 +1663,11 @@ function renderPersonView(panelKey, personName) {
       if (isOwner)     roleHtml += '<span class="role-badge role-owner">擔當</span>';
       if (isStrategic) roleHtml += '<span class="role-badge role-strategic">負責人</span>';
       const extraCell = `<td>${roleHtml}</td>`;
-      html += simpleRow(r, { showOwner: false, showRemark: true, parent, showGroup: true, extraCellAfterDept: extraCell });
+      html += simpleRow(r, { showOwner: false, showRemark: true, parent, showGroup: true, showConf: true, extraCellAfterDept: extraCell });
       prevParent = parent.num;
     });
   } else {
-    html = `<tr><td colspan="9" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>`;
+    html = `<tr><td colspan="10" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>`;
   }
   tbody.innerHTML = html;
 
@@ -1682,12 +1744,17 @@ function renderTabF() {
     const status = (r['狀態']||'').trim();
     const daysLabel = m.days == null ? '未設定' : m.days <= 0 ? '今天' : `${m.days} 天前`;
     const cls = m.days != null && m.days > 14 ? 'dl-stale' : m.days != null && m.days > 7 ? 'dl-warn' : '';
+    const confUrl = (r['Confluence URL']||'').trim();
+    const confHtml = confUrl
+      ? `<a href="${escapeAttr(confUrl)}" target="_blank" rel="noopener" title="${escapeAttr(confUrl)}"><img src="${CONF_FAVICON}" alt="" onerror="this.style.display='none'"></a>`
+      : '';
     return `<div class="dash-list-row ${cls}">
       <div class="dl-id" title="${escapeAttr(id)}">${escapeHtml(id)}</div>
       <div class="dl-title" title="${escapeAttr((r['Issue']||'') + ' / ' + parentNum + ' ' + parentName)}">${title}</div>
       <div class="dl-owner" title="${escapeAttr(owner)}">${escapeHtml(owner)}</div>
       <div class="dl-status">${statusBadge(status, true)}</div>
       <div class="dl-days">${escapeHtml(daysLabel)}</div>
+      <div class="dl-conf">${confHtml}</div>
     </div>`;
   };
   const stalledEl = document.getElementById('dashStalledList');
@@ -1717,6 +1784,7 @@ function renderAll() {
   renderPersonView('D', '詩雅');
   renderPersonView('E', '育菱');
   renderTabF();
+  wireClosedToggles();
 }
 
 // ===== 列陣列 → 資料物件（雲端載入用）=====

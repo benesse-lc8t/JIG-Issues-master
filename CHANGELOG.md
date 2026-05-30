@@ -5,6 +5,27 @@
 
 ---
 
+## v0.9.12 — 2026-05-30
+
+**全タブの Mission に Confluence リンク・結案 表示トグル**
+
+### 1. Confluence リンクを全タブの Mission 行に追加
+- B / C / D / E：thead に「🔗」列（34px）を末尾に追加、Mission 行右端に Confluence favicon リンク
+- 親 Issue から継承された `Confluence URL` を使う（A タブと同じ仕組み）
+- DASHBOARD の停滯／最近活躍リストにも Confluence アイコンを追加（右端 26px 列）
+- URL が空の Mission は何も表示しない（リンクなしの空セル）
+
+### 2. 「顯示結案」トグル（全タブ連動・既定 OFF）
+- A/B/C/D/E の各 ctrl-bar に **`☐ 顯示結案`** チェックボックスを追加
+- 既定 OFF：`狀態 = 結案`（旧「完成」も同義）の Mission は全タブで非表示
+- 1 つのチェックを変更すると全タブのチェックが同期、全タブが再描画
+- 内部状態 `_showClosed` ＋ `getShowClosed()` / `setShowClosed()` / `wireClosedToggles()` で集中管理
+- A タブの Issue 行が結案の場合も連動して非表示
+
+DASHBOARD は集計性質上、結案も含めた全体状況を表示（トグル対象外）。
+
+---
+
 ## v0.9.11 — 2026-05-30
 
 **B/C/D/E 行密度・C 並び順・DASHBOARD 全面再設計**
