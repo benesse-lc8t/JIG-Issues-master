@@ -48,14 +48,6 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font); font-weight: 400; font-size: 13px; color: #202124; background: var(--body-bg); padding: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-
-  /* Google 4-color top strip — iconic accent */
-  .g-strip { display: flex; height: 4px; margin: -16px -16px 14px -16px; }
-  .g-strip > span { flex: 1; }
-  .g-strip .gs-b { background: #4285F4; }
-  .g-strip .gs-r { background: #EA4335; }
-  .g-strip .gs-y { background: #FBBC04; }
-  .g-strip .gs-g { background: #34A853; }
   button, input, select, textarea, a { font-family: var(--font); }
   code { font-family: var(--font); font-weight: 500; font-size: 0.92em; background: var(--g-grey-bg); color: #3C4043; padding: 1px 6px; border-radius: 4px; letter-spacing: 0.01em; }
   h1 { font-size: 18px; font-weight: 500; color: #202124; margin-bottom: 14px; letter-spacing: 0; }
@@ -257,7 +249,6 @@
 </style>
 </head>
 <body>
-<div class="g-strip"><span class="gs-b"></span><span class="gs-r"></span><span class="gs-y"></span><span class="gs-g"></span></div>
 <div class="topbar">
   <h1 style="display:flex; align-items:center; gap:10px;">
     <img src="favicon.svg" alt="" width="32" height="32" style="vertical-align:middle; flex-shrink:0;">
@@ -437,9 +428,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.6.3';
+const APP_VERSION = '0.6.4';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '分頁配色調整：A 藍 / B 黃 / C 綠 / D 紅（panel 上端アクセントも連動）';
+const APP_NOTE  = '頂部 4 色帶を撤去';
 
 // ===== Tab switch =====
 function show(id, e) {
