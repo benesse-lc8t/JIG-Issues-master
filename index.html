@@ -235,20 +235,34 @@
   .toggle.no-children { visibility: hidden; }
   /* Issue 行：薄い地色で「主な行」と認識させる */
   tr.issue-row { background: #F4F7FB; }
-  /* Mission 行：白＋約 70% の行高（padding と line-height を更に控えめに） */
-  tr.mission-row { background: #FFFFFF; }
-  tr.mission-row td { padding-top: 2px; padding-bottom: 2px; line-height: 1.2; font-size: 11px; }
+  /* Mission 行：白＋約 60% の行高、フォントもより小さく */
+  tr.mission-row { background: #FFFFFF; color: var(--g-grey); }
+  tr.mission-row td { padding-top: 1px; padding-bottom: 1px; line-height: 1.3; font-size: 10px; }
   tr.mission-row.hidden { display: none; }
-  tr.mission-row .num { color: var(--g-grey); font-weight: 500; font-size: 10px; }
-  /* Mission 行のラベル先頭マークを ↳ → ▶ に。位置も右寄せに */
-  tr.mission-row .lbl { font-size: 11px; color: #3C4043; padding-left: 28px; position: relative; }
+  tr.mission-row .num { font-weight: 500; font-size: 9px; color: inherit; }
+  tr.mission-row .lbl { font-size: 10px; padding-left: 28px; position: relative; color: inherit; }
   tr.mission-row .lbl::before { content: '▶'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #9AA0A6; font-size: 7px; }
-  /* Mission 行の處セルは色塗りなし（白）にして親階層の主張を弱める */
+  /* Mission 行のすべてのテキストセルが TR の color を継承するように */
+  tr.mission-row .dept,
+  tr.mission-row .pc,
+  tr.mission-row .memo { color: inherit; }
+  /* Mission 行の處セルは色塗りなし（白）。文字色は TR から継承 */
   tr.mission-row td[class*="dept-c-"] {
     background: #FFFFFF !important;
-    color: var(--g-grey);
-    font-weight: 400;
+    color: inherit;
+    font-weight: 500;
   }
+  /* Mission 行の Confluence セルも白（淡青の地色を解除） */
+  tr.mission-row td.conf { background: #FFFFFF; }
+  tr.mission-row .conf a { color: inherit; }
+  /* Mission 行の文字色を親 Issue の處（部門）色に合わせる */
+  tr.mission-row.mc-blue   { color: #1967D2; }
+  tr.mission-row.mc-green  { color: #137333; }
+  tr.mission-row.mc-yellow { color: #B06000; }
+  tr.mission-row.mc-red    { color: #B31412; }
+  tr.mission-row.mc-purple { color: #7026A6; }
+  tr.mission-row.mc-teal   { color: #00838F; }
+  tr.mission-row.mc-grey   { color: #5F6368; }
 
   /* Print */
   @media print {
@@ -441,9 +455,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.8.3';
+const APP_VERSION = '0.8.4';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'Mission 行を更に控えめに：行高 70%、↳ → ▶（右に寄せて配置）、處セルの色塗りを白に。';
+const APP_NOTE  = 'Mission 行：行高 60%・font 10px、文字色を親 Issue の處色に同期、Confluence 地色も白に。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -705,7 +719,9 @@ function renderRow(r, opts) {
     r['管理頁面'], r['確認會議'], r['事務局備註']
   ].map(v => (v||'').toString().toLowerCase()).join(' ');
 
-  const cls = isMission ? 'mission-row hidden' : 'issue-row';
+  // Mission 行には親 Issue の處色を文字色として反映するため mc-* クラスを付与
+  const deptColorKey = deptColorClass(dept).replace('dept-c-', ''); // 'blue' / 'green' ...
+  const cls = isMission ? `mission-row hidden mc-${deptColorKey}` : 'issue-row';
   let trAttrs = ` class="${cls}"`;
   if (isMission) trAttrs += ` data-parent="${escapeAttr(parentNum)}"`;
   trAttrs += ` data-dept="${escapeAttr(dept)}" data-group="${escapeAttr(grp)}" data-owner="${escapeAttr(owner)}" data-search="${escapeAttr(searchStr)}"`;
