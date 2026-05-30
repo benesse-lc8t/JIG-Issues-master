@@ -189,16 +189,16 @@
   .st-type-mission  { background: #E8F0FE; color: #1967D2; border: 1px dashed #4285F4; }
 
   /* Tab A controls bar */
-  .ctrl-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; background: var(--hdr-bg); border-bottom: 1px solid var(--border); font-size: 12px; }
-  .ctrl-bar input[type="search"], .ctrl-bar select { padding: 6px 10px; font-size: 12px; border: 1px solid var(--border); border-radius: 4px; background: #fff; font-family: inherit; color: #202124; transition: border-color 0.15s; }
+  .ctrl-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 7px 9px; background: var(--hdr-bg); border-bottom: 1px solid var(--border); font-size: 9px; }
+  .ctrl-bar input[type="search"], .ctrl-bar select { padding: 4px 7px; font-size: 9px; border: 1px solid var(--border); border-radius: 3px; background: #fff; font-family: inherit; color: #202124; transition: border-color 0.15s; height: 24px; }
   .ctrl-bar input[type="search"]:focus, .ctrl-bar select:focus { outline: none; border-color: var(--g-blue); box-shadow: 0 0 0 2px var(--g-blue-bg); }
-  .ctrl-bar input[type="search"] { min-width: 220px; }
-  .ctrl-bar label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; color: #3C4043; }
-  .ctrl-bar input[type="checkbox"] { accent-color: var(--g-blue); }
-  .ctrl-bar .ctrl-sep { width: 1px; height: 18px; background: var(--border); margin: 0 4px; }
-  .ctrl-bar .ctrl-clear { padding: 6px 12px; font-size: 11px; font-weight: 500; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: pointer; color: var(--g-grey); transition: all 0.15s; }
+  .ctrl-bar input[type="search"] { min-width: 150px; }
+  .ctrl-bar label { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; color: #3C4043; font-size: 9px; }
+  .ctrl-bar input[type="checkbox"] { accent-color: var(--g-blue); width: 11px; height: 11px; }
+  .ctrl-bar .ctrl-sep { width: 1px; height: 13px; background: var(--border); margin: 0 3px; }
+  .ctrl-bar .ctrl-clear { padding: 4px 8px; font-size: 8px; font-weight: 500; border: 1px solid var(--border); border-radius: 3px; background: #fff; cursor: pointer; color: var(--g-grey); transition: all 0.15s; height: 24px; line-height: 1; }
   .ctrl-bar .ctrl-clear:hover { background: var(--g-grey-bg); color: #202124; }
-  .ctrl-bar .ctrl-count { margin-left: auto; font-size: 11px; color: var(--g-grey); }
+  .ctrl-bar .ctrl-count { margin-left: auto; font-size: 8px; color: var(--g-grey); }
   .row-hidden { display: none !important; }
 
   /* Confluence cell（管理頁面の位置に配置） */
@@ -480,9 +480,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.8.6';
+const APP_VERSION = '0.8.7';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '上部に「全部展開/全部收合」ボタンを追加：1 クリックで全 Mission を一括表示／非表示。';
+const APP_NOTE  = 'コントロールバーの全要素を約 70% に縮小（フィルタ・ボタン・チェックボックス・セパレータ）。';
 
 // ===== Tab switch =====
 function show(id, e) {
