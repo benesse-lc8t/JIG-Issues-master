@@ -61,12 +61,18 @@
   .tab { padding: 7px 18px; cursor: pointer; font-size: 10px; font-weight: 500; border: 1px solid var(--border); border-bottom: none; border-radius: 6px 6px 0 0; background: #F8F9FA; color: #5F6368; transition: all 0.15s; letter-spacing: 0.01em; }
   .tab:hover { background: #F1F3F4; color: #202124; }
   .tab.active { font-weight: 700; box-shadow: 0 -2px 8px rgba(0,0,0,0.08); transform: translateY(-1px); }
-  .tab.active:nth-child(1) { background: #4285F4; color: #fff;     border-color: #1A73E8; }
-  .tab.active:nth-child(2) { background: #FBBC04; color: #202124; border-color: #F9AB00; }
-  .tab.active:nth-child(3) { background: #34A853; color: #fff;     border-color: #1E8E3E; }
-  .tab.active:nth-child(4) { background: #EA4335; color: #fff;     border-color: #D93025; }
-  .tab.active:nth-child(5) { background: #9334E6; color: #fff;     border-color: #8430CE; }
-  .tab.active:nth-child(6) { background: #00ACC1; color: #fff;     border-color: #00838F; }
+  .tab.active:nth-child(1) { background: #4285F4; color: #fff;     border-color: #1A73E8; } /* Issue & Mission */
+  .tab.active:nth-child(2) { background: #FBBC04; color: #202124; border-color: #F9AB00; } /* 會議議程 */
+  .tab.active:nth-child(3) { background: #34A853; color: #fff;     border-color: #1E8E3E; } /* 停滯警報 */
+  .tab.active:nth-child(4) { background: #00ACC1; color: #fff;     border-color: #00838F; } /* 儀表板 */
+
+  /* topbar 右肩のアクション群（管理者ボタンと人物ボタンを縦に並べる） */
+  .topbar-actions { display: flex; flex-direction: column; gap: 4px; align-items: stretch; }
+  .person-btns { display: flex; gap: 4px; }
+  .person-btn { flex: 1; padding: 4px 10px; font-size: 10px; font-weight: 500; border: 1px solid var(--border); border-radius: 4px; background: #fff; color: #5F6368; cursor: pointer; white-space: nowrap; transition: all 0.15s; font-family: inherit; }
+  .person-btn:hover { background: #F1F3F4; color: #202124; }
+  .person-btn.btn-shiya.active  { background: #FCE8E6; color: #B31412; border-color: #EA4335; }
+  .person-btn.btn-yuling.active { background: #F3E8FD; color: #7026A6; border-color: #9334E6; }
 
   /* Panel：active タブと連動した色アクセントを上端に持たせる */
   #panel-A.active { border-top: 3px solid #4285F4; }
@@ -354,16 +360,20 @@
     <img src="favicon.svg" alt="" width="32" height="32" style="vertical-align:middle; flex-shrink:0;">
     <span>TBBS-經營Issue管理系統<span class="ver" id="verBadge" title="">v?.?.?</span></span>
   </h1>
-  <button id="adminBtn" class="admin-btn" onclick="show('Admin',event)" title="僅供管理者使用：資料來源設定">⚙ 管理者專用</button>
+  <div class="topbar-actions">
+    <button id="adminBtn" class="admin-btn" onclick="show('Admin',event)" title="僅供管理者使用：資料來源設定">⚙ 管理者專用</button>
+    <div class="person-btns">
+      <button type="button" class="person-btn btn-shiya" onclick="show('D',event)" title="詩雅の Mission を表示">👤 詩雅</button>
+      <button type="button" class="person-btn btn-yuling" onclick="show('E',event)" title="育菱の Mission を表示">👤 育菱</button>
+    </div>
+  </div>
 </div>
 
 <div class="tabs">
-  <div class="tab active" onclick="show('A',event)">A：Issue &amp; Mission</div>
-  <div class="tab" onclick="show('B',event)">B：會議議程</div>
-  <div class="tab" onclick="show('C',event)">C：停滯警報</div>
-  <div class="tab" onclick="show('D',event)">D：詩雅</div>
-  <div class="tab" onclick="show('E',event)">E：育菱</div>
-  <div class="tab" onclick="show('F',event)">F：儀表板</div>
+  <div class="tab active" onclick="show('A',event)">Issue &amp; Mission</div>
+  <div class="tab" onclick="show('B',event)">會議議程</div>
+  <div class="tab" onclick="show('C',event)">停滯警報</div>
+  <div class="tab" onclick="show('F',event)">儀表板</div>
 </div>
 
 <!-- ===== A ===== -->
@@ -489,18 +499,9 @@
   </table>
 </div>
 
-<!-- ===== F：儀表板 ===== -->
+<!-- ===== F：儀表板（Mission 専用） ===== -->
 <div class="panel" id="panel-F">
   <div class="dash-container">
-    <div class="dash-section">
-      <h3>Issue 概況</h3>
-      <div class="dash-grid">
-        <div class="dash-card dash-blue"><div class="dash-num" id="dashIssueTotal">-</div><div class="dash-label">Issue 總數</div></div>
-        <div class="dash-card dash-grey"><div class="dash-num" id="dashIssueNotStarted">-</div><div class="dash-label">未開始</div></div>
-        <div class="dash-card dash-yellow"><div class="dash-num" id="dashIssueWip">-</div><div class="dash-label">進行中</div></div>
-        <div class="dash-card dash-green"><div class="dash-num" id="dashIssueDone">-</div><div class="dash-label">完成</div></div>
-      </div>
-    </div>
     <div class="dash-section">
       <h3>Mission 概況</h3>
       <div class="dash-grid">
@@ -512,7 +513,7 @@
       </div>
     </div>
     <div class="dash-section">
-      <h3>停滞</h3>
+      <h3>停滯</h3>
       <div class="dash-grid">
         <div class="dash-card dash-red"><div class="dash-num" id="dashStalled14">-</div><div class="dash-label">&gt;14 天無更新</div></div>
         <div class="dash-card dash-yellow"><div class="dash-num" id="dashStalled7">-</div><div class="dash-label">8-14 天無更新</div></div>
@@ -520,16 +521,16 @@
       </div>
     </div>
     <div class="dash-section">
-      <h3>部門別 Issue 件數</h3>
-      <div class="dash-bars dash-bar-bd" id="dashDeptBars"></div>
-    </div>
-    <div class="dash-section">
-      <h3>戰略負責人別 Issue 件數</h3>
-      <div class="dash-bars dash-bar-gn" id="dashOwnerBars"></div>
-    </div>
-    <div class="dash-section">
       <h3>擔當別 Mission 件數</h3>
-      <div class="dash-bars dash-bar-rd" id="dashMissionOwnerBars"></div>
+      <div class="dash-bars dash-bar-bd" id="dashMissionOwnerBars"></div>
+    </div>
+    <div class="dash-section">
+      <h3>部門別 Mission 件數</h3>
+      <div class="dash-bars dash-bar-gn" id="dashMissionDeptBars"></div>
+    </div>
+    <div class="dash-section">
+      <h3>親 Issue 別 Mission 件數</h3>
+      <div class="dash-bars dash-bar-rd" id="dashMissionParentBars"></div>
     </div>
   </div>
 </div>
@@ -565,14 +566,14 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.9.3';
+const APP_VERSION = '0.9.4';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'B/C/D/E に「親 Issue」列を追加（連続する同じ親は最上行のみ表示）。タブ名 B/C/F を繁體中文に：會議議程／停滯警報／儀表板。';
+const APP_NOTE  = 'タブ整理：A〜F記号を削除、4 タブ構成に。詩雅・育菱は右肩のボタンに退避。儀表板も Mission 専用に。';
 
 // ===== Tab switch =====
 function show(id, e) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab, .person-btn').forEach(t => t.classList.remove('active'));
   const admin = document.getElementById('adminBtn');
   if (admin) admin.classList.remove('active');
   document.getElementById('panel-' + id).classList.add('active');
@@ -1235,35 +1236,32 @@ function renderPersonView(panelKey, personName) {
 
 // ===== Tab F：儀表板 =====
 function renderTabF() {
-  let issueTotal = 0, issueDone = 0, issueWip = 0, issueNotStarted = 0;
+  // Mission only — Issue 集計は廃止
   let missionTotal = 0, missionDone = 0, missionWip = 0, missionNotStarted = 0, missionNoOwner = 0;
   let stalled14 = 0, stalled7 = 0, noDate = 0;
-  const deptCounts = {};
-  const ownerCounts = {};      // 戰略負責人 (Issue)
-  const missionOwnerCounts = {}; // 擔當 (Mission)
+  const missionOwnerCounts = {};   // 擔當
+  const missionDeptCounts  = {};   // 親 Issue の 處
+  const missionParentCounts = {};  // 親 Issue 名（編號 + Issue タイトル）
+  const issueMap = buildIssueMap();
   const today = new Date(); today.setHours(0,0,0,0);
 
   issueData.forEach(r => {
-    const t = r['種別']||'Issue';
-    const isMission = (t === 'Mission' || t === 'Task');
+    if (!isMissionDatum(r)) return;
+    missionTotal++;
     const status = (r['狀態']||'').trim();
-    if (isMission) {
-      missionTotal++;
-      if (status === '完成') missionDone++;
-      else if (status === '進行中') missionWip++;
-      else missionNotStarted++; // '未開始' または空欄
-      const own = (r['擔當']||'').trim();
-      if (!own) missionNoOwner++;
-      else missionOwnerCounts[own] = (missionOwnerCounts[own]||0)+1;
-    } else {
-      issueTotal++;
-      if (status === '完成') issueDone++;
-      else if (status === '進行中') issueWip++;
-      else issueNotStarted++;
-      const dept = (r['處']||'').trim();
-      if (dept) deptCounts[dept] = (deptCounts[dept]||0)+1;
-      const owner = (r['戰略負責人']||'').trim();
-      if (owner) ownerCounts[owner] = (ownerCounts[owner]||0)+1;
+    if (status === '完成') missionDone++;
+    else if (status === '進行中') missionWip++;
+    else missionNotStarted++; // '未開始' または空欄
+    const own = (r['擔當']||'').trim();
+    if (!own) missionNoOwner++;
+    else missionOwnerCounts[own] = (missionOwnerCounts[own]||0)+1;
+    const dept = (r['處']||'').trim();
+    if (dept) missionDeptCounts[dept] = (missionDeptCounts[dept]||0)+1;
+    const parentNum = (r['親編號']||'').trim();
+    if (parentNum) {
+      const parentRow = issueMap.get(parentNum);
+      const label = parentRow ? `${parentNum} ${parentRow['Issue']||''}` : parentNum;
+      missionParentCounts[label] = (missionParentCounts[label]||0)+1;
     }
     const upd = parseDateLoose(r['更新日']);
     if (!upd) noDate++;
@@ -1276,10 +1274,6 @@ function renderTabF() {
   });
 
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  set('dashIssueTotal', issueTotal);
-  set('dashIssueDone', issueDone);
-  set('dashIssueWip', issueWip);
-  set('dashIssueNotStarted', issueNotStarted);
   set('dashMissionTotal', missionTotal);
   set('dashMissionDone', missionDone);
   set('dashMissionWip', missionWip);
@@ -1303,9 +1297,9 @@ function renderTabF() {
       </div>
     `).join('');
   }
-  renderBars('dashDeptBars', deptCounts);
-  renderBars('dashOwnerBars', ownerCounts);
-  renderBars('dashMissionOwnerBars', missionOwnerCounts);
+  renderBars('dashMissionOwnerBars',  missionOwnerCounts);
+  renderBars('dashMissionDeptBars',   missionDeptCounts);
+  renderBars('dashMissionParentBars', missionParentCounts);
 }
 
 function renderAll() {
