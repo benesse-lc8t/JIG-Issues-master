@@ -777,9 +777,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.10.1';
+const APP_VERSION = '0.10.2';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '編集 API URL を埋め込み・本番有効化（インライン編集が動作）。';
+const APP_NOTE  = '保存応答の検証強化：doPost が確実に動いたか確認するため、応答に mission フィールドが無ければ警告。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1294,16 +1294,25 @@ async function saveMissionEdit(missionId, fields) {
     toast('編集機能 未配置：管理者に Web App URL の設定を依頼してください', 'error');
     return null;
   }
+  const payload = { token: WRITE_TOKEN, mission: missionId, ...fields };
   try {
     const res = await fetch(SHEET_WRITE_URL, {
       method: 'POST',
       // CORS preflight を避けるため text/plain で送る（中身は JSON 文字列）
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ token: WRITE_TOKEN, mission: missionId, ...fields }),
+      body: JSON.stringify(payload),
       redirect: 'follow',
     });
     const text = await res.text();
     let data; try { data = JSON.parse(text); } catch (_) { data = { ok: false, error: 'bad_response', raw: text }; }
+    console.info('[saveMissionEdit] response:', { status: res.status, url: res.url, data, payload });
+    // doPost の応答には mission フィールドが含まれる。これが無いのに ok:true なら、
+    // doPost ではなく doGet（service 情報）が返ってきている = 書き込み未実行
+    if (data.ok && !data.mission) {
+      toast('應答は ok だが書き込み未確認（doGet が返った可能性）。DevTools Console を確認', 'error');
+      console.warn('[saveMissionEdit] suspicious response (ok but no mission field):', data);
+      return null;
+    }
     if (!data.ok) {
       toast(`儲存失敗：${data.error || 'unknown'}`, 'error');
       console.warn('[saveMissionEdit] failed:', data);
