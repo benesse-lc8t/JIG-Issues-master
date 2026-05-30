@@ -398,18 +398,18 @@
 </table>
 </div>
 
-<!-- ===== B：會議アジェンダ ===== -->
+<!-- ===== B：會議アジェンダ（Mission 専用） ===== -->
 <div class="panel" id="panel-B">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    確認會議ごとに Issue を曜日・時間順に並べた、会議週次アジェンダ
+    確認會議ごとに <b>Mission</b> を曜日・時間順に並べた、會議週次アジェンダ
   </div>
   <table class="simple-table">
     <thead>
       <tr>
-        <th style="width:74px;">編號</th>
-        <th>Issue</th>
+        <th style="width:90px;">編號</th>
+        <th>Mission</th>
         <th style="width:80px;">處</th>
-        <th style="width:70px;">負責人</th>
+        <th style="width:70px;">擔當</th>
         <th style="width:74px;">狀態</th>
         <th style="min-width:120px;">備註</th>
         <th style="width:56px;">更新</th>
@@ -419,19 +419,18 @@
   </table>
 </div>
 
-<!-- ===== C：停滞警報 ===== -->
+<!-- ===== C：停滞警報（Mission 専用） ===== -->
 <div class="panel" id="panel-C">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    更新日が古い順に並べた停滞リスト（>14 日 赤・>7 日 黃・未設定 灰）
+    更新日が古い順に並べた <b>Mission</b> 停滞リスト（>14 日 赤・>7 日 黃・未設定 灰）
   </div>
   <table class="simple-table">
     <thead>
       <tr>
-        <th style="width:64px;">種別</th>
         <th style="width:90px;">編號</th>
-        <th>Issue / Mission</th>
+        <th>Mission</th>
         <th style="width:80px;">處</th>
-        <th style="width:70px;">負責人</th>
+        <th style="width:70px;">擔當</th>
         <th style="min-width:140px;">備註</th>
         <th style="width:74px;">狀態</th>
         <th style="width:56px;">更新</th>
@@ -441,16 +440,16 @@
   </table>
 </div>
 
-<!-- ===== D：詩雅 ===== -->
+<!-- ===== D：詩雅（Mission 専用） ===== -->
 <div class="panel" id="panel-D">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    詩雅が <b>戰略負責人</b> または <b>擔當</b> として割り当てられている Issue / Mission
+    詩雅が <b>擔當</b> として割り当てられている <b>Mission</b>
   </div>
   <table class="simple-table">
     <thead>
       <tr>
         <th style="width:90px;">編號</th>
-        <th>Issue / Mission</th>
+        <th>Mission</th>
         <th style="width:80px;">處</th>
         <th style="min-width:140px;">備註</th>
         <th style="width:74px;">狀態</th>
@@ -461,16 +460,16 @@
   </table>
 </div>
 
-<!-- ===== E：育菱 ===== -->
+<!-- ===== E：育菱（Mission 専用） ===== -->
 <div class="panel" id="panel-E">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    育菱が <b>戰略負責人</b> または <b>擔當</b> として割り当てられている Issue / Mission
+    育菱が <b>擔當</b> として割り当てられている <b>Mission</b>
   </div>
   <table class="simple-table">
     <thead>
       <tr>
         <th style="width:90px;">編號</th>
-        <th>Issue / Mission</th>
+        <th>Mission</th>
         <th style="width:80px;">處</th>
         <th style="min-width:140px;">備註</th>
         <th style="width:74px;">狀態</th>
@@ -557,9 +556,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.9.1';
+const APP_VERSION = '0.9.2';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'B/C/D/E/F タブを再編：B=會議アジェンダ、C=停滞警報、D=詩雅、E=育菱、F=Dashboard。Admin は ⚙ ボタン専用に。';
+const APP_NOTE  = 'B / C / D / E を Mission 専用ビューに：会議・停滞・1on1 の文脈は全て Mission（実行ユニット）に絞って表示。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1059,13 +1058,15 @@ function toggleAllMissions() {
 }
 
 // ===== 共通ヘルパー：行データから 1 行の HTML を組み立てる（簡易表形式） =====
+// opts.ownerField: '戰略負責人' or '擔當'（既定 '戰略負責人'）
 function simpleRow(r, opts) {
   opts = opts || {};
   const isMission = ((r['種別']||'Issue') === 'Mission' || (r['種別']||'') === 'Task');
   const num = (r['編號']||'').trim();
   const dept = (r['處']||'').trim();
   const remark = (r['事務局備註']||'').trim();
-  const owner = (r['戰略負責人']||'').trim();
+  const ownerField = opts.ownerField || '戰略負責人';
+  const owner = (r[ownerField]||'').trim();
   const cls = opts.rowClass || '';
   let h = `<tr${cls ? ` class="${cls}"` : ''}>`;
   if (opts.showType) {
@@ -1093,15 +1094,19 @@ function simpleRow(r, opts) {
   return h;
 }
 
-// ===== Tab B：會議アジェンダ（會議ごとに Issue を曜日順に並べる）=====
+function isMissionDatum(r) {
+  const t = r['種別'] || 'Issue';
+  return t === 'Mission' || t === 'Task';
+}
+
+// ===== Tab B：會議アジェンダ（Mission を確認會議ごとに曜日順）=====
 function renderTableB() {
   const tbody = document.querySelector('#panel-B tbody');
   if (!tbody) return;
   const meetMap = new Map();
   issueData.forEach(r => {
-    const t = r['種別']||'Issue';
-    if (t === 'Mission' || t === 'Task') return; // Issue のみ
-    const meeting = (r['確認會議']||'').trim() || '（未設定）';
+    if (!isMissionDatum(r)) return; // Mission のみ
+    const meeting = (r['確認會議']||'').trim() || '（會議未設定）';
     const time = (r['會議時間']||'').trim();
     const key = `${meeting}|${time}`;
     if (!meetMap.has(key)) {
@@ -1117,26 +1122,30 @@ function renderTableB() {
   let html = '';
   meets.forEach(g => {
     html += `<tr class="mtg-header"><th colspan="7">📅 ${escapeHtml(g.meeting)}<span class="mtg-time">${escapeHtml(g.time)}</span> · ${g.items.length} 件</th></tr>`;
-    g.items.forEach(r => { html += simpleRow(r, {}); });
+    g.items.forEach(r => {
+      html += simpleRow(r, { ownerField: '擔當', showParentHint: true });
+    });
   });
-  if (!html) html = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#999;">會議が未設定の Issue のみのため、表示できる項目はありません</td></tr>';
+  if (!html) html = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#999;">Mission がまだ登録されていません</td></tr>';
   tbody.innerHTML = html;
 }
 
-// ===== Tab C：停滞警報（更新日が古い順）=====
+// ===== Tab C：停滞警報（Mission を更新日が古い順に）=====
 function renderTableC() {
   const tbody = document.querySelector('#panel-C tbody');
   if (!tbody) return;
   const today = new Date(); today.setHours(0,0,0,0);
-  const decorated = issueData.map(r => {
-    const upd = parseDateLoose(r['更新日']);
-    let days = null;
-    if (upd) {
-      upd.setHours(0,0,0,0);
-      days = Math.floor((today - upd) / 86400000);
-    }
-    return { row: r, days };
-  });
+  const decorated = issueData
+    .filter(isMissionDatum)
+    .map(r => {
+      const upd = parseDateLoose(r['更新日']);
+      let days = null;
+      if (upd) {
+        upd.setHours(0,0,0,0);
+        days = Math.floor((today - upd) / 86400000);
+      }
+      return { row: r, days };
+    });
   // 並べ替え：更新日が古い順（>14日 → >7日 → ≤7日 → 未設定 を最後）
   decorated.sort((a, b) => {
     if (a.days === null && b.days === null) return 0;
@@ -1149,44 +1158,27 @@ function renderTableC() {
     const rowClass = days != null && days > 14 ? 'stalled-red'
                    : days != null && days > 7  ? 'stalled-yellow'
                    : '';
-    html += simpleRow(r, { showType: true, showParentHint: true, rowClass });
+    html += simpleRow(r, { ownerField: '擔當', showParentHint: true, rowClass });
   });
-  if (!html) html = '<tr><td colspan="8" style="text-align:center; padding:30px; color:#999;">資料無し</td></tr>';
+  if (!html) html = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#999;">Mission がまだ登録されていません</td></tr>';
   tbody.innerHTML = html;
 }
 
-// ===== Tab D / E：特定担当者の Issue / Mission 一覧 =====
+// ===== Tab D / E：特定担当者が 擔當 の Mission 一覧 =====
 function renderPersonView(panelKey, personName) {
   const tbody = document.querySelector(`#panel-${panelKey} tbody`);
   if (!tbody) return;
-  const issuesOwned = [];
-  const missionsOwned = [];
-  const issueByNum = new Map();
-  issueData.forEach(r => {
-    const t = r['種別']||'Issue';
-    if (t === 'Mission' || t === 'Task') {
-      if ((r['擔當']||'').trim() === personName) missionsOwned.push(r);
-    } else {
-      issueByNum.set((r['編號']||'').trim(), r);
-      const o = (r['戰略負責人']||'').trim();
-      if (o === personName) issuesOwned.push(r);
-    }
-  });
+  const missionsOwned = issueData.filter(r =>
+    isMissionDatum(r) && (r['擔當']||'').trim() === personName
+  );
   let html = '';
-  if (issuesOwned.length) {
-    html += `<tr class="sec-row"><th colspan="6">★ Issue（戰略負責人 = ${escapeHtml(personName)}）· ${issuesOwned.length} 件</th></tr>`;
-    issuesOwned.forEach(r => {
-      html += simpleRow(r, { showOwner: false, showRemark: true });
-    });
-  }
   if (missionsOwned.length) {
     html += `<tr class="sec-row"><th colspan="6">▶ Mission（擔當 = ${escapeHtml(personName)}）· ${missionsOwned.length} 件</th></tr>`;
     missionsOwned.forEach(r => {
       html += simpleRow(r, { showOwner: false, showRemark: true, showParentHint: true });
     });
-  }
-  if (!html) {
-    html = `<tr><td colspan="6" style="text-align:center; padding:30px; color:#999;">${escapeHtml(personName)} が擔當 / 戰略負責人 として割り当てられている Issue / Mission はありません</td></tr>`;
+  } else {
+    html = `<tr><td colspan="6" style="text-align:center; padding:30px; color:#999;">${escapeHtml(personName)} が擔當 として割り当てられている Mission はありません</td></tr>`;
   }
   tbody.innerHTML = html;
 }
