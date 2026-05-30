@@ -179,12 +179,12 @@
 
   /* Status badge (Tab A) — solid fill / pill shape */
   .st { text-align: center; font-size: 11px; font-weight: 500; white-space: nowrap; }
-  .st-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-weight: 700; font-size: 11px; line-height: 1.4; letter-spacing: 0.02em; }
+  .st-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 10px; line-height: 1.35; letter-spacing: 0.02em; }
   .st-未開始 { background: #9AA0A6; color: #fff; }
   .st-進行中 { background: #4285F4; color: #fff; }
   .st-完成   { background: #34A853; color: #fff; }
   /* 空欄時は行種別バッジで埋める（欠落ではなく未評価と分かる） */
-  .st-type   { display: inline-block; padding: 2px 8px; border-radius: 12px; font-weight: 700; font-size: 10px; line-height: 1.4; letter-spacing: 0.05em; }
+  .st-type   { display: inline-block; padding: 1px 6px; border-radius: 10px; font-weight: 700; font-size: 9px; line-height: 1.35; letter-spacing: 0.05em; }
   .st-type-issue { background: #E6F4EA; color: #137333; border: 1px dashed #34A853; }
   .st-type-mission  { background: #E8F0FE; color: #1967D2; border: 1px dashed #4285F4; }
 
@@ -264,6 +264,30 @@
   tr.mission-row.mc-teal   { color: #00838F; }
   tr.mission-row.mc-grey   { color: #5F6368; }
 
+  /* Mission 編號をバッジ風に（親處色で塗りつぶし＋白文字） */
+  tr.mission-row .m-num-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: #fff;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  tr.mission-row.mc-blue   .m-num-badge { background: #4285F4; }
+  tr.mission-row.mc-green  .m-num-badge { background: #34A853; }
+  tr.mission-row.mc-yellow .m-num-badge { background: #F9AB00; color: #202124; }
+  tr.mission-row.mc-red    .m-num-badge { background: #EA4335; }
+  tr.mission-row.mc-purple .m-num-badge { background: #9334E6; }
+  tr.mission-row.mc-teal   .m-num-badge { background: #00ACC1; }
+  tr.mission-row.mc-grey   .m-num-badge { background: #9AA0A6; }
+
+  /* Mission の狀態バッジを更に小さく */
+  tr.mission-row .st-badge { padding: 1px 6px; font-size: 9px; border-radius: 8px; }
+  tr.mission-row .st-type  { padding: 0 5px;  font-size: 8px; border-radius: 8px; }
+
   /* Print */
   @media print {
     .tabs, .admin-btn { display: none; }
@@ -297,12 +321,12 @@
   <select id="filterGroupA"><option value="">組：全部</option></select>
   <select id="filterOwnerA"><option value="">擔當：全部</option></select>
   <span class="ctrl-sep"></span>
-  <label><input type="checkbox" id="toggleMtgA" checked>顯示會議欄</label>
+  <label><input type="checkbox" id="toggleMtgA">顯示會議欄</label>
   <span class="ctrl-sep"></span>
   <button type="button" class="ctrl-clear" id="clearFilterA">清除</button>
   <span class="ctrl-count" id="filterCountA"></span>
 </div>
-<table id="tableA">
+<table id="tableA" class="hide-mtg">
 <thead>
   <tr>
     <th style="width:74px;">編號</th>
@@ -455,9 +479,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.8.4';
+const APP_VERSION = '0.8.5';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'Mission 行：行高 60%・font 10px、文字色を親 Issue の處色に同期、Confluence 地色も白に。';
+const APP_NOTE  = 'Mission 編號をバッジ化、Issue/Mission 狀態バッジを縮小、Mission 行の處・組は空欄に、會議列はデフォルト非表示。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -726,17 +750,27 @@ function renderRow(r, opts) {
   if (isMission) trAttrs += ` data-parent="${escapeAttr(parentNum)}"`;
   trAttrs += ` data-dept="${escapeAttr(dept)}" data-group="${escapeAttr(grp)}" data-owner="${escapeAttr(owner)}" data-search="${escapeAttr(searchStr)}"`;
 
+  // Mission 行は編號をバッジ表示（親處色で塗りつぶし）
+  const numHtml = isMission
+    ? `<span class="m-num-badge">${escapeHtml(num)}</span>`
+    : escapeHtml(num);
+
   let h = `<tr${trAttrs}>`;
-  h += `<td class="num num-cell"><span class="${toggleCls}"${toggleAttr}>${toggleSym}</span>${escapeHtml(num)}</td>`; // 1 編號
+  h += `<td class="num num-cell"><span class="${toggleCls}"${toggleAttr}>${toggleSym}</span>${numHtml}</td>`; // 1 編號
   h += `<td class="lbl">${escapeHtml(r['Issue'])}</td>`;                                   // 2 Issue / Mission
-  h += `<td class="dept ${deptColorClass(dept)}">${escapeHtml(dept)}</td>`;                // 3 處（部門色分け）
-  h += `<td class="dept">${escapeHtml(grp)}</td>`;                                         // 4 組
-  h += `<td class="dept">${escapeHtml(owner)}</td>`;                                       // 5 擔當（新規）
+  if (isMission) {
+    // Mission 行では 處・組 列を空欄に（親 Issue の情報を二重表示しない）
+    h += '<td></td><td></td>';                                                              // 3 處 / 4 組（空）
+  } else {
+    h += `<td class="dept ${deptColorClass(dept)}">${escapeHtml(dept)}</td>`;              // 3 處（部門色分け）
+    h += `<td class="dept">${escapeHtml(grp)}</td>`;                                       // 4 組
+  }
+  h += `<td class="dept">${escapeHtml(owner)}</td>`;                                       // 5 擔當
   h += `<td class="dept">${escapeHtml(r['戰略負責人'])}</td>`;                             // 6 戰略負責人
   h += confluenceCell(r['管理頁面'], r['Confluence URL']);                                  // 7 Confluence
   h += `<td class="pc mtg-col">${escapeHtml(r['確認會議'])}</td>`;                          // 8 確認會議
   h += `<td class="pc mtg-col">${escapeHtml(r['會議時間'])}</td>`;                          // 9 會議時間
-  h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;                             // 10 狀態
+  h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;                          // 10 狀態
   h += `<td class="memo">${escapeHtml(r['事務局備註'])}</td>`;                              // 11 備註
   h += freshnessCell(r['更新日']);                                                          // 12 更新
   h += '</tr>';
