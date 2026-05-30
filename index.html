@@ -480,9 +480,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.8.8';
+const APP_VERSION = '0.8.9';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'テーブルヘッダ行を一段濃く（背景 #E8EAED、文字 #202124、太字）。視認性向上。';
+const APP_NOTE  = '更新日の解析を堅牢化：Sheets 日付ピッカーが出す M/D/YYYY、D/M/YYYY、YYYY年M月D日、Excel シリアル値などに対応。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -643,19 +643,47 @@ function statusBadge(s, isMission) {
 }
 
 // 更新日：今日からの経過日数で色変化（≤7d 通常 / 8-14d 黄 / >14d 赤）
-function freshnessCell(dateStr) {
-  const v = (dateStr || '').trim();
-  if (!v) return '<td class="upd"></td>';
-  // 受け付ける形式：YYYY-MM-DD, YYYY/MM/DD, M/D, etc.
-  let d = null;
-  const m = v.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
-  if (m) d = new Date(+m[1], +m[2]-1, +m[3]);
-  else {
-    const p = Date.parse(v);
-    if (!isNaN(p)) d = new Date(p);
+// Sheets の日付ピッカーが出す多種の形式に対応
+function parseDateLoose(v) {
+  if (v == null) return null;
+  v = String(v).trim();
+  if (!v) return null;
+  let m;
+  // YYYY-MM-DD / YYYY/MM/DD（時刻が後ろに付いても可）
+  m = v.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  // M/D/YYYY または D/M/YYYY（Sheets ピッカーの既定出力）
+  m = v.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);
+  if (m) {
+    const a = +m[1], b = +m[2], y = +m[3];
+    // 先頭が 12 超 → D/M/YYYY、それ以外は M/D/YYYY と仮定
+    return (a > 12) ? new Date(y, b-1, a) : new Date(y, a-1, b);
   }
+  // YYYY年M月D日 / YYYY年MM月DD日
+  m = v.match(/^(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  // Excel/Sheets serial number（念のため）
+  if (/^\d+(\.\d+)?$/.test(v)) {
+    const n = parseFloat(v);
+    if (n > 1 && n < 100000) return new Date((n - 25569) * 86400 * 1000);
+  }
+  // ブラウザ標準パーサに fallback
+  const p = Date.parse(v);
+  if (!isNaN(p)) {
+    const d = new Date(p);
+    if (!isNaN(d.getTime())) return d;
+  }
+  return null;
+}
+
+function freshnessCell(dateStr) {
+  const v = (dateStr || '').toString().trim();
+  if (!v) return '<td class="upd"></td>';
+  const d = parseDateLoose(v);
   if (!d || isNaN(d.getTime())) {
-    return `<td class="upd">${escapeHtml(v)}</td>`;
+    // パース失敗時：生の値を出す。debug 用に console にも残す
+    console.warn('[freshnessCell] 日付の解析に失敗:', JSON.stringify(v));
+    return `<td class="upd" title="解析できず：${escapeAttr(v)}">${escapeHtml(v)}</td>`;
   }
   const today = new Date();
   today.setHours(0,0,0,0);
