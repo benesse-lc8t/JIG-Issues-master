@@ -308,10 +308,14 @@ function setupJIG() {
     log.push('  　└ 列幅・行 freeze・プルダウンも設定済み');
   }
 
-  SpreadsheetApp.getUi().alert(
-    log.length ? '✅ セットアップ完了\n\n' + log.join('\n')
-               : 'ℹ️ 既に整っています（追加・変更なし）'
-  );
+  const msg = log.length ? '✅ セットアップ完了\n\n' + log.join('\n')
+                         : 'ℹ️ 既に整っています（追加・変更なし）';
+  console.log('[setupJIG] ' + msg);
+  try {
+    SpreadsheetApp.getUi().alert(msg);
+  } catch (_) {
+    // エディタから直接実行した場合は getUi() が使えないのでコンソールのみ
+  }
 }
 
 // ===== 条件付き書式をクリアして入れ直す（重複が気になったとき用）=====
