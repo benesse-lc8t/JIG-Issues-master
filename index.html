@@ -66,6 +66,7 @@
   .tab.active:nth-child(3) { background: #34A853; color: #fff;     border-color: #1E8E3E; }
   .tab.active:nth-child(4) { background: #EA4335; color: #fff;     border-color: #D93025; }
   .tab.active:nth-child(5) { background: #9334E6; color: #fff;     border-color: #8430CE; }
+  .tab.active:nth-child(6) { background: #00ACC1; color: #fff;     border-color: #00838F; }
 
   /* Panel：active タブと連動した色アクセントを上端に持たせる */
   #panel-A.active { border-top: 3px solid #4285F4; }
@@ -73,6 +74,8 @@
   #panel-C.active { border-top: 3px solid #34A853; }
   #panel-D.active { border-top: 3px solid #EA4335; }
   #panel-E.active { border-top: 3px solid #9334E6; }
+  #panel-F.active { border-top: 3px solid #00ACC1; }
+  #panel-Admin.active { border-top: 3px solid #5F6368; }
   .panel.active { box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
 
   /* Console (Tab E) */
@@ -292,9 +295,52 @@
   @media print {
     .tabs, .admin-btn { display: none; }
     .panel { display: block !important; border: none; page-break-after: always; }
-    #panel-E { display: none !important; }
+    #panel-Admin { display: none !important; }
     body { padding: 8px; }
   }
+
+  /* Tab B/C/D/E 共通：シンプル表 */
+  .simple-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .simple-table th { background: #E8EAED; color: #202124; padding: 7px 10px; text-align: left; font-weight: 700; border: 1px solid var(--border); }
+  .simple-table td { padding: 5px 10px; border: 1px solid var(--border); vertical-align: middle; }
+  .simple-table tr.sec-row th { background: #F1F3F4; color: #5F6368; font-size: 12px; padding: 8px 12px; letter-spacing: 0.02em; }
+  .simple-table tr.mtg-header th { background: #FEF7E0; color: #B06000; font-size: 12px; padding: 8px 12px; }
+  .simple-table tr.mtg-header .mtg-time { color: #5F6368; font-weight: 500; margin-left: 8px; }
+  .simple-table tr.stalled-red { background: #FCE8E6; }
+  .simple-table tr.stalled-yellow { background: #FEF7E0; }
+  .simple-table .parent-hint { color: #80868B; font-size: 10px; margin-left: 4px; }
+  .simple-table .type-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 700; letter-spacing: 0.05em; }
+  .simple-table .type-issue   { background: #E6F4EA; color: #137333; border: 1px dashed #34A853; }
+  .simple-table .type-mission { background: #E8F0FE; color: #1967D2; border: 1px dashed #4285F4; }
+  .simple-table .conf-link { color: var(--g-blue); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+  .simple-table .conf-link img { width: 12px; height: 12px; }
+  .simple-table .conf-link:hover { text-decoration: underline; }
+
+  /* Dashboard (Tab F) */
+  .dash-container { padding: 16px 20px; }
+  .dash-section { margin-bottom: 22px; }
+  .dash-section h3 { font-size: 13px; font-weight: 700; color: #202124; margin-bottom: 10px; letter-spacing: 0.02em; padding-bottom: 4px; border-bottom: 2px solid var(--border); }
+  .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .dash-card { background: #F8F9FA; border: 1px solid var(--border); border-radius: 8px; padding: 14px 12px; text-align: center; transition: transform 0.15s; }
+  .dash-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .dash-card.dash-blue   { background: #E8F0FE; border-color: #C8D7F0; }
+  .dash-card.dash-green  { background: #E6F4EA; border-color: #B5DCC0; }
+  .dash-card.dash-yellow { background: #FEF7E0; border-color: #F0D78A; }
+  .dash-card.dash-red    { background: #FCE8E6; border-color: #F5C4BE; }
+  .dash-card.dash-purple { background: #F3E8FD; border-color: #D8C0E8; }
+  .dash-card.dash-teal   { background: #E0F7FA; border-color: #B2EBF2; }
+  .dash-card.dash-grey   { background: #F1F3F4; border-color: var(--border); }
+  .dash-num { font-size: 28px; font-weight: 900; color: #202124; line-height: 1.1; }
+  .dash-label { font-size: 11px; color: #5F6368; margin-top: 4px; font-weight: 500; }
+  .dash-bars { display: flex; flex-direction: column; gap: 5px; }
+  .dash-bar-row { display: grid; grid-template-columns: 110px 1fr 50px; gap: 8px; align-items: center; font-size: 11px; }
+  .dash-bar-name { color: #3C4043; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dash-bar-track { height: 14px; background: #F1F3F4; border-radius: 7px; overflow: hidden; position: relative; }
+  .dash-bar-fill { height: 100%; border-radius: 7px; transition: width 0.3s; }
+  .dash-bar-count { text-align: right; font-weight: 700; color: #5F6368; font-size: 11px; }
+  .dash-bar-bd .dash-bar-fill { background: #4285F4; }
+  .dash-bar-gn .dash-bar-fill { background: #34A853; }
+  .dash-bar-rd .dash-bar-fill { background: #EA4335; }
 </style>
 </head>
 <body>
@@ -303,14 +349,16 @@
     <img src="favicon.svg" alt="" width="32" height="32" style="vertical-align:middle; flex-shrink:0;">
     <span>TBBS-經營Issue管理系統<span class="ver" id="verBadge" title="">v?.?.?</span></span>
   </h1>
-  <button id="adminBtn" class="admin-btn" onclick="show('E',event)" title="僅供管理者使用：資料來源設定">⚙ 管理者專用</button>
+  <button id="adminBtn" class="admin-btn" onclick="show('Admin',event)" title="僅供管理者使用：資料來源設定">⚙ 管理者專用</button>
 </div>
 
 <div class="tabs">
   <div class="tab active" onclick="show('A',event)">A：Issue &amp; Mission</div>
-  <div class="tab" onclick="show('B',event)">B：會議-頁面-Issue表</div>
-  <div class="tab" onclick="show('C',event)">C：部門別</div>
-  <div class="tab" onclick="show('D',event)">D：行事曆</div>
+  <div class="tab" onclick="show('B',event)">B：會議アジェンダ</div>
+  <div class="tab" onclick="show('C',event)">C：停滞警報</div>
+  <div class="tab" onclick="show('D',event)">D：詩雅</div>
+  <div class="tab" onclick="show('E',event)">E：育菱</div>
+  <div class="tab" onclick="show('F',event)">F：Dashboard</div>
 </div>
 
 <!-- ===== A ===== -->
@@ -350,112 +398,141 @@
 </table>
 </div>
 
-<!-- ===== B ===== -->
+<!-- ===== B：會議アジェンダ ===== -->
 <div class="panel" id="panel-B">
-<table>
-<thead>
-  <tr>
-    <th style="width:82px;">會議</th><th style="width:64px;">時間</th><th style="width:110px;">管理頁面</th><th>Issue</th>
-  </tr>
-</thead>
-<tbody>
-<tr><td class="mc" rowspan="1">合約管理</td><td class="pc" rowspan="1">週一09:30</td><td class="pgc">JIG-統籌整合</td><td><div class="iss-grid"><span class="tag tag-P">共-19 合約規管</span></div></td></tr>
-<tr><td class="mc" rowspan="1">總管理溝通</td><td class="pc" rowspan="1">週一10:00</td><td class="pgc">JIG-統籌整合</td><td><div class="iss-grid"><span class="tag tag-I">共-15 共通費·物流</span><span class="tag tag-I">共-16 共通費·其他</span></div></td></tr>
-<tr><td class="mc" rowspan="1">LC8T-推進</td><td class="pc" rowspan="1">週一10:30</td><td class="pgc">JIG-LC8T</td><td><div class="iss-grid"><span class="tag tag-CV">共-7 LC8T推進</span></div></td></tr>
-<tr><td class="mc" rowspan="1">資訊溝通</td><td class="pc" rowspan="1">週一11:00</td><td class="pgc">JIG-資訊</td><td><div class="iss-grid"><span class="tag tag-I">共-14 共通費·系統</span></div></td></tr>
-<tr><td class="mc" rowspan="1">業績確認</td><td class="pc" rowspan="1">週一14:00</td><td class="pgc">JIG-詩雅工作一覽</td><td><div class="iss-grid"><span class="tag tag-P">共-23 業績確認準備</span></div></td></tr>
-<tr><td class="mc" rowspan="1">經營會</td><td class="pc" rowspan="1">週二11:00</td><td class="pgc">JIG-經營會</td><td><div class="iss-grid"><span class="tag tag-P">共-21 經營事項共討</span></div></td></tr>
-<tr><td class="mc" rowspan="1">靜中美</td><td class="pc" rowspan="1">週二13:30</td><td class="pgc">JIG-靜中美</td><td><div class="iss-grid"><span class="tag tag-I">共-13 庫存風險</span><span class="tag tag-O">C-1 共創-SKU擴大</span><span class="tag tag-O">X-1 跨境-SKU擴大</span><span class="tag tag-CV">X-2 跨境-WEB</span></div></td></tr>
-<tr><td class="mc" rowspan="1">商品溝通-YT</td><td class="pc" rowspan="1">週二14:30</td><td class="pgc">JIG-學習商品開發</td><td><div class="iss-grid"><span class="tag tag-O">共-3 YT內容·業績·訂閱</span></div></td></tr>
-<tr><td class="mc" rowspan="1">商品溝通-學習商品</td><td class="pc" rowspan="1">週二14:30</td><td class="pgc">JIG-學習商品開發</td><td><div class="iss-grid"><span class="tag tag-O">L-1 學習-SKU擴大</span></div></td></tr>
-<tr><td class="mc" rowspan="1">商品溝通-授權</td><td class="pc" rowspan="1">週二14:30</td><td class="pgc">JIG-品牌授權策略</td><td><div class="iss-grid"><span class="tag tag-O">Z-1 周邊-SKU擴大</span><span class="tag tag-O">IP-1 IP-MD</span><span class="tag tag-O">IP-2 IP-卡通</span><span class="tag tag-O">IP-3 IP-空間</span></div></td></tr>
-<tr><td class="mc" rowspan="1">商品溝通-舞台劇</td><td class="pc" rowspan="1">週二14:30</td><td class="pgc">JIG-表演活動</td><td><div class="iss-grid"><span class="tag tag-CV">Z-6 周邊-舞台劇現場</span><span class="tag tag-O">S-1 舞台劇-節目擴大</span><span class="tag tag-CV">S-2 舞台劇-BCL</span><span class="tag tag-CV">S-3 舞台劇-其他通路</span><span class="tag tag-CV">S-4 舞台劇-B2C</span></div></td></tr>
-<tr><td class="mc" rowspan="1">整合溝通-數位行銷</td><td class="pc" rowspan="1">週二15:30</td><td class="pgc">JIG-數位行銷</td><td><div class="iss-grid"><span class="tag tag-O">共-4 SNS互動·粉絲擴大</span><span class="tag tag-CV">共-9 AWRT再行銷</span><span class="tag tag-CV">L-2 學習-WEB</span><span class="tag tag-CV">L-3 學習-KOL</span><span class="tag tag-CV">L-4 學習-EC</span><span class="tag tag-CV">L-5 學習-海外代理</span><span class="tag tag-CV">Z-4 周邊-EC</span></div></td></tr>
-<tr><td class="mc" rowspan="1">整合溝通-通路整合</td><td class="pc" rowspan="1">週二15:30</td><td class="pgc">JIG-通路整合</td><td><div class="iss-grid"><span class="tag tag-O">共-2 官方網體驗·轉換</span><span class="tag tag-CV">共-11 LiveChat運營</span><span class="tag tag-CV">Z-2 周邊-WEB</span><span class="tag tag-CV">Z-3 周邊-KOL</span><span class="tag tag-CV">Z-5 周邊-海外代理</span><span class="tag tag-O">M-1 MF-SKU擴大</span><span class="tag tag-CV">M-2 MF-WEB</span><span class="tag tag-CV">M-3 MF-TM</span><span class="tag tag-CV">M-4 MF-KOL</span></div></td></tr>
-<tr><td class="mc" rowspan="1">AI巧虎</td><td class="pc" rowspan="1">週二16:30</td><td class="pgc">JIG-AI巧虎</td><td><div class="iss-grid"><span class="tag tag-O">C-2 KK-AI巧虎</span></div></td></tr>
-<tr><td class="mc" rowspan="1">CX溝通</td><td class="pc" rowspan="1">週三10:30</td><td class="pgc">JIG-LTV戰略</td><td><div class="iss-grid"><span class="tag tag-CV">共-8 ACTS定期發信</span><span class="tag tag-CV">共-10 ATLT高回應TEL</span><span class="tag tag-CV">共-12 LINE客服運營</span><span class="tag tag-CV">L-6 學習-TM</span></div></td></tr>
-<tr><td class="mc" rowspan="1">詩雅1ON1</td><td class="pc" rowspan="1">週三14:00</td><td class="pgc">JIG-詩雅工作一覽</td><td><div class="iss-grid"><span class="tag tag-P">共-20 LTV儀表板</span></div></td></tr>
-<tr><td class="mc" rowspan="2">經營戰略組會</td><td class="pc" rowspan="2">週三15:30</td><td class="pgc">JIG-經營戰略</td><td><div class="iss-grid"><span class="tag tag-O">共-1 交叉銷售·客單價</span></div></td></tr>
-<tr><td class="pgc">JIG-BCL</td><td><div class="iss-grid"><span class="tag tag-N">共-5 BCL擴大</span><span class="tag tag-N">共-6 忠誠用戶擴大</span></div></td></tr>
-<tr><td class="mc" rowspan="1">育菱1on1</td><td class="pc" rowspan="1">週四09:30</td><td class="pgc">JIG-育菱工作一覽</td><td><div class="iss-grid"><span class="tag tag-P">共-22 跨部門Issue調整</span></div></td></tr>
-<tr><td class="mc" rowspan="1">綢繆帷幄</td><td class="pc" rowspan="1">週四10:30</td><td class="pgc">JIG-綢繆帷幄</td><td><div class="iss-grid"><span class="tag tag-I">共-17 Issue進度管控</span></div></td></tr>
-<tr><td class="mc" rowspan="1">財務溝通</td><td class="pc" rowspan="1">週四13:30</td><td class="pgc">JIG-財務</td><td><div class="iss-grid"><span class="tag tag-P">共-18 經營儀表板</span></div></td></tr>
-<tr><td class="mc" rowspan="1">AIC會議</td><td class="pc" rowspan="1">週五10:00</td><td class="pgc">JIG-AIC</td><td><div class="iss-grid"><span class="tag tag-P">共-24 AI經營能力</span></div></td></tr>
-</tbody>
-</table>
+  <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
+    確認會議ごとに Issue を曜日・時間順に並べた、会議週次アジェンダ
+  </div>
+  <table class="simple-table">
+    <thead>
+      <tr>
+        <th style="width:74px;">編號</th>
+        <th>Issue</th>
+        <th style="width:80px;">處</th>
+        <th style="width:70px;">負責人</th>
+        <th style="width:74px;">狀態</th>
+        <th style="min-width:120px;">備註</th>
+        <th style="width:56px;">更新</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 </div>
 
-<!-- ===== C ===== -->
+<!-- ===== C：停滞警報 ===== -->
 <div class="panel" id="panel-C">
-<table>
-<thead>
-  <tr><th style="width:90px;">處</th><th style="width:130px;">組（JIG-頁面）</th><th style="width:110px;">會議</th><th style="width:70px;">時間</th><th>Issue</th>
-  </tr>
-</thead>
-<tbody>
-<tr><td class="mc" rowspan="11">經營戰略</td><td class="pgc" rowspan="1">JIG-經營戰略</td><td class="pgc">經營戰略組會</td><td class="pc">週三15:30</td><td><div class="iss-grid"><span class="tag tag-O">共-1 交叉銷售·客單價</span></div></td></tr>
-<tr><td class="pgc" rowspan="1">JIG-BCL</td><td class="pgc">經營戰略組會</td><td class="pc">週三15:30</td><td><div class="iss-grid"><span class="tag tag-N">共-5 BCL擴大</span><span class="tag tag-N">共-6 忠誠用戶擴大</span></div></td></tr>
-<tr><td class="pgc" rowspan="1">JIG-LC8T</td><td class="pgc">LC8T-推進</td><td class="pc">週一10:30</td><td><div class="iss-grid"><span class="tag tag-CV">共-7 LC8T推進</span></div></td></tr>
-<tr><td class="pgc" rowspan="1">JIG-靜中美</td><td class="pgc">靜中美</td><td class="pc">週二13:30</td><td><div class="iss-grid"><span class="tag tag-I">共-13 庫存風險</span><span class="tag tag-O">C-1 共創-SKU擴大</span><span class="tag tag-O">X-1 跨境-SKU擴大</span><span class="tag tag-CV">X-2 跨境-WEB</span></div></td></tr>
-<tr><td class="pgc" rowspan="1">JIG-綢繆帷幄</td><td class="pgc">綢繆帷幄</td><td class="pc">週四10:30</td><td><div class="iss-grid"><span class="tag tag-I">共-17 Issue進度管控</span></div></td></tr>
-<tr><td class="pgc" rowspan="2">JIG-詩雅工作一覽</td><td class="pgc">詩雅1ON1</td><td class="pc">週三14:00</td><td><div class="iss-grid"><span class="tag tag-P">共-20 LTV儀表板</span></div></td></tr>
-<tr><td class="pgc">業績確認</td><td class="pc">週一14:00</td><td><div class="iss-grid"><span class="tag tag-P">共-23 業績確認準備</span></div></td></tr>
-<tr><td class="pgc" rowspan="1">JIG-經營會</td><td class="pgc">經營會</td><td class="pc">週二11:00</td><td><div class="iss-grid"><span class="tag tag-P">共-21 經營事項共討</span></div></td></tr>
-<tr><td class="pgc" rowspan="1">JIG-育菱工作一覽</td><td class="pgc">育菱1on1</td><td class="pc">週四09:30</td><td><div class="iss-grid"><span class="tag tag-P">共-22 跨部門Issue調整</span></div></td></tr>
-<tr><td class="pgc" rowspan="1">JIG-AIC</td><td class="pgc">AIC會議</td><td class="pc">週五10:00</td><td><div class="iss-grid"><span class="tag tag-P">共-24 AI經營能力</span></div></td></tr>
-<tr><td class="pgc" rowspan="1">JIG-AI巧虎</td><td class="pgc">AI巧虎</td><td class="pc">週二16:30</td><td><div class="iss-grid"><span class="tag tag-O">C-2 KK-AI巧虎</span></div></td></tr>
-<tr><td class="mc" rowspan="2">整合行銷</td><td class="pgc" rowspan="1">JIG-通路整合</td><td class="pgc">整合溝通-通路整合</td><td class="pc">週二15:30</td><td><div class="iss-grid"><span class="tag tag-O">共-2 官方網體驗·轉換</span><span class="tag tag-CV">共-11 LiveChat運營</span><span class="tag tag-CV">Z-2 周邊-WEB</span><span class="tag tag-CV">Z-3 周邊-KOL</span><span class="tag tag-CV">Z-5 周邊-海外代理</span><span class="tag tag-O">M-1 MF-SKU擴大</span><span class="tag tag-CV">M-2 MF-WEB</span><span class="tag tag-CV">M-3 MF-TM</span><span class="tag tag-CV">M-4 MF-KOL</span></div></td></tr>
-<tr><td class="pgc" rowspan="1">JIG-數位行銷</td><td class="pgc">整合溝通-數位行銷</td><td class="pc">週二15:30</td><td><div class="iss-grid"><span class="tag tag-O">共-4 SNS互動·粉絲擴大</span><span class="tag tag-CV">共-9 AWRT再行銷</span><span class="tag tag-CV">L-2 學習-WEB</span><span class="tag tag-CV">L-3 學習-KOL</span><span class="tag tag-CV">L-4 學習-EC</span><span class="tag tag-CV">L-5 學習-海外代理</span><span class="tag tag-CV">Z-4 周邊-EC</span></div></td></tr>
-<tr><td class="mc" rowspan="4">商品事業</td><td class="pgc" rowspan="2">JIG-學習商品開發</td><td class="pgc">商品溝通-YT</td><td class="pc">週二14:30</td><td><div class="iss-grid"><span class="tag tag-O">共-3 YT內容·業績·訂閱</span></div></td></tr>
-<tr><td class="pgc">商品溝通-學習商品</td><td class="pc">週二14:30</td><td><div class="iss-grid"><span class="tag tag-O">L-1 學習-SKU擴大</span></div></td></tr>
-<tr><td class="pgc" rowspan="1">JIG-品牌授權策略</td><td class="pgc">商品溝通-授權</td><td class="pc">週二14:30</td><td><div class="iss-grid"><span class="tag tag-O">Z-1 周邊-SKU擴大</span><span class="tag tag-O">IP-1 IP-MD</span><span class="tag tag-O">IP-2 IP-卡通</span><span class="tag tag-O">IP-3 IP-空間</span></div></td></tr>
-<tr><td class="pgc" rowspan="1">JIG-表演活動</td><td class="pgc">商品溝通-舞台劇</td><td class="pc">週二14:30</td><td><div class="iss-grid"><span class="tag tag-CV">Z-6 周邊-舞台劇現場</span><span class="tag tag-O">S-1 舞台劇-節目擴大</span><span class="tag tag-CV">S-2 舞台劇-BCL</span><span class="tag tag-CV">S-3 舞台劇-其他通路</span><span class="tag tag-CV">S-4 舞台劇-B2C</span></div></td></tr>
-<tr><td class="mc" rowspan="1">CX計劃</td><td class="pgc" rowspan="1">JIG-LTV戰略</td><td class="pgc">CX溝通</td><td class="pc">週三10:30</td><td><div class="iss-grid"><span class="tag tag-CV">共-8 ACTS定期發信</span><span class="tag tag-CV">共-10 ATLT高回應TEL</span><span class="tag tag-CV">共-12 LINE客服運營</span><span class="tag tag-CV">L-6 學習-TM</span></div></td></tr>
-<tr><td class="mc" rowspan="1">資訊事業</td><td class="pgc" rowspan="1">JIG-資訊</td><td class="pgc">資訊溝通</td><td class="pc">週一11:00</td><td><div class="iss-grid"><span class="tag tag-I">共-14 共通費·系統</span></div></td></tr>
-<tr><td class="mc" rowspan="2">總管理</td><td class="pgc" rowspan="2">JIG-統籌整合</td><td class="pgc">總管理溝通</td><td class="pc">週一10:00</td><td><div class="iss-grid"><span class="tag tag-I">共-15 共通費·物流</span><span class="tag tag-I">共-16 共通費·其他</span></div></td></tr>
-<tr><td class="pgc">合約管理</td><td class="pc">週一09:30</td><td><div class="iss-grid"><span class="tag tag-P">共-19 合約規管</span></div></td></tr>
-<tr><td class="mc" rowspan="1">財務</td><td class="pgc" rowspan="1">JIG-財務</td><td class="pgc">財務溝通</td><td class="pc">週四13:30</td><td><div class="iss-grid"><span class="tag tag-P">共-18 經營儀表板</span></div></td></tr>
-</tbody>
-</table>
+  <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
+    更新日が古い順に並べた停滞リスト（>14 日 赤・>7 日 黃・未設定 灰）
+  </div>
+  <table class="simple-table">
+    <thead>
+      <tr>
+        <th style="width:64px;">種別</th>
+        <th style="width:90px;">編號</th>
+        <th>Issue / Mission</th>
+        <th style="width:80px;">處</th>
+        <th style="width:70px;">負責人</th>
+        <th style="min-width:140px;">備註</th>
+        <th style="width:74px;">狀態</th>
+        <th style="width:56px;">更新</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 </div>
 
-
-<!-- ===== D ===== -->
+<!-- ===== D：詩雅 ===== -->
 <div class="panel" id="panel-D">
-<table>
-<thead><tr><th style="width:50px;"></th>
-<th style="width:19%;">週一</th>
-<th style="width:19%;">週二</th>
-<th style="width:19%;">週三</th>
-<th style="width:19%;">週四</th>
-<th style="width:19%;">週五</th>
-</tr></thead>
-<tbody>
-<tr><td class="mc" style="vertical-align:middle;">AM</td>
-<td class="cal-cell"><div class="cal-mtg"><div class="cal-mtg-time">09:30</div><div class="cal-mtg-name">合約管理</div><div class="cal-mtg-jig">JIG-統籌整合</div><div class="cal-tags"><span class="tag tag-P">共-19 合約規管</span></div></div><div class="cal-mtg"><div class="cal-mtg-time">10:00</div><div class="cal-mtg-name">總管理溝通</div><div class="cal-mtg-jig">JIG-統籌整合</div><div class="cal-tags"><span class="tag tag-I">共-15 共通費·物流</span><span class="tag tag-I">共-16 共通費·其他</span></div></div><div class="cal-mtg"><div class="cal-mtg-time">10:30</div><div class="cal-mtg-name">LC8T-推進</div><div class="cal-mtg-jig">JIG-LC8T</div><div class="cal-tags"><span class="tag tag-CV">共-7 LC8T推進</span></div></div><div class="cal-mtg"><div class="cal-mtg-time">11:00</div><div class="cal-mtg-name">資訊溝通</div><div class="cal-mtg-jig">JIG-資訊</div><div class="cal-tags"><span class="tag tag-I">共-14 共通費·系統</span></div></div></td>
-<td class="cal-cell"><div class="cal-mtg"><div class="cal-mtg-time">11:00</div><div class="cal-mtg-name">經營會</div><div class="cal-mtg-jig">JIG-經營會</div><div class="cal-tags"><span class="tag tag-P">共-21 經營事項共討</span></div></div></td>
-<td class="cal-cell"><div class="cal-mtg"><div class="cal-mtg-time">10:30</div><div class="cal-mtg-name">CX溝通</div><div class="cal-mtg-jig">JIG-LTV戰略</div><div class="cal-tags"><span class="tag tag-CV">共-8 ACTS定期發信</span><span class="tag tag-CV">共-10 ATLT高回應TEL</span><span class="tag tag-CV">共-12 LINE客服運營</span><span class="tag tag-CV">L-6 學習-TM</span></div></div></td>
-<td class="cal-cell"><div class="cal-mtg"><div class="cal-mtg-time">09:30</div><div class="cal-mtg-name">育菱1on1</div><div class="cal-mtg-jig">JIG-育菱工作一覽</div><div class="cal-tags"><span class="tag tag-P">共-22 跨部門Issue調整</span></div></div><div class="cal-mtg"><div class="cal-mtg-time">10:30</div><div class="cal-mtg-name">綢繆帷幄</div><div class="cal-mtg-jig">JIG-綢繆帷幄</div><div class="cal-tags"><span class="tag tag-I">共-17 Issue進度管控</span></div></div></td>
-<td class="cal-cell"><div class="cal-mtg"><div class="cal-mtg-time">10:00</div><div class="cal-mtg-name">AIC會議</div><div class="cal-mtg-jig">JIG-AIC</div><div class="cal-tags"><span class="tag tag-P">共-24 AI經營能力</span></div></div></td>
-</tr>
-<tr><td class="mc" style="vertical-align:middle;">PM</td>
-<td class="cal-cell"><div class="cal-mtg"><div class="cal-mtg-time">14:00</div><div class="cal-mtg-name">業績確認</div><div class="cal-mtg-jig">JIG-詩雅工作一覽</div><div class="cal-tags"><span class="tag tag-P">共-23 業績確認準備</span></div></div></td>
-<td class="cal-cell"><div class="cal-mtg"><div class="cal-mtg-time">13:30</div><div class="cal-mtg-name">靜中美</div><div class="cal-mtg-jig">JIG-靜中美</div><div class="cal-tags"><span class="tag tag-I">共-13 庫存風險</span><span class="tag tag-O">C-1 共創-SKU擴大</span><span class="tag tag-O">X-1 跨境-SKU擴大</span><span class="tag tag-CV">X-2 跨境-WEB</span></div></div><div class="cal-group"><div class="cal-group-name">商品溝通</div><div class="cal-sub"><div class="cal-sub-time">14:30</div><div class="cal-sub-name">YT</div><div class="cal-sub-jig">JIG-學習商品開發</div><div class="cal-tags"><span class="tag tag-O">共-3 YT內容·業績·訂閱</span></div></div><div class="cal-sub"><div class="cal-sub-time">14:30</div><div class="cal-sub-name">學習商品</div><div class="cal-sub-jig">JIG-學習商品開發</div><div class="cal-tags"><span class="tag tag-O">L-1 學習-SKU擴大</span></div></div><div class="cal-sub"><div class="cal-sub-time">14:30</div><div class="cal-sub-name">授權</div><div class="cal-sub-jig">JIG-品牌授權策略</div><div class="cal-tags"><span class="tag tag-O">Z-1 周邊-SKU擴大</span><span class="tag tag-O">IP-1 IP-MD</span><span class="tag tag-O">IP-2 IP-卡通</span><span class="tag tag-O">IP-3 IP-空間</span></div></div><div class="cal-sub"><div class="cal-sub-time">14:30</div><div class="cal-sub-name">舞台劇</div><div class="cal-sub-jig">JIG-表演活動</div><div class="cal-tags"><span class="tag tag-CV">Z-6 周邊-舞台劇現場</span><span class="tag tag-O">S-1 舞台劇-節目擴大</span><span class="tag tag-CV">S-2 舞台劇-BCL</span><span class="tag tag-CV">S-3 舞台劇-其他通路</span><span class="tag tag-CV">S-4 舞台劇-B2C</span></div></div></div><div class="cal-group"><div class="cal-group-name">整合溝通</div><div class="cal-sub"><div class="cal-sub-time">15:30</div><div class="cal-sub-name">通路整合</div><div class="cal-sub-jig">JIG-通路整合</div><div class="cal-tags"><span class="tag tag-O">共-2 官方網體驗·轉換</span><span class="tag tag-CV">共-11 LiveChat運營</span><span class="tag tag-CV">Z-2 周邊-WEB</span><span class="tag tag-CV">Z-3 周邊-KOL</span><span class="tag tag-CV">Z-5 周邊-海外代理</span><span class="tag tag-O">M-1 MF-SKU擴大</span><span class="tag tag-CV">M-2 MF-WEB</span><span class="tag tag-CV">M-3 MF-TM</span><span class="tag tag-CV">M-4 MF-KOL</span></div></div><div class="cal-sub"><div class="cal-sub-time">15:30</div><div class="cal-sub-name">數位行銷</div><div class="cal-sub-jig">JIG-數位行銷</div><div class="cal-tags"><span class="tag tag-O">共-4 SNS互動·粉絲擴大</span><span class="tag tag-CV">共-9 AWRT再行銷</span><span class="tag tag-CV">L-2 學習-WEB</span><span class="tag tag-CV">L-3 學習-KOL</span><span class="tag tag-CV">L-4 學習-EC</span><span class="tag tag-CV">L-5 學習-海外代理</span><span class="tag tag-CV">Z-4 周邊-EC</span></div></div></div><div class="cal-mtg"><div class="cal-mtg-time">16:30</div><div class="cal-mtg-name">AI巧虎</div><div class="cal-mtg-jig">JIG-AI巧虎</div><div class="cal-tags"><span class="tag tag-O">C-2 KK-AI巧虎</span></div></div></td>
-<td class="cal-cell"><div class="cal-mtg"><div class="cal-mtg-time">14:00</div><div class="cal-mtg-name">詩雅1ON1</div><div class="cal-mtg-jig">JIG-詩雅工作一覽</div><div class="cal-tags"><span class="tag tag-P">共-20 LTV儀表板</span></div></div><div class="cal-mtg"><div class="cal-mtg-time">15:30</div><div class="cal-mtg-name">經營戰略組會</div><div class="cal-mtg-jig">JIG-經營戰略</div><div class="cal-tags"><span class="tag tag-O">共-1 交叉銷售·客單價</span><span class="tag tag-N">共-5 BCL擴大</span><span class="tag tag-N">共-6 忠誠用戶擴大</span></div></div></td>
-<td class="cal-cell"><div class="cal-mtg"><div class="cal-mtg-time">13:30</div><div class="cal-mtg-name">財務溝通</div><div class="cal-mtg-jig">JIG-財務</div><div class="cal-tags"><span class="tag tag-P">共-18 經營儀表板</span></div></div></td>
-<td style="background:#FBF9F4;"></td>
-</tr>
-</tbody>
-</table>
+  <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
+    詩雅が <b>戰略負責人</b> または <b>擔當</b> として割り当てられている Issue / Mission
+  </div>
+  <table class="simple-table">
+    <thead>
+      <tr>
+        <th style="width:90px;">編號</th>
+        <th>Issue / Mission</th>
+        <th style="width:80px;">處</th>
+        <th style="min-width:140px;">備註</th>
+        <th style="width:74px;">狀態</th>
+        <th style="width:56px;">更新</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 </div>
 
-<!-- ===== E：資料來源 Console ===== -->
+<!-- ===== E：育菱 ===== -->
 <div class="panel" id="panel-E">
+  <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
+    育菱が <b>戰略負責人</b> または <b>擔當</b> として割り当てられている Issue / Mission
+  </div>
+  <table class="simple-table">
+    <thead>
+      <tr>
+        <th style="width:90px;">編號</th>
+        <th>Issue / Mission</th>
+        <th style="width:80px;">處</th>
+        <th style="min-width:140px;">備註</th>
+        <th style="width:74px;">狀態</th>
+        <th style="width:56px;">更新</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<!-- ===== F：Dashboard ===== -->
+<div class="panel" id="panel-F">
+  <div class="dash-container">
+    <div class="dash-section">
+      <h3>Issue 概況</h3>
+      <div class="dash-grid">
+        <div class="dash-card dash-blue"><div class="dash-num" id="dashIssueTotal">-</div><div class="dash-label">Issue 總數</div></div>
+        <div class="dash-card dash-grey"><div class="dash-num" id="dashIssueNotStarted">-</div><div class="dash-label">未開始</div></div>
+        <div class="dash-card dash-yellow"><div class="dash-num" id="dashIssueWip">-</div><div class="dash-label">進行中</div></div>
+        <div class="dash-card dash-green"><div class="dash-num" id="dashIssueDone">-</div><div class="dash-label">完成</div></div>
+      </div>
+    </div>
+    <div class="dash-section">
+      <h3>Mission 概況</h3>
+      <div class="dash-grid">
+        <div class="dash-card dash-blue"><div class="dash-num" id="dashMissionTotal">-</div><div class="dash-label">Mission 總數</div></div>
+        <div class="dash-card dash-grey"><div class="dash-num" id="dashMissionNotStarted">-</div><div class="dash-label">未開始</div></div>
+        <div class="dash-card dash-yellow"><div class="dash-num" id="dashMissionWip">-</div><div class="dash-label">進行中</div></div>
+        <div class="dash-card dash-green"><div class="dash-num" id="dashMissionDone">-</div><div class="dash-label">完成</div></div>
+        <div class="dash-card dash-red"><div class="dash-num" id="dashMissionNoOwner">-</div><div class="dash-label">擔當未割当</div></div>
+      </div>
+    </div>
+    <div class="dash-section">
+      <h3>停滞</h3>
+      <div class="dash-grid">
+        <div class="dash-card dash-red"><div class="dash-num" id="dashStalled14">-</div><div class="dash-label">&gt;14 天無更新</div></div>
+        <div class="dash-card dash-yellow"><div class="dash-num" id="dashStalled7">-</div><div class="dash-label">8-14 天無更新</div></div>
+        <div class="dash-card dash-grey"><div class="dash-num" id="dashNoDate">-</div><div class="dash-label">更新日未設定</div></div>
+      </div>
+    </div>
+    <div class="dash-section">
+      <h3>部門別 Issue 件數</h3>
+      <div class="dash-bars dash-bar-bd" id="dashDeptBars"></div>
+    </div>
+    <div class="dash-section">
+      <h3>戰略負責人別 Issue 件數</h3>
+      <div class="dash-bars dash-bar-gn" id="dashOwnerBars"></div>
+    </div>
+    <div class="dash-section">
+      <h3>擔當別 Mission 件數</h3>
+      <div class="dash-bars dash-bar-rd" id="dashMissionOwnerBars"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Admin：資料來源 Console（タブ行には出さず、⚙ ボタンから開く） ===== -->
+<div class="panel" id="panel-Admin">
   <div class="console">
     <h2>Issue管理主檔 — 資料來源</h2>
     <div class="desc">
       本頁的所有資料皆來自共用的 <b>Google 試算表</b>。在試算表中新增或修改 Issue 後，重新整理本頁（或按下方按鈕）即可讓全員看到最新內容。<br>
-      試算表欄位順序：<code>區分 / 軸 / 編號 / Issue / Issue短縮 / 處 / 組 / 戰略負責人 / 管理頁面(JIG-組名) / 確認會議 / 會議時間</code>
+      試算表欄位順序：<code>區分 / 軸 / 編號 / Issue / Issue短縮 / 處 / 組 / 擔當 / 戰略負責人 / 管理頁面(JIG-組名) / 確認會議 / 會議時間 / Confluence URL / 狀態 / 事務局備註 / 更新日</code>
     </div>
 
     <!-- Cloud source -->
@@ -480,9 +557,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.9.0';
+const APP_VERSION = '0.9.1';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'タブ A 名称を「Issue & Mission」に。タブ全体を 75% サイズに縮小。';
+const APP_NOTE  = 'B/C/D/E/F タブを再編：B=會議アジェンダ、C=停滞警報、D=詩雅、E=育菱、F=Dashboard。Admin は ⚙ ボタン専用に。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -981,138 +1058,221 @@ function toggleAllMissions() {
   if (btn) btn.textContent = _allMissionsExpanded ? '▼ 全部收合' : '▶ 全部展開';
 }
 
-// ===== Tab B: 會議 → 管理頁面 → Issues =====
+// ===== 共通ヘルパー：行データから 1 行の HTML を組み立てる（簡易表形式） =====
+function simpleRow(r, opts) {
+  opts = opts || {};
+  const isMission = ((r['種別']||'Issue') === 'Mission' || (r['種別']||'') === 'Task');
+  const num = (r['編號']||'').trim();
+  const dept = (r['處']||'').trim();
+  const remark = (r['事務局備註']||'').trim();
+  const owner = (r['戰略負責人']||'').trim();
+  const cls = opts.rowClass || '';
+  let h = `<tr${cls ? ` class="${cls}"` : ''}>`;
+  if (opts.showType) {
+    h += `<td><span class="type-badge ${isMission ? 'type-mission' : 'type-issue'}">${isMission ? 'MISSION' : 'ISSUE'}</span></td>`;
+  }
+  h += `<td class="num">${escapeHtml(num)}</td>`;
+  let labelHtml = escapeHtml(r['Issue']||'');
+  if (opts.showParentHint && isMission) {
+    const parentNum = (r['親編號']||'').trim();
+    if (parentNum) labelHtml += ` <span class="parent-hint">↳ ${escapeHtml(parentNum)}</span>`;
+  }
+  h += `<td class="lbl">${labelHtml}</td>`;
+  if (opts.showDept !== false) {
+    h += `<td class="dept ${deptColorClass(dept)}">${escapeHtml(dept)}</td>`;
+  }
+  if (opts.showOwner !== false) {
+    h += `<td>${escapeHtml(owner)}</td>`;
+  }
+  if (opts.showRemark !== false) {
+    h += `<td class="memo">${escapeHtml(remark)}</td>`;
+  }
+  h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;
+  h += freshnessCell(r['更新日']);
+  h += '</tr>';
+  return h;
+}
+
+// ===== Tab B：會議アジェンダ（會議ごとに Issue を曜日順に並べる）=====
 function renderTableB() {
   const tbody = document.querySelector('#panel-B tbody');
+  if (!tbody) return;
   const meetMap = new Map();
   issueData.forEach(r => {
-    const key = (r['確認會議']||'') + '|' + (r['會議時間']||'');
-    if (!meetMap.has(key)) meetMap.set(key, {
-      meeting: r['確認會議']||'', time: r['會議時間']||'',
-      sortKey: parseDayTime(r['會議時間']||'').key, pages: new Map()
-    });
-    const o = meetMap.get(key);
-    const pg = r['管理頁面'] || '';
-    if (!o.pages.has(pg)) o.pages.set(pg, []);
-    o.pages.get(pg).push(r);
+    const t = r['種別']||'Issue';
+    if (t === 'Mission' || t === 'Task') return; // Issue のみ
+    const meeting = (r['確認會議']||'').trim() || '（未設定）';
+    const time = (r['會議時間']||'').trim();
+    const key = `${meeting}|${time}`;
+    if (!meetMap.has(key)) {
+      meetMap.set(key, {
+        meeting, time,
+        sortKey: parseDayTime(time).key,
+        items: []
+      });
+    }
+    meetMap.get(key).items.push(r);
   });
   const meets = [...meetMap.values()].sort((a,b) => a.sortKey - b.sortKey);
   let html = '';
-  meets.forEach(meet => {
-    const pgs = [...meet.pages.entries()];
-    pgs.forEach(([pg, items], i) => {
-      html += '<tr>';
-      if (i === 0) {
-        html += `<td class="mc" rowspan="${pgs.length}">${escapeHtml(meet.meeting)}</td>`;
-        html += `<td class="pc" rowspan="${pgs.length}">${escapeHtml(meet.time)}</td>`;
-      }
-      html += `<td class="pgc">${escapeHtml(pg)}</td>`;
-      html += `<td><div class="iss-grid">${items.map(tagSpan).join('')}</div></td>`;
-      html += '</tr>';
-    });
+  meets.forEach(g => {
+    html += `<tr class="mtg-header"><th colspan="7">📅 ${escapeHtml(g.meeting)}<span class="mtg-time">${escapeHtml(g.time)}</span> · ${g.items.length} 件</th></tr>`;
+    g.items.forEach(r => { html += simpleRow(r, {}); });
   });
+  if (!html) html = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#999;">會議が未設定の Issue のみのため、表示できる項目はありません</td></tr>';
   tbody.innerHTML = html;
 }
 
-// ===== Tab C: 處 → 管理頁面 → 會議+時間 → Issues =====
+// ===== Tab C：停滞警報（更新日が古い順）=====
 function renderTableC() {
   const tbody = document.querySelector('#panel-C tbody');
-  const deptMap = new Map();
-  issueData.forEach(r => {
-    const d = r['處'] || '';
-    if (!deptMap.has(d)) deptMap.set(d, new Map());
-    const sk = (r['管理頁面']||'') + '|' + (r['確認會議']||'') + '|' + (r['會議時間']||'');
-    const pm = deptMap.get(d);
-    if (!pm.has(sk)) pm.set(sk, {
-      page: r['管理頁面']||'', meeting: r['確認會議']||'',
-      time: r['會議時間']||'', items: []
-    });
-    pm.get(sk).items.push(r);
+  if (!tbody) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const decorated = issueData.map(r => {
+    const upd = parseDateLoose(r['更新日']);
+    let days = null;
+    if (upd) {
+      upd.setHours(0,0,0,0);
+      days = Math.floor((today - upd) / 86400000);
+    }
+    return { row: r, days };
+  });
+  // 並べ替え：更新日が古い順（>14日 → >7日 → ≤7日 → 未設定 を最後）
+  decorated.sort((a, b) => {
+    if (a.days === null && b.days === null) return 0;
+    if (a.days === null) return 1;
+    if (b.days === null) return -1;
+    return b.days - a.days;
   });
   let html = '';
-  [...deptMap.entries()].forEach(([dept, pgMap]) => {
-    const subs = [...pgMap.values()];
-    // Group consecutive same page → rowspan on 管理頁面 column
-    const pageGroups = [];
-    subs.forEach(s => {
-      const last = pageGroups[pageGroups.length-1];
-      if (last && last.page === s.page) last.entries.push(s);
-      else pageGroups.push({ page:s.page, entries:[s] });
-    });
-    const totalRows = subs.length;
-    let deptCellEmitted = false;
-    pageGroups.forEach(pg => {
-      pg.entries.forEach((e, j) => {
-        html += '<tr>';
-        if (!deptCellEmitted) {
-          html += `<td class="mc" rowspan="${totalRows}">${escapeHtml(dept)}</td>`;
-          deptCellEmitted = true;
-        }
-        if (j === 0) {
-          html += `<td class="pgc" rowspan="${pg.entries.length}">${escapeHtml(pg.page)}</td>`;
-        }
-        html += `<td class="pgc">${escapeHtml(e.meeting)}</td>`;
-        html += `<td class="pc">${escapeHtml(e.time)}</td>`;
-        html += `<td><div class="iss-grid">${e.items.map(tagSpan).join('')}</div></td>`;
-        html += '</tr>';
-      });
-    });
+  decorated.forEach(({ row: r, days }) => {
+    const rowClass = days != null && days > 14 ? 'stalled-red'
+                   : days != null && days > 7  ? 'stalled-yellow'
+                   : '';
+    html += simpleRow(r, { showType: true, showParentHint: true, rowClass });
   });
+  if (!html) html = '<tr><td colspan="8" style="text-align:center; padding:30px; color:#999;">資料無し</td></tr>';
   tbody.innerHTML = html;
 }
 
-// ===== Tab D: weekly calendar (AM/PM × 週一〜週五) =====
-function renderTableD() {
-  const tbody = document.querySelector('#panel-D tbody');
-  const cells = { AM:{1:[],2:[],3:[],4:[],5:[]}, PM:{1:[],2:[],3:[],4:[],5:[]} };
-  const meetMap = new Map();
+// ===== Tab D / E：特定担当者の Issue / Mission 一覧 =====
+function renderPersonView(panelKey, personName) {
+  const tbody = document.querySelector(`#panel-${panelKey} tbody`);
+  if (!tbody) return;
+  const issuesOwned = [];
+  const missionsOwned = [];
+  const issueByNum = new Map();
   issueData.forEach(r => {
-    const dt = parseDayTime(r['會議時間']||'');
-    if (dt.day < 1 || dt.day > 5) return;
-    const key = (r['確認會議']||'') + '|' + (r['會議時間']||'');
-    if (!meetMap.has(key)) meetMap.set(key, {
-      meeting: r['確認會議']||'', dt, pages: new Set(), items: []
-    });
-    const o = meetMap.get(key);
-    if (r['管理頁面']) o.pages.add(r['管理頁面']);
-    o.items.push(r);
+    const t = r['種別']||'Issue';
+    if (t === 'Mission' || t === 'Task') {
+      if ((r['擔當']||'').trim() === personName) missionsOwned.push(r);
+    } else {
+      issueByNum.set((r['編號']||'').trim(), r);
+      const o = (r['戰略負責人']||'').trim();
+      if (o === personName) issuesOwned.push(r);
+    }
   });
-  [...meetMap.values()].forEach(m => {
-    const period = m.dt.h < 12 ? 'AM' : 'PM';
-    cells[period][m.dt.day].push(m);
-  });
-  ['AM','PM'].forEach(p => {
-    for (let d=1; d<=5; d++) cells[p][d].sort((a,b) => a.dt.key - b.dt.key);
-  });
-  function renderCell(meets) {
-    if (!meets.length) return '<td style="background:#FBF9F4;"></td>';
-    let h = '<td class="cal-cell">';
-    meets.forEach(m => {
-      const pages = [...m.pages].join(' / ');
-      h += '<div class="cal-mtg">';
-      h += `<div class="cal-mtg-time">${escapeHtml(m.dt.time)}</div>`;
-      h += `<div class="cal-mtg-name">${escapeHtml(m.meeting)}</div>`;
-      h += `<div class="cal-mtg-jig">${escapeHtml(pages)}</div>`;
-      h += `<div class="cal-tags">${m.items.map(tagSpan).join('')}</div>`;
-      h += '</div>';
-    });
-    h += '</td>';
-    return h;
-  }
   let html = '';
-  ['AM','PM'].forEach(p => {
-    html += `<tr><td class="mc" style="vertical-align:middle;">${p}</td>`;
-    for (let d=1; d<=5; d++) html += renderCell(cells[p][d]);
-    html += '</tr>';
-  });
+  if (issuesOwned.length) {
+    html += `<tr class="sec-row"><th colspan="6">★ Issue（戰略負責人 = ${escapeHtml(personName)}）· ${issuesOwned.length} 件</th></tr>`;
+    issuesOwned.forEach(r => {
+      html += simpleRow(r, { showOwner: false, showRemark: true });
+    });
+  }
+  if (missionsOwned.length) {
+    html += `<tr class="sec-row"><th colspan="6">▶ Mission（擔當 = ${escapeHtml(personName)}）· ${missionsOwned.length} 件</th></tr>`;
+    missionsOwned.forEach(r => {
+      html += simpleRow(r, { showOwner: false, showRemark: true, showParentHint: true });
+    });
+  }
+  if (!html) {
+    html = `<tr><td colspan="6" style="text-align:center; padding:30px; color:#999;">${escapeHtml(personName)} が擔當 / 戰略負責人 として割り当てられている Issue / Mission はありません</td></tr>`;
+  }
   tbody.innerHTML = html;
+}
+
+// ===== Tab F：Dashboard =====
+function renderTabF() {
+  let issueTotal = 0, issueDone = 0, issueWip = 0, issueNotStarted = 0;
+  let missionTotal = 0, missionDone = 0, missionWip = 0, missionNotStarted = 0, missionNoOwner = 0;
+  let stalled14 = 0, stalled7 = 0, noDate = 0;
+  const deptCounts = {};
+  const ownerCounts = {};      // 戰略負責人 (Issue)
+  const missionOwnerCounts = {}; // 擔當 (Mission)
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  issueData.forEach(r => {
+    const t = r['種別']||'Issue';
+    const isMission = (t === 'Mission' || t === 'Task');
+    const status = (r['狀態']||'').trim();
+    if (isMission) {
+      missionTotal++;
+      if (status === '完成') missionDone++;
+      else if (status === '進行中') missionWip++;
+      else missionNotStarted++; // '未開始' または空欄
+      const own = (r['擔當']||'').trim();
+      if (!own) missionNoOwner++;
+      else missionOwnerCounts[own] = (missionOwnerCounts[own]||0)+1;
+    } else {
+      issueTotal++;
+      if (status === '完成') issueDone++;
+      else if (status === '進行中') issueWip++;
+      else issueNotStarted++;
+      const dept = (r['處']||'').trim();
+      if (dept) deptCounts[dept] = (deptCounts[dept]||0)+1;
+      const owner = (r['戰略負責人']||'').trim();
+      if (owner) ownerCounts[owner] = (ownerCounts[owner]||0)+1;
+    }
+    const upd = parseDateLoose(r['更新日']);
+    if (!upd) noDate++;
+    else {
+      upd.setHours(0,0,0,0);
+      const days = Math.floor((today - upd) / 86400000);
+      if (days > 14) stalled14++;
+      else if (days > 7) stalled7++;
+    }
+  });
+
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('dashIssueTotal', issueTotal);
+  set('dashIssueDone', issueDone);
+  set('dashIssueWip', issueWip);
+  set('dashIssueNotStarted', issueNotStarted);
+  set('dashMissionTotal', missionTotal);
+  set('dashMissionDone', missionDone);
+  set('dashMissionWip', missionWip);
+  set('dashMissionNotStarted', missionNotStarted);
+  set('dashMissionNoOwner', missionNoOwner);
+  set('dashStalled14', stalled14);
+  set('dashStalled7', stalled7);
+  set('dashNoDate', noDate);
+
+  function renderBars(elId, counts) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    if (!entries.length) { el.innerHTML = '<div style="color:#999;font-size:11px;padding:10px;">資料無し</div>'; return; }
+    const max = Math.max(1, ...entries.map(e => e[1]));
+    el.innerHTML = entries.map(([name, count]) => `
+      <div class="dash-bar-row">
+        <div class="dash-bar-name" title="${escapeAttr(name)}">${escapeHtml(name)}</div>
+        <div class="dash-bar-track"><div class="dash-bar-fill" style="width:${(count/max*100).toFixed(1)}%;"></div></div>
+        <div class="dash-bar-count">${count}</div>
+      </div>
+    `).join('');
+  }
+  renderBars('dashDeptBars', deptCounts);
+  renderBars('dashOwnerBars', ownerCounts);
+  renderBars('dashMissionOwnerBars', missionOwnerCounts);
 }
 
 function renderAll() {
   renderTableA();
   renderTableB();
   renderTableC();
-  renderTableD();
+  renderPersonView('D', '詩雅');
+  renderPersonView('E', '育菱');
+  renderTabF();
 }
 
 // ===== 列陣列 → 資料物件（雲端載入用）=====
