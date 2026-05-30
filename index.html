@@ -148,7 +148,32 @@
   .st-未開始 { background: #EEEAE0; color: #555; }
   .st-進行中 { background: #DCEBFB; color: #000; }
   .st-完成   { background: #D4F2DD; color: #000; }
-  .st-empty  { color: #DDD; font-weight: 400; }
+  /* 空欄時は行種別バッジで埋める（欠落ではなく未評価と分かる） */
+  .st-type   { display: inline-block; padding: 1px 7px; border-radius: 3px; font-weight: 700; font-size: 10px; line-height: 1.5; letter-spacing: 0.05em; }
+  .st-type-issue { background: transparent; color: #B8B0A0; border: 1px dashed #D8D2C0; }
+  .st-type-task  { background: transparent; color: #9BB6D2; border: 1px dashed #C7D5E8; }
+
+  /* Tab A controls bar */
+  .ctrl-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 10px; background: var(--hdr-bg); border-bottom: 1px solid var(--border); font-size: 12px; }
+  .ctrl-bar input[type="search"], .ctrl-bar select { padding: 4px 8px; font-size: 12px; border: 1px solid #BFB8A4; border-radius: 4px; background: #fff; font-family: inherit; color: #000; }
+  .ctrl-bar input[type="search"] { min-width: 200px; }
+  .ctrl-bar label { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; color: #333; }
+  .ctrl-bar .ctrl-sep { width: 1px; height: 18px; background: var(--border); margin: 0 4px; }
+  .ctrl-bar .ctrl-clear { padding: 4px 10px; font-size: 11px; font-weight: 600; border: 1px solid #BFB8A4; border-radius: 4px; background: #fff; cursor: pointer; color: #555; }
+  .ctrl-bar .ctrl-clear:hover { background: #F0EBDC; color: #000; }
+  .ctrl-bar .ctrl-count { margin-left: auto; font-size: 11px; color: #666; }
+  .row-hidden { display: none !important; }
+
+  /* Confluence cell（管理頁面の位置に配置） */
+  .conf { white-space: nowrap; font-size: 11px; }
+  .conf a { color: #5A78AA; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+  .conf a:hover { text-decoration: underline; color: #000; }
+  .conf img { width: 13px; height: 13px; vertical-align: middle; flex-shrink: 0; }
+  .conf .conf-text { display: inline-block; max-width: 130px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+
+  /* 確認會議・會議時間 折り畳み */
+  .mtg-col { transition: none; }
+  table.hide-mtg .mtg-col { display: none; }
 
   /* Office memo (事務局備註) — 空のときは何も表示しない */
   .memo { font-size: 11px; color: #555; font-style: italic; line-height: 1.45; min-width: 100px; max-width: 200px; white-space: normal; }
@@ -188,7 +213,10 @@
 </head>
 <body>
 <div class="topbar">
-  <h1>TBBS-經營Issue管理系統<span class="ver" id="verBadge" title="">v?.?.?</span></h1>
+  <h1 style="display:flex; align-items:center; gap:10px;">
+    <img src="favicon.svg" alt="" width="28" height="28" style="vertical-align:middle; flex-shrink:0;">
+    <span>TBBS-經營Issue管理系統<span class="ver" id="verBadge" title="">v?.?.?</span></span>
+  </h1>
   <button id="adminBtn" class="admin-btn" onclick="show('E',event)" title="僅供管理者使用：資料來源設定">⚙ 管理者專用</button>
 </div>
 
@@ -201,77 +229,34 @@
 
 <!-- ===== A ===== -->
 <div class="panel active" id="panel-A">
-<table>
+<div class="ctrl-bar" id="ctrlBarA">
+  <input type="search" id="searchA" placeholder="🔍 Issue/Task/担当者/組...で検索" autocomplete="off">
+  <select id="filterDeptA"><option value="">處：すべて</option></select>
+  <select id="filterGroupA"><option value="">組：すべて</option></select>
+  <span class="ctrl-sep"></span>
+  <label><input type="checkbox" id="toggleMtgA" checked>會議列を表示</label>
+  <span class="ctrl-sep"></span>
+  <button type="button" class="ctrl-clear" id="clearFilterA">クリア</button>
+  <span class="ctrl-count" id="filterCountA"></span>
+</div>
+<table id="tableA">
 <thead>
   <tr>
     <th style="width:74px;">編號</th>
     <th style="min-width:160px;">Issue / Task</th>
-    <th style="width:64px;">處</th>
-    <th style="width:64px;">組</th>
-    <th style="width:48px;">戰略負責人</th>
-    <th style="width:96px;">管理頁面</th>
-    <th style="width:96px;">確認會議</th>
-    <th style="width:62px;">會議時間</th>
-    <th style="width:64px;">狀態</th>
-    <th style="min-width:140px;">事務局備註</th>
+    <th style="width:74px;">處</th>
+    <th style="width:74px;">組</th>
+    <th style="width:60px;">戰略負責人</th>
+    <th style="width:160px;">Confluence</th>
+    <th class="mtg-col" style="width:110px;">確認會議</th>
+    <th class="mtg-col" style="width:70px;">會議時間</th>
+    <th style="width:74px;">狀態</th>
+    <th style="min-width:140px;">Remarks</th>
     <th style="width:56px;">更新</th>
-    <th style="width:28px;" title="Confluence">📄</th>
   </tr>
 </thead>
 <tbody>
-<tr><td colspan="12" class="sec">■ 共通Issue（橫軸管理）</td></tr>
-<tr><td class="grp grp-com" rowspan="24">共通</td><td class="ax ax-O">O</td><td class="num">共-1</td><td class="lbl">交叉銷售·客單價提升</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">JIG-經營戰略</td><td class="pc">經營戰略組會</td><td class="pc">週三15:30</td></tr>
-<tr><td class="ax ax-O">O</td><td class="num">共-2</td><td class="lbl">官方網站體驗強化·轉換提升</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">JIG-通路整合</td><td class="pc">整合溝通-通路整合</td><td class="pc">週二15:30</td></tr>
-<tr><td class="ax ax-O">O</td><td class="num">共-3</td><td class="lbl">YOUTUBE內容強化·各事業業績貢獻·訂閱者擴大</td><td class="dept">商品事業</td><td class="dept">學習商品開發</td><td class="dept">育菱</td><td class="pc">JIG-學習商品開發</td><td class="pc">商品溝通-YT</td><td class="pc">週二14:30</td></tr>
-<tr><td class="ax ax-O">O</td><td class="num">共-4</td><td class="lbl">SNS社群互動·粉絲擴大·各事業貢獻</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">JIG-數位行銷</td><td class="pc">整合溝通-數位行銷</td><td class="pc">週二15:30</td></tr>
-<tr><td class="ax ax-N">N</td><td class="num">共-5</td><td class="lbl">BCL註冊用戶擴大</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">少琪</td><td class="pc">JIG-BCL</td><td class="pc">經營戰略組會</td><td class="pc">週三15:30</td></tr>
-<tr><td class="ax ax-N">N</td><td class="num">共-6</td><td class="lbl">忠誠用戶擴大</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">少琪</td><td class="pc">JIG-BCL</td><td class="pc">經營戰略組會</td><td class="pc">週三15:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">共-7</td><td class="lbl">LC8T實裝·運用成熟·機能改善·資料統合</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">JIG-LC8T</td><td class="pc">LC8T-推進</td><td class="pc">週一10:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">共-8</td><td class="lbl">LC8T-ACTS 產品系列定期發信自動化</td><td class="dept">CX計劃</td><td class="dept">LTV戰略</td><td class="dept">育菱</td><td class="pc">JIG-LTV戰略</td><td class="pc">CX溝通</td><td class="pc">週三10:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">共-9</td><td class="lbl">LC8T-AWRT WEB再行銷對象抽取·自動發信</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">JIG-數位行銷</td><td class="pc">整合溝通-數位行銷</td><td class="pc">週二15:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">共-10</td><td class="lbl">LC8T-ATLT 高回應對象自動抽取·TEL名單化</td><td class="dept">CX計劃</td><td class="dept">LTV戰略</td><td class="dept">育菱</td><td class="pc">JIG-LTV戰略</td><td class="pc">CX溝通</td><td class="pc">週三10:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">共-11</td><td class="lbl">LiveChat運營改善</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">JIG-通路整合</td><td class="pc">整合溝通-通路整合</td><td class="pc">週二15:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">共-12</td><td class="lbl">LINE客服運營改善</td><td class="dept">CX計劃</td><td class="dept">LTV戰略</td><td class="dept">育菱</td><td class="pc">JIG-LTV戰略</td><td class="pc">CX溝通</td><td class="pc">週三10:30</td></tr>
-<tr><td class="ax ax-I">I</td><td class="num">共-13</td><td class="lbl">庫存管理-降低風險</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">詩雅</td><td class="pc">JIG-靜中美</td><td class="pc">靜中美</td><td class="pc">週二13:30</td></tr>
-<tr><td class="ax ax-I">I</td><td class="num">共-14</td><td class="lbl">共同費用合理化·系統開發-優化</td><td class="dept">資訊事業</td><td class="dept">資訊</td><td class="dept">詩雅</td><td class="pc">JIG-資訊</td><td class="pc">資訊溝通</td><td class="pc">週一11:00</td></tr>
-<tr><td class="ax ax-I">I</td><td class="num">共-15</td><td class="lbl">共同費用合理化·物流</td><td class="dept">總管理</td><td class="dept">統籌整合</td><td class="dept">詩雅</td><td class="pc">JIG-統籌整合</td><td class="pc">總管理溝通</td><td class="pc">週一10:00</td></tr>
-<tr><td class="ax ax-I">I</td><td class="num">共-16</td><td class="lbl">共同費用合理化·其他</td><td class="dept">總管理</td><td class="dept">統籌整合</td><td class="dept">詩雅</td><td class="pc">JIG-統籌整合</td><td class="pc">總管理溝通</td><td class="pc">週一10:00</td></tr>
-<tr><td class="ax ax-I">I</td><td class="num">共-17</td><td class="lbl">經營Issue同步·進度管控機制建立</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">詩雅</td><td class="pc">JIG-綢繆帷幄</td><td class="pc">綢繆帷幄</td><td class="pc">週四10:30</td></tr>
-<tr><td class="ax ax-P">P</td><td class="num">共-18</td><td class="lbl">經營可視化儀表板建置(PL-BS-CF)</td><td class="dept">財務</td><td class="dept">財務</td><td class="dept">詩雅</td><td class="pc">JIG-財務</td><td class="pc">財務溝通</td><td class="pc">週四13:30</td></tr>
-<tr><td class="ax ax-P">P</td><td class="num">共-19</td><td class="lbl">合約規管一元化·可視化</td><td class="dept">總管理</td><td class="dept">統籌整合</td><td class="dept">詩雅</td><td class="pc">JIG-統籌整合</td><td class="pc">合約管理</td><td class="pc">週一09:30</td></tr>
-<tr><td class="ax ax-P">P</td><td class="num">共-20</td><td class="lbl">LTV儀表板建設-提升經營Issue的尋找以及判斷能力</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">詩雅</td><td class="pc">JIG-詩雅工作一覽</td><td class="pc">詩雅1ON1</td><td class="pc">週三14:00</td></tr>
-<tr><td class="ax ax-P">P</td><td class="num">共-21</td><td class="lbl">經營重要事項共有·討論</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">詩雅</td><td class="pc">JIG-經營會</td><td class="pc">經營會</td><td class="pc">週二11:00</td></tr>
-<tr><td class="ax ax-P">P</td><td class="num">共-22</td><td class="lbl">跨部門Issue調整方針討論</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">JIG-育菱工作一覽</td><td class="pc">育菱1on1</td><td class="pc">週四09:30</td></tr>
-<tr><td class="ax ax-P">P</td><td class="num">共-23</td><td class="lbl">業績確認以及經營會準備</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">詩雅</td><td class="pc">JIG-詩雅工作一覽</td><td class="pc">業績確認</td><td class="pc">週一14:00</td></tr>
-<tr><td class="ax ax-P">P</td><td class="num">共-24</td><td class="lbl">AI經營能力提升</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">詩雅</td><td class="pc">JIG-AIC</td><td class="pc">AIC會議</td><td class="pc">週五10:00</td></tr>
-<tr><td colspan="12" class="sec">■ 個別Issue（縱軸·依SKU管理）</td></tr>
-<tr><td class="grp grp-L" rowspan="6">L<br>學習商品</td><td class="ax ax-O">O</td><td class="num">L-1</td><td class="lbl">學習商品-SKU擴大·進化</td><td class="dept">商品事業</td><td class="dept">學習商品開發</td><td class="dept">育菱</td><td class="pc">JIG-學習商品開發</td><td class="pc">商品溝通-學習商品</td><td class="pc">週二14:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">L-2</td><td class="lbl">學習商品-WEB銷售擴大</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">JIG-數位行銷</td><td class="pc">整合溝通-數位行銷</td><td class="pc">週二15:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">L-3</td><td class="lbl">學習商品-KOL銷售擴大</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">JIG-數位行銷</td><td class="pc">整合溝通-數位行銷</td><td class="pc">週二15:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">L-4</td><td class="lbl">學習商品-EC銷售擴大</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">JIG-數位行銷</td><td class="pc">整合溝通-數位行銷</td><td class="pc">週二15:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">L-5</td><td class="lbl">學習商品-海外代理商擴大</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">JIG-數位行銷</td><td class="pc">整合溝通-數位行銷</td><td class="pc">週二15:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">L-6</td><td class="lbl">學習商品-TM銷售擴大</td><td class="dept">CX計劃</td><td class="dept">LTV戰略</td><td class="dept">育菱</td><td class="pc">JIG-LTV戰略</td><td class="pc">CX溝通</td><td class="pc">週三10:30</td></tr>
-<tr><td class="grp grp-Z" rowspan="6">Z<br>周邊商品</td><td class="ax ax-O">O</td><td class="num">Z-1</td><td class="lbl">周邊商品-SKU擴大·進化</td><td class="dept">商品事業</td><td class="dept">品牌授權策略</td><td class="dept">育菱</td><td class="pc">JIG-品牌授權策略</td><td class="pc">商品溝通-授權</td><td class="pc">週二14:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">Z-2</td><td class="lbl">周邊商品-WEB銷售擴大</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">JIG-通路整合</td><td class="pc">整合溝通-通路整合</td><td class="pc">週二15:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">Z-3</td><td class="lbl">周邊商品-KOL銷售擴大</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">JIG-通路整合</td><td class="pc">整合溝通-通路整合</td><td class="pc">週二15:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">Z-4</td><td class="lbl">周邊商品-EC銷售擴大</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">JIG-數位行銷</td><td class="pc">整合溝通-數位行銷</td><td class="pc">週二15:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">Z-5</td><td class="lbl">周邊商品-海外代理商擴大</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">JIG-通路整合</td><td class="pc">整合溝通-通路整合</td><td class="pc">週二15:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">Z-6</td><td class="lbl">周邊商品-舞台劇現場銷售擴大</td><td class="dept">商品事業</td><td class="dept">表演活動</td><td class="dept">育菱</td><td class="pc">JIG-表演活動</td><td class="pc">商品溝通-舞台劇</td><td class="pc">週二14:30</td></tr>
-<tr><td class="grp grp-M" rowspan="4">M<br>Mirafeel</td><td class="ax ax-O">O</td><td class="num">M-1</td><td class="lbl">Mirafeel-SKU擴大·進化</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">JIG-通路整合</td><td class="pc">整合溝通-通路整合</td><td class="pc">週二15:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">M-2</td><td class="lbl">Mirafeel-WEB銷售擴大</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">JIG-通路整合</td><td class="pc">整合溝通-通路整合</td><td class="pc">週二15:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">M-3</td><td class="lbl">Mirafeel-TM銷售擴大</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">JIG-通路整合</td><td class="pc">整合溝通-通路整合</td><td class="pc">週二15:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">M-4</td><td class="lbl">Mirafeel-KOL銷售擴大</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">JIG-通路整合</td><td class="pc">整合溝通-通路整合</td><td class="pc">週二15:30</td></tr>
-<tr><td class="grp grp-C" rowspan="2">C<br>共創SKU</td><td class="ax ax-O">O</td><td class="num">C-1</td><td class="lbl">共創SKU擴大·進化</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">JIG-靜中美</td><td class="pc">靜中美</td><td class="pc">週二13:30</td></tr>
-<tr><td class="ax ax-O">O</td><td class="num">C-2</td><td class="lbl">KK-AI巧虎商品化推進</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">JIG-AI巧虎</td><td class="pc">AI巧虎</td><td class="pc">週二16:30</td></tr>
-<tr><td class="grp grp-X" rowspan="2">X<br>跨境A&amp;B</td><td class="ax ax-O">O</td><td class="num">X-1</td><td class="lbl">跨境A&amp;B-SKU擴大·進化</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">JIG-靜中美</td><td class="pc">靜中美</td><td class="pc">週二13:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">X-2</td><td class="lbl">跨境A&amp;B-WEB銷售擴大</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">JIG-靜中美</td><td class="pc">靜中美</td><td class="pc">週二13:30</td></tr>
-<tr><td class="grp grp-S" rowspan="4">S<br>舞台劇</td><td class="ax ax-O">O</td><td class="num">S-1</td><td class="lbl">舞台劇-節目擴大·進化（各演出/電影）</td><td class="dept">商品事業</td><td class="dept">表演活動</td><td class="dept">育菱</td><td class="pc">JIG-表演活動</td><td class="pc">商品溝通-舞台劇</td><td class="pc">週二14:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">S-2</td><td class="lbl">舞台劇票房-BCL銷售擴大</td><td class="dept">商品事業</td><td class="dept">表演活動</td><td class="dept">育菱</td><td class="pc">JIG-表演活動</td><td class="pc">商品溝通-舞台劇</td><td class="pc">週二14:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">S-3</td><td class="lbl">舞台劇票房-其他通路銷售擴大</td><td class="dept">商品事業</td><td class="dept">表演活動</td><td class="dept">育菱</td><td class="pc">JIG-表演活動</td><td class="pc">商品溝通-舞台劇</td><td class="pc">週二14:30</td></tr>
-<tr><td class="ax ax-CV">CV</td><td class="num">S-4</td><td class="lbl">舞台劇包場-B2C銷售擴大</td><td class="dept">商品事業</td><td class="dept">表演活動</td><td class="dept">育菱</td><td class="pc">JIG-表演活動</td><td class="pc">商品溝通-舞台劇</td><td class="pc">週二14:30</td></tr>
-<tr><td class="grp grp-IP" rowspan="3">IP<br>IP授權</td><td class="ax ax-O">O</td><td class="num">IP-1</td><td class="lbl">MD商品授權擴大（好園地/自社）</td><td class="dept">商品事業</td><td class="dept">品牌授權策略</td><td class="dept">育菱</td><td class="pc">JIG-品牌授權策略</td><td class="pc">商品溝通-授權</td><td class="pc">週二14:30</td></tr>
-<tr><td class="ax ax-O">O</td><td class="num">IP-2</td><td class="lbl">卡通IP化·授權收益擴大</td><td class="dept">商品事業</td><td class="dept">品牌授權策略</td><td class="dept">育菱</td><td class="pc">JIG-品牌授權策略</td><td class="pc">商品溝通-授權</td><td class="pc">週二14:30</td></tr>
-<tr><td class="ax ax-O">O</td><td class="num">IP-3</td><td class="lbl">空間授權事業拓展</td><td class="dept">商品事業</td><td class="dept">品牌授權策略</td><td class="dept">育菱</td><td class="pc">JIG-品牌授權策略</td><td class="pc">商品溝通-授權</td><td class="pc">週二14:30</td></tr>
+<tr><td colspan="11" style="text-align:center; color:#999; padding:20px; font-size:11px;">資料を雲端から読み込んでいます…</td></tr>
 </tbody>
 </table>
 </div>
@@ -406,9 +391,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.5.1';
+const APP_VERSION = '0.6.0';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'Task シート名のUnicode修正（覧→覽 繁體）／既存 Task の Task一覽 へのマイグレーション対応';
+const APP_NOTE  = 'Tab A 改善：検索＋處/組フィルタ、會議列の折り畳み、Confluence列統合（favicon＋ページ名）、Remarks 改名、空狀態をISSUE/TASKバッジに';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -550,9 +535,14 @@ function harvestShortNames() {
 }
 
 // 狀態バッジHTML
-function statusBadge(s) {
+// 空欄時は行種別バッジ（ISSUE / TASK）で埋めて「未評価」と分かるようにする
+function statusBadge(s, isTask) {
   const v = (s || '').trim();
-  if (!v) return '<span class="st-empty">—</span>';
+  if (!v) {
+    return isTask
+      ? '<span class="st-type st-type-task">TASK</span>'
+      : '<span class="st-type st-type-issue">ISSUE</span>';
+  }
   const cls = STATUS_VALUES.has(v) ? `st-${v}` : '';
   return `<span class="st-badge ${cls}">${escapeHtml(v)}</span>`;
 }
@@ -583,11 +573,19 @@ function freshnessCell(dateStr) {
   return `<td class="upd ${cls}" title="${escapeHtml(v)}">${label}</td>`;
 }
 
-// Confluence リンクのセル
-function confluenceCell(url) {
+// Confluence セル：管理頁面（ページ名）＋ favicon ＋ リンク
+// pageName は元 "管理頁面" 列の文字列。url が空ならテキストのみ。
+const CONF_FAVICON = 'https://benessetw.atlassian.net/favicon.ico';
+function confluenceCell(pageName, url) {
+  const name = (pageName || '').trim();
   const u = (url || '').trim();
-  if (!u) return '<td class="lnk"></td>';
-  return `<td class="lnk"><a href="${escapeHtml(u)}" target="_blank" rel="noopener" title="Confluence ページを開く">📄</a></td>`;
+  if (!name && !u) return '<td class="conf"></td>';
+  const iconHtml = `<img src="${CONF_FAVICON}" alt="Confluence" onerror="this.style.display='none'">`;
+  const text = `<span class="conf-text" title="${escapeAttr(name)}">${escapeHtml(name || 'Confluenceページ')}</span>`;
+  const inner = u
+    ? `<a href="${escapeAttr(u)}" target="_blank" rel="noopener" title="${escapeAttr(u)}">${iconHtml}${text}</a>`
+    : `${iconHtml}${text}`;
+  return `<td class="conf">${inner}</td>`;
 }
 
 // Issue + Task 階層を組み立てる：Issue配下に親編號が一致するTaskを纏める
@@ -612,7 +610,7 @@ function buildIssueTree(rows) {
   return issues;
 }
 
-// 1 行を 12 セル固定で生成する共通ヘルパー（v0.5.0：區分・軸を撤去）
+// 1 行を 11 セル固定で生成する共通ヘルパー（v0.6.0：Confluence 列統合 + 管理頁面廃止 + 📄列廃止）
 function renderRow(r, opts) {
   const isTask = !!opts.isTask;
   const parentNum = opts.parentNum || '';
@@ -622,23 +620,31 @@ function renderRow(r, opts) {
   const toggleAttr = hasTasks ? ` onclick="toggleTasks(this, '${escapeAttr(num)}')"` : '';
   const toggleSym = hasTasks ? '▶' : '';
 
-  const trAttrs = isTask
-    ? ` class="task-row hidden" data-parent="${escapeAttr(parentNum)}"`
-    : '';
+  const dept = r['處'] || '';
+  const grp  = r['組'] || '';
+  // 検索用テキスト（lowercase, 連結）
+  const searchStr = [
+    num, r['Issue'], dept, grp, r['戰略負責人'],
+    r['管理頁面'], r['確認會議'], r['事務局備註']
+  ].map(v => (v||'').toString().toLowerCase()).join(' ');
+
+  const cls = isTask ? 'task-row hidden' : 'issue-row';
+  let trAttrs = ` class="${cls}"`;
+  if (isTask) trAttrs += ` data-parent="${escapeAttr(parentNum)}"`;
+  trAttrs += ` data-dept="${escapeAttr(dept)}" data-group="${escapeAttr(grp)}" data-search="${escapeAttr(searchStr)}"`;
 
   let h = `<tr${trAttrs}>`;
   h += `<td class="num num-cell"><span class="${toggleCls}"${toggleAttr}>${toggleSym}</span>${escapeHtml(num)}</td>`; // 1 編號
-  h += `<td class="lbl">${escapeHtml(r['Issue'])}</td>`;                            // 2 Issue / Task
-  h += `<td class="dept">${escapeHtml(r['處'])}</td>`;                              // 3 處
-  h += `<td class="dept">${escapeHtml(r['組'])}</td>`;                              // 4 組
-  h += `<td class="dept">${escapeHtml(r['戰略負責人'])}</td>`;                      // 5 戰略負責人
-  h += `<td class="pc">${escapeHtml(r['管理頁面'])}</td>`;                          // 6 管理頁面
-  h += `<td class="pc">${escapeHtml(r['確認會議'])}</td>`;                          // 7 確認會議
-  h += `<td class="pc">${escapeHtml(r['會議時間'])}</td>`;                          // 8 會議時間
-  h += `<td class="st">${statusBadge(r['狀態'])}</td>`;                             // 9 狀態
-  h += `<td class="memo">${escapeHtml(r['事務局備註'])}</td>`;                      // 10 事務局備註
-  h += freshnessCell(r['更新日']);                                                  // 11 更新
-  h += confluenceCell(r['Confluence URL']);                                          // 12 📄
+  h += `<td class="lbl">${escapeHtml(r['Issue'])}</td>`;                                   // 2 Issue / Task
+  h += `<td class="dept">${escapeHtml(dept)}</td>`;                                        // 3 處
+  h += `<td class="dept">${escapeHtml(grp)}</td>`;                                         // 4 組
+  h += `<td class="dept">${escapeHtml(r['戰略負責人'])}</td>`;                             // 5 戰略負責人
+  h += confluenceCell(r['管理頁面'], r['Confluence URL']);                                  // 6 Confluence
+  h += `<td class="pc mtg-col">${escapeHtml(r['確認會議'])}</td>`;                          // 7 確認會議
+  h += `<td class="pc mtg-col">${escapeHtml(r['會議時間'])}</td>`;                          // 8 會議時間
+  h += `<td class="st">${statusBadge(r['狀態'], isTask)}</td>`;                             // 9 狀態
+  h += `<td class="memo">${escapeHtml(r['事務局備註'])}</td>`;                              // 10 Remarks
+  h += freshnessCell(r['更新日']);                                                          // 11 更新
   h += '</tr>';
   return h;
 }
@@ -663,6 +669,103 @@ function renderTableA() {
     });
   });
   tbody.innerHTML = html;
+  setupTabAFilters();
+  applyTabAFilters();
+}
+
+// ===== Tab A: 處・組セレクタ、検索ボックス、會議列トグル =====
+let _filtersWired = false;
+function setupTabAFilters() {
+  const deptSel  = document.getElementById('filterDeptA');
+  const grpSel   = document.getElementById('filterGroupA');
+  if (!deptSel || !grpSel) return;
+
+  // 處・組の選択肢を Issue 行（種別=Issue）から組み立て
+  const deptSet = new Set(), grpByDept = new Map();
+  issueData.forEach(r => {
+    if ((r['種別']||'Issue') === 'Task') return;
+    const d = (r['處']||'').trim();
+    const g = (r['組']||'').trim();
+    if (d) deptSet.add(d);
+    if (d || g) {
+      if (!grpByDept.has(d)) grpByDept.set(d, new Set());
+      if (g) grpByDept.get(d).add(g);
+    }
+  });
+
+  const curDept = deptSel.value;
+  const curGrp  = grpSel.value;
+  deptSel.innerHTML = '<option value="">處：すべて</option>'
+    + [...deptSet].sort().map(d => `<option value="${escapeAttr(d)}">${escapeHtml(d)}</option>`).join('');
+  if ([...deptSel.options].some(o => o.value === curDept)) deptSel.value = curDept;
+
+  rebuildGroupOptions();
+
+  if (_filtersWired) return;
+  _filtersWired = true;
+  deptSel.addEventListener('change', () => { rebuildGroupOptions(); applyTabAFilters(); });
+  grpSel.addEventListener('change',  applyTabAFilters);
+  document.getElementById('searchA').addEventListener('input', applyTabAFilters);
+  document.getElementById('toggleMtgA').addEventListener('change', e => {
+    document.getElementById('tableA').classList.toggle('hide-mtg', !e.target.checked);
+  });
+  document.getElementById('clearFilterA').addEventListener('click', () => {
+    document.getElementById('searchA').value = '';
+    deptSel.value = '';
+    rebuildGroupOptions();
+    grpSel.value = '';
+    applyTabAFilters();
+  });
+
+  function rebuildGroupOptions() {
+    const d = deptSel.value;
+    const groups = d ? (grpByDept.get(d) || new Set()) : new Set([].concat(...[...grpByDept.values()].map(s => [...s])));
+    const cur = grpSel.value;
+    grpSel.innerHTML = '<option value="">組：すべて</option>'
+      + [...groups].sort().map(g => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`).join('');
+    if ([...grpSel.options].some(o => o.value === cur)) grpSel.value = cur;
+  }
+}
+
+function applyTabAFilters() {
+  const q = (document.getElementById('searchA')?.value || '').trim().toLowerCase();
+  const d = (document.getElementById('filterDeptA')?.value || '').trim();
+  const g = (document.getElementById('filterGroupA')?.value || '').trim();
+  const tbody = document.querySelector('#panel-A tbody');
+  if (!tbody) return;
+
+  // Issue 行の表示判定 → 表示する Issue の編號を集める
+  const visibleIssueNums = new Set();
+  let shownCount = 0;
+  tbody.querySelectorAll('tr.issue-row').forEach(tr => {
+    const rowDept = tr.dataset.dept || '';
+    const rowGrp  = tr.dataset.group || '';
+    const rowTxt  = tr.dataset.search || '';
+    const match = (!d || rowDept === d)
+               && (!g || rowGrp  === g)
+               && (!q || rowTxt.includes(q));
+    tr.classList.toggle('row-hidden', !match);
+    if (match) {
+      shownCount++;
+      const num = tr.querySelector('.num-cell')?.textContent.replace(/^[▶▼ ]+/,'').trim();
+      if (num) visibleIssueNums.add(num);
+    }
+  });
+
+  // Task 行：親 Issue が表示中なら、検索条件にもマッチさせる（部門は親に追随）
+  tbody.querySelectorAll('tr.task-row').forEach(tr => {
+    const parent = tr.dataset.parent || '';
+    const rowTxt = tr.dataset.search || '';
+    const parentVisible = visibleIssueNums.has(parent);
+    const matchSearch = !q || rowTxt.includes(q);
+    // Task 行は親が見えていて、かつ検索条件にもマッチする必要がある
+    const shouldShow = parentVisible && matchSearch;
+    tr.classList.toggle('row-hidden', !shouldShow);
+  });
+
+  const total = tbody.querySelectorAll('tr.issue-row').length;
+  const countEl = document.getElementById('filterCountA');
+  if (countEl) countEl.textContent = (q || d || g) ? `${shownCount} / ${total} 件表示` : '';
 }
 
 function escapeAttr(s) {
