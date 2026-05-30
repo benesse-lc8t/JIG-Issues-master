@@ -366,8 +366,8 @@
   <div class="topbar-actions">
     <button id="adminBtn" class="admin-btn" onclick="show('Admin',event)" title="僅供管理者使用：資料來源設定">⚙ 管理者專用</button>
     <div class="person-btns">
-      <button type="button" class="person-btn btn-shiya" onclick="show('D',event)" title="詩雅の Mission を表示">👤 詩雅</button>
-      <button type="button" class="person-btn btn-yuling" onclick="show('E',event)" title="育菱の Mission を表示">👤 育菱</button>
+      <button type="button" class="person-btn btn-shiya" onclick="show('D',event)" title="顯示詩雅擔當的 Mission">👤 詩雅</button>
+      <button type="button" class="person-btn btn-yuling" onclick="show('E',event)" title="顯示育菱擔當的 Mission">👤 育菱</button>
     </div>
   </div>
 </div>
@@ -419,7 +419,7 @@
 <!-- ===== B：會議議程（Mission 専用） ===== -->
 <div class="panel" id="panel-B">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    確認會議ごとに <b>Mission</b> を曜日・時間順に並べた會議週次議程
+    依確認會議分組顯示 <b>Mission</b>，依星期與時間排序的會議週次議程
   </div>
   <table class="simple-table">
     <thead>
@@ -441,7 +441,29 @@
 <!-- ===== C：停滯警報（Mission 専用） ===== -->
 <div class="panel" id="panel-C">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    更新日が古い順に並べた <b>Mission</b> 停滯リスト（>14 日 赤・>7 日 黃・未設定 灰）
+    依更新日由舊至新排序的 <b>Mission</b> 停滯清單（&gt;14 天 紅・&gt;7 天 黃・未設定 灰）
+  </div>
+  <div class="ctrl-bar">
+    <select id="filterDeptC"><option value="">處：全部</option></select>
+    <select id="filterOwnerC"><option value="">擔當：全部</option></select>
+    <select id="filterStatusC">
+      <option value="">狀態：全部</option>
+      <option value="未開始">未開始</option>
+      <option value="策劃中">策劃中</option>
+      <option value="需確認">需確認</option>
+      <option value="進行中">進行中</option>
+      <option value="結案">結案</option>
+    </select>
+    <select id="filterStaleC">
+      <option value="">更新：全部</option>
+      <option value="14">&gt;14 天無更新</option>
+      <option value="7">8-14 天無更新</option>
+      <option value="fresh">≤7 天</option>
+      <option value="none">未設定</option>
+    </select>
+    <span class="ctrl-sep"></span>
+    <button type="button" class="ctrl-clear" id="clearFilterC">清除</button>
+    <span class="ctrl-count" id="filterCountC"></span>
   </div>
   <table class="simple-table">
     <thead>
@@ -463,7 +485,7 @@
 <!-- ===== D：詩雅（Mission 専用） ===== -->
 <div class="panel" id="panel-D">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    詩雅が <b>擔當</b> として割り当てられている <b>Mission</b>
+    詩雅 擔當的 <b>Mission</b> 清單
   </div>
   <table class="simple-table">
     <thead>
@@ -484,7 +506,7 @@
 <!-- ===== E：育菱（Mission 専用） ===== -->
 <div class="panel" id="panel-E">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    育菱が <b>擔當</b> として割り当てられている <b>Mission</b>
+    育菱 擔當的 <b>Mission</b> 清單
   </div>
   <table class="simple-table">
     <thead>
@@ -571,9 +593,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.9.5';
+const APP_VERSION = '0.9.6';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '狀態を 5 段階に拡張：未開始 / 策劃中 / 需確認 / 進行中 / 結案。バッジ色＋儀表板カード＋Apps Script ＋ Python 一括対応。「完成」も旧ラベル互換で結案扱い。';
+const APP_NOTE  = '停滯警報に 處 × 擔當 × 狀態 × 更新 のフィルタを追加。B/C/D/E の説明文の日本語残りを繁體中文に。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1173,10 +1195,48 @@ function renderTableB() {
   tbody.innerHTML = html;
 }
 
-// ===== Tab C：停滯警報（Mission を更新日が古い順に、親 Issue 列付き）=====
+// ===== Tab C：停滯警報（Mission を更新日が古い順に、親 Issue 列付き、フィルタ可）=====
+let _filtersWiredC = false;
+function setupTabCFilters() {
+  const deptSel  = document.getElementById('filterDeptC');
+  const ownerSel = document.getElementById('filterOwnerC');
+  if (!deptSel || !ownerSel) return;
+  // 處 / 擔當 の候補を Mission 行から組み立て
+  const deptSet = new Set(), ownerSet = new Set();
+  issueData.forEach(r => {
+    if (!isMissionDatum(r)) return;
+    const d = (r['處']||'').trim();
+    const o = (r['擔當']||'').trim();
+    if (d) deptSet.add(d);
+    if (o) ownerSet.add(o);
+  });
+  const curD = deptSel.value, curO = ownerSel.value;
+  deptSel.innerHTML  = '<option value="">處：全部</option>'   + [...deptSet ].sort().map(d => `<option value="${escapeAttr(d)}">${escapeHtml(d)}</option>`).join('');
+  ownerSel.innerHTML = '<option value="">擔當：全部</option>' + [...ownerSet].sort().map(o => `<option value="${escapeAttr(o)}">${escapeHtml(o)}</option>`).join('');
+  if ([...deptSel.options ].some(o => o.value === curD)) deptSel.value  = curD;
+  if ([...ownerSel.options].some(o => o.value === curO)) ownerSel.value = curO;
+  if (_filtersWiredC) return;
+  _filtersWiredC = true;
+  ['filterDeptC','filterOwnerC','filterStatusC','filterStaleC'].forEach(id => {
+    document.getElementById(id).addEventListener('change', renderTableC);
+  });
+  document.getElementById('clearFilterC').addEventListener('click', () => {
+    ['filterDeptC','filterOwnerC','filterStatusC','filterStaleC'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    renderTableC();
+  });
+}
+
 function renderTableC() {
   const tbody = document.querySelector('#panel-C tbody');
   if (!tbody) return;
+  setupTabCFilters();
+  const fDept   = (document.getElementById('filterDeptC')?.value   || '').trim();
+  const fOwner  = (document.getElementById('filterOwnerC')?.value  || '').trim();
+  const fStatus = (document.getElementById('filterStatusC')?.value || '').trim();
+  const fStale  = (document.getElementById('filterStaleC')?.value  || '').trim();
+
   const issueMap = buildIssueMap();
   const today = new Date(); today.setHours(0,0,0,0);
   const decorated = issueData
@@ -1190,8 +1250,27 @@ function renderTableC() {
       }
       return { row: r, days };
     });
+  const totalCount = decorated.length;
+
+  // フィルタ適用
+  const filtered = decorated.filter(({ row: r, days }) => {
+    if (fDept   && (r['處']||'').trim()   !== fDept)   return false;
+    if (fOwner  && (r['擔當']||'').trim() !== fOwner)  return false;
+    if (fStatus) {
+      const s = (r['狀態']||'').trim();
+      // 「結案」フィルタは旧「完成」も拾う
+      if (fStatus === '結案' && !(s === '結案' || s === '完成')) return false;
+      if (fStatus !== '結案' && s !== fStatus) return false;
+    }
+    if (fStale === '14'    && !(days != null && days > 14))           return false;
+    if (fStale === '7'     && !(days != null && days > 7 && days <= 14)) return false;
+    if (fStale === 'fresh' && !(days != null && days <= 7))           return false;
+    if (fStale === 'none'  && days !== null)                          return false;
+    return true;
+  });
+
   // 並べ替え：更新日が古い順、同日数なら親編號でグループ化（dedup を効かせる）
-  decorated.sort((a, b) => {
+  filtered.sort((a, b) => {
     if (a.days === null && b.days === null) {
       return (a.row['親編號']||'').localeCompare(b.row['親編號']||'');
     }
@@ -1200,9 +1279,10 @@ function renderTableC() {
     if (a.days !== b.days) return b.days - a.days;
     return (a.row['親編號']||'').localeCompare(b.row['親編號']||'');
   });
+
   let html = '';
   let prevParent = null;
-  decorated.forEach(({ row: r, days }) => {
+  filtered.forEach(({ row: r, days }) => {
     const rowClass = days != null && days > 14 ? 'stalled-red'
                    : days != null && days > 7  ? 'stalled-yellow'
                    : '';
@@ -1210,8 +1290,16 @@ function renderTableC() {
     html += simpleRow(r, { ownerField: '擔當', parent, rowClass });
     prevParent = parent.num;
   });
-  if (!html) html = '<tr><td colspan="8" style="text-align:center; padding:30px; color:#999;">Mission がまだ登録されていません</td></tr>';
+  if (!html) html = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>`;
   tbody.innerHTML = html;
+
+  // 件数表示
+  const countEl = document.getElementById('filterCountC');
+  if (countEl) {
+    countEl.textContent = (fDept || fOwner || fStatus || fStale)
+      ? `顯示 ${filtered.length} / ${totalCount} 筆`
+      : `${totalCount} 筆`;
+  }
 }
 
 // ===== Tab D / E：特定担当者が 擔當 の Mission 一覧（親 Issue 列付き）=====
