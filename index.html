@@ -56,9 +56,9 @@
   .admin-btn:hover { background: var(--g-grey-bg); color: #202124; }
   .admin-btn.active { background: var(--g-blue-bg); color: var(--g-blue); border-color: var(--g-blue); }
 
-  /* Tabs — Google Workspace 風のフィルド配色 */
-  .tabs { display: flex; gap: 4px; margin-bottom: 0; }
-  .tab { padding: 10px 24px; cursor: pointer; font-size: 13px; font-weight: 500; border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; background: #F8F9FA; color: #5F6368; transition: all 0.15s; letter-spacing: 0.01em; }
+  /* Tabs — Google Workspace 風のフィルド配色（v0.9.0：全体 75% サイズ）*/
+  .tabs { display: flex; gap: 3px; margin-bottom: 0; }
+  .tab { padding: 7px 18px; cursor: pointer; font-size: 10px; font-weight: 500; border: 1px solid var(--border); border-bottom: none; border-radius: 6px 6px 0 0; background: #F8F9FA; color: #5F6368; transition: all 0.15s; letter-spacing: 0.01em; }
   .tab:hover { background: #F1F3F4; color: #202124; }
   .tab.active { font-weight: 700; box-shadow: 0 -2px 8px rgba(0,0,0,0.08); transform: translateY(-1px); }
   .tab.active:nth-child(1) { background: #4285F4; color: #fff;     border-color: #1A73E8; }
@@ -307,7 +307,7 @@
 </div>
 
 <div class="tabs">
-  <div class="tab active" onclick="show('A',event)">A：Issue管理主檔</div>
+  <div class="tab active" onclick="show('A',event)">A：Issue &amp; Mission</div>
   <div class="tab" onclick="show('B',event)">B：會議-頁面-Issue表</div>
   <div class="tab" onclick="show('C',event)">C：部門別</div>
   <div class="tab" onclick="show('D',event)">D：行事曆</div>
@@ -480,9 +480,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.8.9';
+const APP_VERSION = '0.9.0';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '更新日の解析を堅牢化：Sheets 日付ピッカーが出す M/D/YYYY、D/M/YYYY、YYYY年M月D日、Excel シリアル値などに対応。';
+const APP_NOTE  = 'タブ A 名称を「Issue & Mission」に。タブ全体を 75% サイズに縮小。';
 
 // ===== Tab switch =====
 function show(id, e) {
