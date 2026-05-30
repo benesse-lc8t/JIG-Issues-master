@@ -318,6 +318,10 @@
   .simple-table tr.stalled-red { background: #FCE8E6; }
   .simple-table tr.stalled-yellow { background: #FEF7E0; }
   .simple-table .parent-hint { color: #80868B; font-size: 10px; margin-left: 4px; }
+  /* 詩雅 / 育菱パネルの角色バッジ */
+  .simple-table .role-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 700; letter-spacing: 0.03em; margin-right: 3px; white-space: nowrap; }
+  .simple-table .role-owner     { background: #FEF7E0; color: #B06000; border: 1px solid #F9AB00; } /* 擔當 = 橙 */
+  .simple-table .role-strategic { background: #F3E8FD; color: #7026A6; border: 1px solid #9334E6; } /* 戰略負責人 = 紫 */
   /* 親 Issue セル（最初の行のみ表示、以降は空白） */
   .simple-table .parent-cell { font-size: 11px; line-height: 1.3; padding: 5px 8px; }
   .simple-table .parent-cell .pc-num { display: inline-block; padding: 1px 5px; border-radius: 8px; font-size: 9px; font-weight: 700; background: #E8EAED; color: #3C4043; margin-right: 4px; vertical-align: middle; }
@@ -485,7 +489,7 @@
 <!-- ===== D：詩雅（Mission 専用） ===== -->
 <div class="panel" id="panel-D">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    詩雅 擔當的 <b>Mission</b> 清單
+    詩雅 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單
   </div>
   <table class="simple-table">
     <thead>
@@ -494,6 +498,7 @@
         <th style="width:90px;">編號</th>
         <th>Mission</th>
         <th style="width:80px;">處</th>
+        <th style="width:110px;">角色</th>
         <th style="min-width:140px;">備註</th>
         <th style="width:74px;">狀態</th>
         <th style="width:56px;">更新</th>
@@ -506,7 +511,7 @@
 <!-- ===== E：育菱（Mission 専用） ===== -->
 <div class="panel" id="panel-E">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    育菱 擔當的 <b>Mission</b> 清單
+    育菱 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單
   </div>
   <table class="simple-table">
     <thead>
@@ -515,6 +520,7 @@
         <th style="width:90px;">編號</th>
         <th>Mission</th>
         <th style="width:80px;">處</th>
+        <th style="width:110px;">角色</th>
         <th style="min-width:140px;">備註</th>
         <th style="width:74px;">狀態</th>
         <th style="width:56px;">更新</th>
@@ -593,9 +599,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.9.6';
+const APP_VERSION = '0.9.7';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '停滯警報に 處 × 擔當 × 狀態 × 更新 のフィルタを追加。B/C/D/E の説明文の日本語残りを繁體中文に。';
+const APP_NOTE  = '詩雅・育菱パネルは 擔當 だけでなく 戰略負責人 マッチも表示。角色列で「擔當／負責人」を識別。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1128,6 +1134,9 @@ function simpleRow(r, opts) {
   if (opts.showDept !== false) {
     h += `<td class="dept ${deptColorClass(dept)}">${escapeHtml(dept)}</td>`;
   }
+  if (opts.extraCellAfterDept) {
+    h += opts.extraCellAfterDept;
+  }
   if (opts.showOwner !== false) {
     h += `<td>${escapeHtml(owner)}</td>`;
   }
@@ -1302,27 +1311,47 @@ function renderTableC() {
   }
 }
 
-// ===== Tab D / E：特定担当者が 擔當 の Mission 一覧（親 Issue 列付き）=====
+// ===== Tab D / E：特定担当者の Mission 一覧（擔當 or 戰略負責人、親 Issue 列付き）=====
 function renderPersonView(panelKey, personName) {
   const tbody = document.querySelector(`#panel-${panelKey} tbody`);
   if (!tbody) return;
   const issueMap = buildIssueMap();
-  const missionsOwned = issueData.filter(r =>
-    isMissionDatum(r) && (r['擔當']||'').trim() === personName
-  );
+  // 擔當 もしくは 戰略負責人 が personName の Mission を全部拾う
+  const decorated = [];
+  issueData.forEach(r => {
+    if (!isMissionDatum(r)) return;
+    const isOwner = (r['擔當']||'').trim() === personName;
+    const isStrategic = (r['戰略負責人']||'').trim() === personName;
+    if (!isOwner && !isStrategic) return;
+    decorated.push({ row: r, isOwner, isStrategic });
+  });
   // 親 Issue 編號でソートして dedup を効かせる
-  missionsOwned.sort((a, b) => (a['親編號']||'').localeCompare(b['親編號']||''));
+  decorated.sort((a, b) => (a.row['親編號']||'').localeCompare(b.row['親編號']||''));
+
+  // 役割別カウント（見出し用）
+  const ownerOnly = decorated.filter(d => d.isOwner && !d.isStrategic).length;
+  const strategicOnly = decorated.filter(d => !d.isOwner && d.isStrategic).length;
+  const both = decorated.filter(d => d.isOwner && d.isStrategic).length;
+
   let html = '';
-  if (missionsOwned.length) {
-    html += `<tr class="sec-row"><th colspan="7">▶ Mission（擔當 = ${escapeHtml(personName)}）· ${missionsOwned.length} 件</th></tr>`;
+  if (decorated.length) {
+    const breakdown = [];
+    if (ownerOnly) breakdown.push(`擔當 ${ownerOnly}`);
+    if (strategicOnly) breakdown.push(`戰略負責人 ${strategicOnly}`);
+    if (both) breakdown.push(`兩者 ${both}`);
+    html += `<tr class="sec-row"><th colspan="8">▶ ${escapeHtml(personName)} 相關 Mission · 合計 ${decorated.length} 筆（${breakdown.join(' / ')}）</th></tr>`;
     let prevParent = null;
-    missionsOwned.forEach(r => {
+    decorated.forEach(({ row: r, isOwner, isStrategic }) => {
       const parent = makeParentInfo(r, issueMap, prevParent);
-      html += simpleRow(r, { showOwner: false, showRemark: true, parent });
+      let roleHtml = '';
+      if (isOwner)     roleHtml += '<span class="role-badge role-owner">擔當</span>';
+      if (isStrategic) roleHtml += '<span class="role-badge role-strategic">負責人</span>';
+      const extraCell = `<td>${roleHtml}</td>`;
+      html += simpleRow(r, { showOwner: false, showRemark: true, parent, extraCellAfterDept: extraCell });
       prevParent = parent.num;
     });
   } else {
-    html = `<tr><td colspan="7" style="text-align:center; padding:30px; color:#999;">${escapeHtml(personName)} が擔當 として割り当てられている Mission はありません</td></tr>`;
+    html = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#999;">${escapeHtml(personName)} 為擔當或戰略負責人的 Mission 沒有</td></tr>`;
   }
   tbody.innerHTML = html;
 }
