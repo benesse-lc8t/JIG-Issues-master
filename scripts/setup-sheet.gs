@@ -16,8 +16,14 @@
  */
 
 // ===== 設定 =====
-const STATUS_VALUES = ['未開始', '進行中', '完成'];
-const STATUS_COLORS = { '未開始': '#EEEAE0', '進行中': '#DCEBFB', '完成': '#D4F2DD' };
+const STATUS_VALUES = ['未開始', '策劃中', '需確認', '進行中', '結案'];
+const STATUS_COLORS = {
+  '未開始': '#EEEAE0',
+  '策劃中': '#D1F2F7',
+  '需確認': '#FEE7BB',
+  '進行中': '#DCEBFB',
+  '結案':   '#D4F2DD'
+};
 const ISSUE_NEW_COLS = ['Confluence URL', '狀態', '事務局備註', '更新日'];
 const MISSION_HEADERS = [
   '編號',          // A
@@ -145,7 +151,7 @@ function applyStatusValidation(range) {
   const rule = SpreadsheetApp.newDataValidation()
     .requireValueInList(STATUS_VALUES, true)
     .setAllowInvalid(false)
-    .setHelpText('未開始 / 進行中 / 完成 のいずれかを選択')
+    .setHelpText('未開始 / 策劃中 / 需確認 / 進行中 / 結案 のいずれかを選択')
     .build();
   range.setDataValidation(rule);
 }

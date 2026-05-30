@@ -39,8 +39,14 @@ MISSION_SHEET_NAME = 'Mission一覽'
 LEGACY_TASK_SHEET  = 'Task一覽'
 
 NEW_ISSUE_COLS    = ['Confluence URL', '狀態', '事務局備註', '更新日']
-STATUS_VALUES     = ['未開始', '進行中', '完成']
-STATUS_COLORS     = {'未開始': 'EEEAE0', '進行中': 'DCEBFB', '完成': 'D4F2DD'}
+STATUS_VALUES     = ['未開始', '策劃中', '需確認', '進行中', '結案']
+STATUS_COLORS     = {
+    '未開始': 'EEEAE0',
+    '策劃中': 'D1F2F7',
+    '需確認': 'FEE7BB',
+    '進行中': 'DCEBFB',
+    '結案':   'D4F2DD',
+}
 MISSION_HEADERS   = ['編號', 'Mission', '親編號', '戰略負責人', '狀態', '事務局備註', '更新日', 'Confluence URL']
 MISSION_WIDTHS    = [14, 38, 12, 12, 10, 28, 12, 30]
 HDR_FILL = PatternFill(start_color='F7F4EC', end_color='F7F4EC', fill_type='solid')
@@ -54,7 +60,7 @@ def apply_status_dropdown(ws, col_letter, row_count=500):
         allow_blank=True,
         showErrorMessage=True,
     )
-    dv.error = '未開始 / 進行中 / 完成 のいずれかを選択してください'
+    dv.error = '未開始 / 策劃中 / 需確認 / 進行中 / 結案 のいずれかを選択してください'
     dv.errorTitle = '無効な値'
     ws.add_data_validation(dv)
     dv.add('{c}2:{c}{n}'.format(c=col_letter, n=row_count))

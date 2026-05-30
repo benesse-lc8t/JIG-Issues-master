@@ -190,8 +190,11 @@
   .st { text-align: center; font-size: 11px; font-weight: 500; white-space: nowrap; }
   .st-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 10px; line-height: 1.35; letter-spacing: 0.02em; }
   .st-未開始 { background: #9AA0A6; color: #fff; }
+  .st-策劃中 { background: #00ACC1; color: #fff; }
+  .st-需確認 { background: #F9AB00; color: #202124; }
   .st-進行中 { background: #4285F4; color: #fff; }
-  .st-完成   { background: #34A853; color: #fff; }
+  .st-結案   { background: #34A853; color: #fff; }
+  .st-完成   { background: #34A853; color: #fff; } /* 互換：旧ラベル */
   /* 空欄時は行種別バッジで埋める（欠落ではなく未評価と分かる） */
   .st-type   { display: inline-block; padding: 1px 6px; border-radius: 10px; font-weight: 700; font-size: 9px; line-height: 1.35; letter-spacing: 0.05em; }
   .st-type-issue { background: #E6F4EA; color: #137333; border: 1px dashed #34A853; }
@@ -507,8 +510,10 @@
       <div class="dash-grid">
         <div class="dash-card dash-blue"><div class="dash-num" id="dashMissionTotal">-</div><div class="dash-label">Mission 總數</div></div>
         <div class="dash-card dash-grey"><div class="dash-num" id="dashMissionNotStarted">-</div><div class="dash-label">未開始</div></div>
-        <div class="dash-card dash-yellow"><div class="dash-num" id="dashMissionWip">-</div><div class="dash-label">進行中</div></div>
-        <div class="dash-card dash-green"><div class="dash-num" id="dashMissionDone">-</div><div class="dash-label">完成</div></div>
+        <div class="dash-card dash-teal"><div class="dash-num" id="dashMissionPlanning">-</div><div class="dash-label">策劃中</div></div>
+        <div class="dash-card dash-yellow"><div class="dash-num" id="dashMissionNeedConfirm">-</div><div class="dash-label">需確認</div></div>
+        <div class="dash-card dash-blue"><div class="dash-num" id="dashMissionWip">-</div><div class="dash-label">進行中</div></div>
+        <div class="dash-card dash-green"><div class="dash-num" id="dashMissionClosed">-</div><div class="dash-label">結案</div></div>
         <div class="dash-card dash-red"><div class="dash-num" id="dashMissionNoOwner">-</div><div class="dash-label">擔當未割当</div></div>
       </div>
     </div>
@@ -566,9 +571,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.9.4';
+const APP_VERSION = '0.9.5';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'タブ整理：A〜F記号を削除、4 タブ構成に。詩雅・育菱は右肩のボタンに退避。儀表板も Mission 専用に。';
+const APP_NOTE  = '狀態を 5 段階に拡張：未開始 / 策劃中 / 需確認 / 進行中 / 結案。バッジ色＋儀表板カード＋Apps Script ＋ Python 一括対応。「完成」も旧ラベル互換で結案扱い。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -595,7 +600,7 @@ const AXIS_CLASS = { 'O':'ax-O','N':'ax-N','CV':'ax-CV','I':'ax-I','P':'ax-P' };
 const COLS = ['區分','軸','編號','Issue','Issue短縮','處','組','戰略負責人','管理頁面','確認會議','會議時間'];
 // 拡張列：Sheet に存在すれば読み込む。欠けていてもエラーにせず空文字とする。
 const OPTIONAL_COLS = ['種別','親編號','擔當','Confluence URL','狀態','事務局備註','更新日'];
-const STATUS_VALUES = new Set(['未開始','進行中','完成']);
+const STATUS_VALUES = new Set(['未開始','策劃中','需確認','進行中','結案','完成']); // '完成' は旧ラベル互換
 
 let issueData = [];   // array of row objects
 let shortNameMap = {}; // 編號 → Issue短縮（從內建 B/C/D 標籤擷取，作為雲端資料缺漏時的補值）
@@ -1236,8 +1241,9 @@ function renderPersonView(panelKey, personName) {
 
 // ===== Tab F：儀表板 =====
 function renderTabF() {
-  // Mission only — Issue 集計は廃止
-  let missionTotal = 0, missionDone = 0, missionWip = 0, missionNotStarted = 0, missionNoOwner = 0;
+  // Mission only — 5 段階の狀態に対応
+  let missionTotal = 0, missionNotStarted = 0, missionPlanning = 0, missionNeedConfirm = 0,
+      missionWip = 0, missionClosed = 0, missionNoOwner = 0;
   let stalled14 = 0, stalled7 = 0, noDate = 0;
   const missionOwnerCounts = {};   // 擔當
   const missionDeptCounts  = {};   // 親 Issue の 處
@@ -1249,9 +1255,11 @@ function renderTabF() {
     if (!isMissionDatum(r)) return;
     missionTotal++;
     const status = (r['狀態']||'').trim();
-    if (status === '完成') missionDone++;
+    if (status === '結案' || status === '完成') missionClosed++;        // 結案（旧 完成 も同義扱い）
     else if (status === '進行中') missionWip++;
-    else missionNotStarted++; // '未開始' または空欄
+    else if (status === '需確認') missionNeedConfirm++;
+    else if (status === '策劃中') missionPlanning++;
+    else missionNotStarted++;                                            // '未開始' または空欄
     const own = (r['擔當']||'').trim();
     if (!own) missionNoOwner++;
     else missionOwnerCounts[own] = (missionOwnerCounts[own]||0)+1;
@@ -1275,9 +1283,11 @@ function renderTabF() {
 
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   set('dashMissionTotal', missionTotal);
-  set('dashMissionDone', missionDone);
-  set('dashMissionWip', missionWip);
   set('dashMissionNotStarted', missionNotStarted);
+  set('dashMissionPlanning', missionPlanning);
+  set('dashMissionNeedConfirm', missionNeedConfirm);
+  set('dashMissionWip', missionWip);
+  set('dashMissionClosed', missionClosed);
   set('dashMissionNoOwner', missionNoOwner);
   set('dashStalled14', stalled14);
   set('dashStalled7', stalled7);
