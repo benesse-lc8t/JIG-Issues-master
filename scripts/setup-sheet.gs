@@ -19,9 +19,9 @@
 const STATUS_VALUES = ['未開始', '進行中', '完成'];
 const STATUS_COLORS = { '未開始': '#EEEAE0', '進行中': '#DCEBFB', '完成': '#D4F2DD' };
 const ISSUE_NEW_COLS = ['Confluence URL', '狀態', '事務局備註', '更新日'];
-const TASK_HEADERS = [
+const MISSION_HEADERS = [
   '編號',          // A
-  'Task',          // B
+  'Mission',       // B
   '親編號',        // C
   '戰略負責人',    // D
   '狀態',          // E
@@ -29,7 +29,7 @@ const TASK_HEADERS = [
   '更新日',        // G
   'Confluence URL' // H
 ];
-const TASK_COL_WIDTHS = { 1: 100, 2: 320, 3: 90, 4: 90, 5: 80, 6: 220, 7: 90, 8: 240 };
+const MISSION_COL_WIDTHS = { 1: 100, 2: 320, 3: 90, 4: 90, 5: 80, 6: 220, 7: 90, 8: 240 };
 
 // ===== メニュー登録 =====
 function onOpen() {
@@ -84,20 +84,20 @@ function setupJIG() {
     log.push(`✓ Issue主檔 に条件付き書式 ${issueRulesAdded} 件を追加`);
   }
 
-  // --- 2. Task一覽 タブ ---
-  let taskSheet = ss.getSheetByName('Task一覽');
+  // --- 2. Mission一覽 タブ ---
+  let taskSheet = ss.getSheetByName('Mission一覽');
   let taskCreated = false;
   if (!taskSheet) {
-    taskSheet = ss.insertSheet('Task一覽');
+    taskSheet = ss.insertSheet('Mission一覽');
     taskCreated = true;
-    log.push('✓ 「Task一覽」タブを作成');
+    log.push('✓ 「Mission一覽」タブを作成');
   }
   // ヘッダ
-  taskSheet.getRange(1, 1, 1, TASK_HEADERS.length).setValues([TASK_HEADERS])
+  taskSheet.getRange(1, 1, 1, MISSION_HEADERS.length).setValues([MISSION_HEADERS])
     .setFontWeight('bold').setBackground('#F7F4EC');
 
   // 列幅
-  Object.keys(TASK_COL_WIDTHS).forEach(k => taskSheet.setColumnWidth(Number(k), TASK_COL_WIDTHS[k]));
+  Object.keys(MISSION_COL_WIDTHS).forEach(k => taskSheet.setColumnWidth(Number(k), MISSION_COL_WIDTHS[k]));
 
   // 行 freeze
   taskSheet.setFrozenRows(1);
@@ -112,7 +112,7 @@ function setupJIG() {
   const added2 = addFreshnessRulesIfMissing(taskRules, taskSheet.getRange(2, 7, taskRows, 1), 7);
   if (added1 + added2 > 0) {
     taskSheet.setConditionalFormatRules(taskRules);
-    log.push(`✓ Task一覽 に条件付き書式 ${added1 + added2} 件を追加`);
+    log.push(`✓ Mission一覽 に条件付き書式 ${added1 + added2} 件を追加`);
   }
   if (taskCreated) {
     log.push('  　└ 列幅・行 freeze・プルダウンも設定済み');
@@ -127,7 +127,7 @@ function setupJIG() {
 // ===== 条件付き書式をクリアして入れ直す（重複が気になったとき用）=====
 function resetAndSetup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  ['Issue主檔', 'Task一覽'].forEach(name => {
+  ['Issue主檔', 'Mission一覽'].forEach(name => {
     const sh = ss.getSheetByName(name);
     if (sh) sh.setConditionalFormatRules([]);  // 全クリア（注意：手動で入れたルールも消える）
   });

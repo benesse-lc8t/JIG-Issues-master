@@ -5,6 +5,23 @@
 
 ---
 
+## Phase 2 ツール（v0.7.3 相当・ダッシュボード本体は無変更）— 2026-05-30
+
+**スプレッドシート移行用スクリプトを Mission 化**
+
+- `scripts/build-template-xlsx.py`：
+  - 出力シート名を `Task一覽` → **`Mission一覽`**
+  - 列ヘッダ `Task` → `Mission`
+  - 編號の採番を `*-T#` → **`*-M#`** に変更（例：`戰略-1-T1` → `戰略-1-M1`）
+  - 入力側は `Task一覽` / `Mission一覽` どちらでも認識（互換）
+  - 主檔の `種別=Task` 行と `種別=Mission` 行の両方を移行対象に
+  - 既存編號が `*-M#` 形式ならそのまま保持、それ以外は再採番
+- `scripts/setup-sheet.gs`：Apps Script も `Mission一覽` 命名に統一
+
+これで事務局が xlsx を push → 私が変換 → Google Sheets に再インポートで実データが Mission 構造に揃う。
+
+---
+
 ## v0.7.2 — 2026-05-30
 
 **Mission 行が出ない件の調査・修正**
