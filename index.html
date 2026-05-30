@@ -69,16 +69,16 @@
   .tab { padding: 10px 24px; cursor: pointer; font-size: 13px; font-weight: 500; border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; background: #F8F9FA; color: #5F6368; transition: all 0.15s; letter-spacing: 0.01em; }
   .tab:hover { background: #F1F3F4; color: #202124; }
   .tab.active { font-weight: 700; box-shadow: 0 -2px 8px rgba(0,0,0,0.08); transform: translateY(-1px); }
-  .tab.active:nth-child(1) { background: #34A853; color: #fff; border-color: #1E8E3E; }
-  .tab.active:nth-child(2) { background: #4285F4; color: #fff; border-color: #1A73E8; }
-  .tab.active:nth-child(3) { background: #FBBC04; color: #202124; border-color: #F9AB00; }
-  .tab.active:nth-child(4) { background: #EA4335; color: #fff; border-color: #D93025; }
-  .tab.active:nth-child(5) { background: #9334E6; color: #fff; border-color: #8430CE; }
+  .tab.active:nth-child(1) { background: #4285F4; color: #fff;     border-color: #1A73E8; }
+  .tab.active:nth-child(2) { background: #FBBC04; color: #202124; border-color: #F9AB00; }
+  .tab.active:nth-child(3) { background: #34A853; color: #fff;     border-color: #1E8E3E; }
+  .tab.active:nth-child(4) { background: #EA4335; color: #fff;     border-color: #D93025; }
+  .tab.active:nth-child(5) { background: #9334E6; color: #fff;     border-color: #8430CE; }
 
   /* Panel：active タブと連動した色アクセントを上端に持たせる */
-  #panel-A.active { border-top: 3px solid #34A853; }
-  #panel-B.active { border-top: 3px solid #4285F4; }
-  #panel-C.active { border-top: 3px solid #FBBC04; }
+  #panel-A.active { border-top: 3px solid #4285F4; }
+  #panel-B.active { border-top: 3px solid #FBBC04; }
+  #panel-C.active { border-top: 3px solid #34A853; }
   #panel-D.active { border-top: 3px solid #EA4335; }
   #panel-E.active { border-top: 3px solid #9334E6; }
   .panel.active { box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
@@ -437,9 +437,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.6.2';
+const APP_VERSION = '0.6.3';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '配色更鮮明：4色頂部色帶、填色分頁、實心狀態徽章、處欄按部門色分、列 hover 加色';
+const APP_NOTE  = '分頁配色調整：A 藍 / B 黃 / C 綠 / D 紅（panel 上端アクセントも連動）';
 
 // ===== Tab switch =====
 function show(id, e) {
