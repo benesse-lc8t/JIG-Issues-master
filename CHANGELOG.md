@@ -5,6 +5,32 @@
 
 ---
 
+## v0.6.1 — 2026-05-30
+
+**繁體中文統一 + Google 色系設計**
+
+- ダッシュボード UI の日本語文言をすべて繁體中文に統一：
+  - `Remarks` → `備註`
+  - 検索プレースホルダ：`🔍 搜尋 Issue / Task / 負責人 / 組...`
+  - フィルタ既定：`處：全部` / `組：全部`
+  - チェックボックス：`顯示會議欄`
+  - クリアボタン：`清除`
+  - 表示件数：`顯示 N / M 筆`
+  - 鮮度表示：`今天` / `N 天前`
+  - ローディング：`正在從雲端載入資料…`
+- CSS を **Google Material 色系**に刷新：
+  - フォントを `Roboto + Noto Sans TC` に変更
+  - 主色を Google Blue (#1A73E8) / Green (#1E8E3E) / Yellow (#F9AB00) /
+    Red (#D93025) / Grey (#5F6368) に統一
+  - タブの active カラー、ステータスバッジ、軸タグ、按鈕、Confluence リンク、
+    更新日鮮度色、ctrl-bar、ver バッジなどを Material tint へ
+  - 罫線・境界線を `#DADCE0`、ヘッダ背景を `#F8F9FA`（Google Surface）
+  - 角丸（panel/button）を 4–8px に整理、影を控えめに
+  - ステータスバッジを pill 形（border-radius:12px）に
+  - フォーカス時のアウトラインを Google Blue リングに
+
+---
+
 ## v0.6.0 — 2026-05-30
 
 **Tab A の UX 改善（検索・フィルタ・列折り畳み・Confluence 列統合）**

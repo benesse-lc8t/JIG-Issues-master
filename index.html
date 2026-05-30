@@ -9,80 +9,89 @@
 <link rel="apple-touch-icon" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    /* Vivid tag/axis colors (主役) — text black for readability */
-    --O-bg:  #A8EFCB; --O-fg:  #000;
-    --N-bg:  #B6D7FB; --N-fg:  #000;
-    --CV-bg: #FFCB8E; --CV-fg: #000;
-    --I-bg:  #FBBDD3; --I-fg:  #000;
-    --P-bg:  #D6CDF7; --P-fg:  #000;
+    /* Google brand palette */
+    --g-blue:    #1A73E8; --g-blue-bg:    #E8F0FE; --g-blue-fg:    #1967D2;
+    --g-red:     #D93025; --g-red-bg:     #FCE8E6; --g-red-fg:     #B31412;
+    --g-yellow:  #F9AB00; --g-yellow-bg:  #FEF7E0; --g-yellow-fg:  #B06000;
+    --g-green:   #1E8E3E; --g-green-bg:   #E6F4EA; --g-green-fg:   #137333;
+    --g-purple:  #8430CE; --g-purple-bg:  #F3E8FD; --g-purple-fg:  #7026A6;
+    --g-grey:    #5F6368; --g-grey-bg:    #F1F3F4; --g-grey-fg:    #3C4043;
 
-    /* Group column — soft tints, black text */
-    --com-bg: #FAF3E2; --com-fg: #000;
-    --L-bg:  #ECF8EE; --L-fg:  #000;
-    --Z-bg:  #EAF2FB; --Z-fg:  #000;
-    --M-bg:  #FBEEE0; --M-fg:  #000;
-    --C-bg:  #FBE7EE; --C-fg:  #000;
-    --X-bg:  #F0EDFA; --X-fg:  #000;
-    --S-bg:  #E5F2F9; --S-fg:  #000;
-    --IP-bg: #FBEFD4; --IP-fg: #000;
+    /* Axis colors → Google palette tinted backgrounds */
+    --O-bg:  var(--g-green-bg);  --O-fg:  var(--g-green-fg);
+    --N-bg:  var(--g-blue-bg);   --N-fg:  var(--g-blue-fg);
+    --CV-bg: var(--g-yellow-bg); --CV-fg: var(--g-yellow-fg);
+    --I-bg:  var(--g-red-bg);    --I-fg:  var(--g-red-fg);
+    --P-bg:  var(--g-purple-bg); --P-fg:  var(--g-purple-fg);
 
-    /* Structural neutrals (素朴) */
-    --border: #E5E1D8;
-    --font: 'Inter', 'Noto Sans TC', 'Microsoft JhengHei', 'PingFang TC', 'Source Han Sans TC', sans-serif;
-    --hdr-bg: #F7F4EC;
-    --sec-bg: #EFEBE0;
-    --mtg-bg: #FFFFFF;
-    --pgc-bg: #FFFFFF;
-    --body-bg: #FBF9F4;
+    /* Group cells (現状 Tab A では非表示。Tab B/C/D の tag に流用) */
+    --com-bg: #F1F3F4; --com-fg: #5F6368;
+    --L-bg:  #E6F4EA;  --L-fg:  #137333;
+    --Z-bg:  #E8F0FE;  --Z-fg:  #1967D2;
+    --M-bg:  #FEF7E0;  --M-fg:  #B06000;
+    --C-bg:  #FCE8E6;  --C-fg:  #B31412;
+    --X-bg:  #F3E8FD;  --X-fg:  #7026A6;
+    --S-bg:  #E0F7FA;  --S-fg:  #007B83;
+    --IP-bg: #FFF8E1;  --IP-fg: #8B5A00;
+
+    /* Structural */
+    --border:  #DADCE0;
+    --font:    'Roboto', 'Noto Sans TC', 'Microsoft JhengHei', 'PingFang TC', 'Source Han Sans TC', sans-serif;
+    --hdr-bg:  #F8F9FA;
+    --sec-bg:  #F1F3F4;
+    --mtg-bg:  #FFFFFF;
+    --pgc-bg:  #FFFFFF;
+    --body-bg: #FFFFFF;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font); font-weight: 500; font-size: 13px; color: #000; background: var(--body-bg); padding: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   button, input, select, textarea, a { font-family: var(--font); }
-  code { font-family: var(--font); font-weight: 600; font-size: 0.92em; background: #F2EEE3; padding: 1px 6px; border-radius: 4px; letter-spacing: 0.01em; }
-  h1 { font-size: 18px; font-weight: 800; color: #000; margin-bottom: 14px; letter-spacing: 0.03em; }
+  code { font-family: var(--font); font-weight: 500; font-size: 0.92em; background: var(--g-grey-bg); color: #3C4043; padding: 1px 6px; border-radius: 4px; letter-spacing: 0.01em; }
+  h1 { font-size: 18px; font-weight: 500; color: #202124; margin-bottom: 14px; letter-spacing: 0; }
   .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-  .admin-btn { padding: 6px 12px; font-size: 12px; font-weight: 700; border: 1px solid #BFB8A4; border-radius: 5px; background: #F7F4EC; color: #666; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
-  .admin-btn:hover { background: #ECE6D6; color: #000; }
-  .admin-btn.active { background: #D6CDF7; color: #000; border-color: #B7A9E8; }
+  .admin-btn { padding: 6px 12px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); border-radius: 4px; background: #fff; color: var(--g-grey); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .admin-btn:hover { background: var(--g-grey-bg); color: #202124; }
+  .admin-btn.active { background: var(--g-blue-bg); color: var(--g-blue); border-color: var(--g-blue); }
 
   /* Tabs */
   .tabs { display: flex; gap: 4px; margin-bottom: 0; }
-  .tab { padding: 9px 24px; cursor: pointer; font-size: 13px; font-weight: 700; border: 1px solid var(--border); border-bottom: none; border-radius: 6px 6px 0 0; background: #EFEBE0; color: #000; transition: all 0.15s; }
-  .tab.active:nth-child(1) { background: #A8EFCB; }
-  .tab.active:nth-child(2) { background: #B6D7FB; }
-  .tab.active:nth-child(3) { background: #FFCB8E; }
-  .tab.active:nth-child(4) { background: #FBBDD3; }
-  .tab.active:nth-child(5) { background: #D6CDF7; }
-  .tab.active { color: #000; box-shadow: 0 -2px 6px rgba(0,0,0,0.04); }
+  .tab { padding: 9px 24px; cursor: pointer; font-size: 13px; font-weight: 500; border: 1px solid var(--border); border-bottom: none; border-radius: 6px 6px 0 0; background: #F8F9FA; color: #5F6368; transition: all 0.15s; }
+  .tab:hover { background: #F1F3F4; color: #202124; }
+  .tab.active:nth-child(1) { background: var(--g-green-bg);  color: var(--g-green-fg);  border-color: #C5E1CC; }
+  .tab.active:nth-child(2) { background: var(--g-blue-bg);   color: var(--g-blue-fg);   border-color: #C8D7F0; }
+  .tab.active:nth-child(3) { background: var(--g-yellow-bg); color: var(--g-yellow-fg); border-color: #F0D78A; }
+  .tab.active:nth-child(4) { background: var(--g-red-bg);    color: var(--g-red-fg);    border-color: #F5C4BE; }
+  .tab.active:nth-child(5) { background: var(--g-purple-bg); color: var(--g-purple-fg); border-color: #D8C0E8; }
+  .tab.active { font-weight: 700; box-shadow: 0 -1px 4px rgba(0,0,0,0.04); }
 
   /* Console (Tab E) */
   .console { padding: 18px 20px; }
-  .console h2 { font-size: 14px; font-weight: 800; margin-bottom: 6px; color: #000; letter-spacing: 0.02em; }
-  .console .desc { font-size: 12px; color: #555; margin-bottom: 14px; line-height: 1.6; }
-  .con-section { border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; margin-bottom: 14px; background: #FDFCF7; }
-  .con-section .section-title { font-size: 13px; font-weight: 800; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px dashed var(--border); display: flex; align-items: center; gap: 8px; }
-  .con-section .section-title .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; }
+  .console h2 { font-size: 14px; font-weight: 500; margin-bottom: 6px; color: #202124; letter-spacing: 0; }
+  .console .desc { font-size: 12px; color: var(--g-grey); margin-bottom: 14px; line-height: 1.6; }
+  .con-section { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; background: #F8F9FA; }
+  .con-section .section-title { font-size: 13px; font-weight: 500; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px dashed var(--border); display: flex; align-items: center; gap: 8px; color: #202124; }
+  .con-section .section-title .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 500; }
   .con-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
-  .btn { display: inline-block; padding: 8px 16px; border-radius: 5px; border: 1px solid #BFB8A4; background: #fff; color: #000; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; }
-  .btn:hover { background: #F0EBDC; }
-  .btn-primary { background: #A8EFCB; border-color: #5FC591; }
-  .btn-primary:hover { background: #8FE5B8; }
+  .btn { display: inline-block; padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border); background: #fff; color: #3C4043; font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.15s; text-decoration: none; }
+  .btn:hover { background: var(--g-grey-bg); color: #202124; }
+  .btn-primary { background: var(--g-blue); border-color: var(--g-blue); color: #fff; }
+  .btn-primary:hover { background: #1967D2; color: #fff; }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .stats { font-size: 12px; color: #333; padding: 6px 10px; background: #F7F4EC; border-radius: 3px; display: inline-block; }
-  .panel { display: none; border: 1px solid var(--border); background: #fff; border-radius: 0 4px 4px 4px; overflow-x: auto; }
+  .stats { font-size: 12px; color: #3C4043; padding: 6px 10px; background: var(--g-grey-bg); border-radius: 4px; display: inline-block; }
+  .panel { display: none; border: 1px solid var(--border); background: #fff; border-radius: 0 8px 8px 8px; overflow-x: auto; }
   .panel.active { display: block; }
 
   /* Table */
   table { border-collapse: collapse; width: 100%; font-size: 12px; }
-  th, td { border: 0.5px solid var(--border); padding: 6px 8px; vertical-align: middle; line-height: 1.4; }
-  th { font-weight: 700; font-size: 11px; color: #000; background: var(--hdr-bg); white-space: nowrap; }
-  .sec { background: var(--sec-bg); font-size: 12px; font-weight: 700; color: #000; text-align: left; padding: 7px 10px; border-top: 1.5px solid #D6CFBE; letter-spacing: 0.02em; }
+  th, td { border: 1px solid var(--border); padding: 6px 8px; vertical-align: middle; line-height: 1.4; }
+  th { font-weight: 500; font-size: 11px; color: #5F6368; background: var(--hdr-bg); white-space: nowrap; letter-spacing: 0.02em; }
+  .sec { background: var(--sec-bg); font-size: 12px; font-weight: 500; color: #5F6368; text-align: left; padding: 7px 10px; border-top: 1px solid var(--border); letter-spacing: 0.02em; }
 
   /* Group cells */
-  .grp { font-weight: 700; text-align: center; font-size: 11px; vertical-align: middle; line-height: 1.4; }
+  .grp { font-weight: 500; text-align: center; font-size: 11px; vertical-align: middle; line-height: 1.4; }
   /* 區分の連続行は上罫線を消して「同じ區分」が視覚的にマージされて見えるようにする
      （rowspan ではなく毎行 1 セルにしている理由：rowspan は隠れた Task 行と相性が悪い） */
   .grp.grp-cont { border-top-color: transparent !important; color: transparent; }
@@ -96,24 +105,24 @@
   .grp-IP  { background: var(--IP-bg);  color: var(--IP-fg); }
 
   /* Axis cells */
-  .ax { text-align: center; font-weight: 800; font-size: 11px; width: 26px; }
+  .ax { text-align: center; font-weight: 700; font-size: 11px; width: 26px; }
   .ax-O  { background: var(--O-bg);  color: var(--O-fg); }
   .ax-N  { background: var(--N-bg);  color: var(--N-fg); }
   .ax-CV { background: var(--CV-bg); color: var(--CV-fg); }
   .ax-I  { background: var(--I-bg);  color: var(--I-fg); }
   .ax-P  { background: var(--P-bg);  color: var(--P-fg); }
 
-  .num { text-align: center; font-size: 11px; font-weight: 700; width: 52px; color: #000; white-space: nowrap; }
-  .lbl { color: #000; font-weight: 600; font-size: 12px; }
-  .dept { text-align: center; font-size: 11px; font-weight: 600; color: #000; white-space: nowrap; }
-  .pc { text-align: center; font-size: 11px; font-weight: 600; color: #000; white-space: nowrap; }
+  .num { text-align: center; font-size: 11px; font-weight: 500; width: 52px; color: #3C4043; white-space: nowrap; }
+  .lbl { color: #202124; font-weight: 500; font-size: 12px; }
+  .dept { text-align: center; font-size: 11px; font-weight: 500; color: #3C4043; white-space: nowrap; }
+  .pc { text-align: center; font-size: 11px; font-weight: 500; color: #3C4043; white-space: nowrap; }
 
   /* B table */
-  .mc { font-weight: 700; text-align: center; font-size: 12px; background: var(--mtg-bg); color: #000; vertical-align: middle; white-space: nowrap; }
-  .pgc { font-weight: 600; font-size: 12px; background: var(--pgc-bg); color: #000; text-align: center; vertical-align: middle; white-space: nowrap; }
+  .mc { font-weight: 700; text-align: center; font-size: 12px; background: var(--mtg-bg); color: #202124; vertical-align: middle; white-space: nowrap; }
+  .pgc { font-weight: 500; font-size: 12px; background: var(--pgc-bg); color: #202124; text-align: center; vertical-align: middle; white-space: nowrap; }
 
   /* Tags */
-  .tag { display: inline-block; padding: 2px 6px; border-radius: 3px; margin: 1px 2px 1px 0; white-space: nowrap; font-size: 11px; font-weight: 600; }
+  .tag { display: inline-block; padding: 2px 6px; border-radius: 3px; margin: 1px 2px 1px 0; white-space: nowrap; font-size: 11px; font-weight: 500; }
 
   /* Grid for tab C — max 4 per row */
   .iss-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
@@ -127,47 +136,47 @@
 
   /* Tab D calendar */
   .cal-cell { vertical-align: top; padding: 6px; min-height: 60px; }
-  .cal-group { background: #F7F4EC; border-left: 3px solid #FFCB8E; padding: 6px 8px; margin-bottom: 6px; border-radius: 3px; }
-  .cal-group-name { font-weight: 800; font-size: 12px; color: #000; margin-bottom: 4px; }
-  .cal-sub { padding: 3px 6px 3px 10px; border-left: 2px solid #D6CDF7; margin: 3px 0 3px 4px; background: #FFF; border-radius: 2px; }
-  .cal-sub-time { font-size: 10px; font-weight: 700; color: #9A4708; }
-  .cal-sub-name { font-weight: 600; font-size: 11px; color: #000; }
-  .cal-sub-jig { font-size: 10px; color: #555; margin-top: 1px; }
-  .cal-mtg { background: #F7F4EC; border-left: 3px solid #FFCB8E; padding: 4px 6px; margin-bottom: 4px; border-radius: 3px; }
-  .cal-mtg-time { font-size: 10px; font-weight: 700; color: #9A4708; margin-bottom: 2px; }
-  .cal-mtg-name { font-weight: 700; font-size: 11px; color: #000; }
-  .cal-mtg-jig { font-size: 10px; color: #555; margin-top: 2px; }
+  .cal-group { background: var(--g-grey-bg); border-left: 3px solid var(--g-yellow); padding: 6px 8px; margin-bottom: 6px; border-radius: 4px; }
+  .cal-group-name { font-weight: 700; font-size: 12px; color: #202124; margin-bottom: 4px; }
+  .cal-sub { padding: 3px 6px 3px 10px; border-left: 2px solid var(--border); margin: 3px 0 3px 4px; background: #FFF; border-radius: 2px; }
+  .cal-sub-time { font-size: 10px; font-weight: 700; color: var(--g-grey); }
+  .cal-sub-name { font-weight: 500; font-size: 11px; color: #202124; }
+  .cal-sub-jig { font-size: 10px; color: var(--g-grey); margin-top: 1px; }
+  .cal-mtg { background: var(--g-grey-bg); border-left: 3px solid var(--g-yellow); padding: 4px 6px; margin-bottom: 4px; border-radius: 4px; }
+  .cal-mtg-time { font-size: 10px; font-weight: 700; color: var(--g-grey); margin-bottom: 2px; }
+  .cal-mtg-name { font-weight: 700; font-size: 11px; color: #202124; }
+  .cal-mtg-jig { font-size: 10px; color: var(--g-grey); margin-top: 2px; }
   .cal-tags { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 2px; }
   .cal-tags .tag { font-size: 9px; padding: 1px 4px; margin: 0; white-space: normal; }
 
-  .tab.active:nth-child(4) { background: #FBBDD3; }
-
   /* Status badge (Tab A) */
-  .st { text-align: center; font-size: 11px; font-weight: 700; white-space: nowrap; }
-  .st-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-weight: 700; font-size: 11px; line-height: 1.5; }
-  .st-未開始 { background: #EEEAE0; color: #555; }
-  .st-進行中 { background: #DCEBFB; color: #000; }
-  .st-完成   { background: #D4F2DD; color: #000; }
+  .st { text-align: center; font-size: 11px; font-weight: 500; white-space: nowrap; }
+  .st-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-weight: 500; font-size: 11px; line-height: 1.5; }
+  .st-未開始 { background: var(--g-grey-bg);   color: var(--g-grey); }
+  .st-進行中 { background: var(--g-blue-bg);   color: var(--g-blue-fg); }
+  .st-完成   { background: var(--g-green-bg);  color: var(--g-green-fg); }
   /* 空欄時は行種別バッジで埋める（欠落ではなく未評価と分かる） */
-  .st-type   { display: inline-block; padding: 1px 7px; border-radius: 3px; font-weight: 700; font-size: 10px; line-height: 1.5; letter-spacing: 0.05em; }
-  .st-type-issue { background: transparent; color: #B8B0A0; border: 1px dashed #D8D2C0; }
-  .st-type-task  { background: transparent; color: #9BB6D2; border: 1px dashed #C7D5E8; }
+  .st-type   { display: inline-block; padding: 1px 7px; border-radius: 12px; font-weight: 500; font-size: 10px; line-height: 1.5; letter-spacing: 0.05em; }
+  .st-type-issue { background: transparent; color: var(--g-green);  border: 1px dashed #B5DCC0; }
+  .st-type-task  { background: transparent; color: var(--g-blue);   border: 1px dashed #C8D7F0; }
 
   /* Tab A controls bar */
-  .ctrl-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 10px; background: var(--hdr-bg); border-bottom: 1px solid var(--border); font-size: 12px; }
-  .ctrl-bar input[type="search"], .ctrl-bar select { padding: 4px 8px; font-size: 12px; border: 1px solid #BFB8A4; border-radius: 4px; background: #fff; font-family: inherit; color: #000; }
-  .ctrl-bar input[type="search"] { min-width: 200px; }
-  .ctrl-bar label { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; color: #333; }
+  .ctrl-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; background: var(--hdr-bg); border-bottom: 1px solid var(--border); font-size: 12px; }
+  .ctrl-bar input[type="search"], .ctrl-bar select { padding: 6px 10px; font-size: 12px; border: 1px solid var(--border); border-radius: 4px; background: #fff; font-family: inherit; color: #202124; transition: border-color 0.15s; }
+  .ctrl-bar input[type="search"]:focus, .ctrl-bar select:focus { outline: none; border-color: var(--g-blue); box-shadow: 0 0 0 2px var(--g-blue-bg); }
+  .ctrl-bar input[type="search"] { min-width: 220px; }
+  .ctrl-bar label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; color: #3C4043; }
+  .ctrl-bar input[type="checkbox"] { accent-color: var(--g-blue); }
   .ctrl-bar .ctrl-sep { width: 1px; height: 18px; background: var(--border); margin: 0 4px; }
-  .ctrl-bar .ctrl-clear { padding: 4px 10px; font-size: 11px; font-weight: 600; border: 1px solid #BFB8A4; border-radius: 4px; background: #fff; cursor: pointer; color: #555; }
-  .ctrl-bar .ctrl-clear:hover { background: #F0EBDC; color: #000; }
-  .ctrl-bar .ctrl-count { margin-left: auto; font-size: 11px; color: #666; }
+  .ctrl-bar .ctrl-clear { padding: 6px 12px; font-size: 11px; font-weight: 500; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: pointer; color: var(--g-grey); transition: all 0.15s; }
+  .ctrl-bar .ctrl-clear:hover { background: var(--g-grey-bg); color: #202124; }
+  .ctrl-bar .ctrl-count { margin-left: auto; font-size: 11px; color: var(--g-grey); }
   .row-hidden { display: none !important; }
 
   /* Confluence cell（管理頁面の位置に配置） */
   .conf { white-space: nowrap; font-size: 11px; }
-  .conf a { color: #5A78AA; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
-  .conf a:hover { text-decoration: underline; color: #000; }
+  .conf a { color: var(--g-blue); text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+  .conf a:hover { text-decoration: underline; color: var(--g-blue-fg); }
   .conf img { width: 13px; height: 13px; vertical-align: middle; flex-shrink: 0; }
   .conf .conf-text { display: inline-block; max-width: 130px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
 
@@ -175,32 +184,32 @@
   .mtg-col { transition: none; }
   table.hide-mtg .mtg-col { display: none; }
 
-  /* Office memo (事務局備註) — 空のときは何も表示しない */
-  .memo { font-size: 11px; color: #555; font-style: italic; line-height: 1.45; min-width: 100px; max-width: 200px; white-space: normal; }
+  /* Office memo (事務局備註) */
+  .memo { font-size: 11px; color: var(--g-grey); font-style: italic; line-height: 1.45; min-width: 100px; max-width: 200px; white-space: normal; }
 
-  /* Update freshness (更新日) — 空のときは何も表示しない */
-  .upd { text-align: center; font-size: 10px; font-weight: 600; color: #555; white-space: nowrap; }
-  .upd-warn  { background: #FFF3CC; color: #7A5A00; }
-  .upd-stale { background: #FCD7D7; color: #8A0000; }
+  /* Update freshness (更新日) */
+  .upd { text-align: center; font-size: 10px; font-weight: 500; color: var(--g-grey); white-space: nowrap; }
+  .upd-warn  { background: var(--g-yellow-bg); color: var(--g-yellow-fg); }
+  .upd-stale { background: var(--g-red-bg);    color: var(--g-red-fg); }
 
-  /* Confluence link */
+  /* Confluence link (legacy) */
   .lnk { text-align: center; width: 28px; }
-  .lnk a { text-decoration: none; font-size: 14px; color: #5A78AA; }
-  .lnk a:hover { color: #000; }
+  .lnk a { text-decoration: none; font-size: 14px; color: var(--g-blue); }
+  .lnk a:hover { color: var(--g-blue-fg); }
 
   /* Version badge */
-  .ver { display: inline-block; margin-left: 10px; padding: 2px 8px; font-size: 10px; font-weight: 600; color: #888; background: #F2EEE3; border: 1px solid #DCD5C0; border-radius: 10px; vertical-align: middle; letter-spacing: 0.03em; cursor: help; }
-  .ver:hover { background: #ECE6D6; color: #000; }
+  .ver { display: inline-block; margin-left: 10px; padding: 2px 8px; font-size: 10px; font-weight: 500; color: var(--g-grey); background: var(--g-grey-bg); border: 1px solid var(--border); border-radius: 10px; vertical-align: middle; letter-spacing: 0.03em; cursor: help; }
+  .ver:hover { background: #E8EAED; color: #202124; }
 
   /* Issue expand toggle (for tasks) */
   .num-cell { position: relative; }
-  .toggle { display: inline-block; cursor: pointer; user-select: none; width: 12px; text-align: center; color: #666; font-size: 10px; font-weight: 700; margin-right: 2px; }
+  .toggle { display: inline-block; cursor: pointer; user-select: none; width: 12px; text-align: center; color: var(--g-grey); font-size: 10px; font-weight: 500; margin-right: 2px; }
   .toggle.no-children { visibility: hidden; }
-  tr.task-row { background: #FBF8EE; }
+  tr.task-row { background: #F8F9FA; }
   tr.task-row.hidden { display: none; }
-  tr.task-row .num { color: #7A5A00; font-weight: 600; font-size: 10px; }
-  tr.task-row .lbl { font-size: 11px; color: #333; padding-left: 18px; position: relative; }
-  tr.task-row .lbl::before { content: '↳'; position: absolute; left: 4px; color: #999; }
+  tr.task-row .num { color: var(--g-grey); font-weight: 500; font-size: 10px; }
+  tr.task-row .lbl { font-size: 11px; color: #3C4043; padding-left: 18px; position: relative; }
+  tr.task-row .lbl::before { content: '↳'; position: absolute; left: 4px; color: #80868B; }
 
   /* Print */
   @media print {
@@ -230,13 +239,13 @@
 <!-- ===== A ===== -->
 <div class="panel active" id="panel-A">
 <div class="ctrl-bar" id="ctrlBarA">
-  <input type="search" id="searchA" placeholder="🔍 Issue/Task/担当者/組...で検索" autocomplete="off">
-  <select id="filterDeptA"><option value="">處：すべて</option></select>
-  <select id="filterGroupA"><option value="">組：すべて</option></select>
+  <input type="search" id="searchA" placeholder="🔍 搜尋 Issue / Task / 負責人 / 組..." autocomplete="off">
+  <select id="filterDeptA"><option value="">處：全部</option></select>
+  <select id="filterGroupA"><option value="">組：全部</option></select>
   <span class="ctrl-sep"></span>
-  <label><input type="checkbox" id="toggleMtgA" checked>會議列を表示</label>
+  <label><input type="checkbox" id="toggleMtgA" checked>顯示會議欄</label>
   <span class="ctrl-sep"></span>
-  <button type="button" class="ctrl-clear" id="clearFilterA">クリア</button>
+  <button type="button" class="ctrl-clear" id="clearFilterA">清除</button>
   <span class="ctrl-count" id="filterCountA"></span>
 </div>
 <table id="tableA">
@@ -251,12 +260,12 @@
     <th class="mtg-col" style="width:110px;">確認會議</th>
     <th class="mtg-col" style="width:70px;">會議時間</th>
     <th style="width:74px;">狀態</th>
-    <th style="min-width:140px;">Remarks</th>
+    <th style="min-width:140px;">備註</th>
     <th style="width:56px;">更新</th>
   </tr>
 </thead>
 <tbody>
-<tr><td colspan="11" style="text-align:center; color:#999; padding:20px; font-size:11px;">資料を雲端から読み込んでいます…</td></tr>
+<tr><td colspan="11" style="text-align:center; color:#80868B; padding:20px; font-size:11px;">正在從雲端載入資料…</td></tr>
 </tbody>
 </table>
 </div>
@@ -372,7 +381,7 @@
     <!-- Cloud source -->
     <div class="con-section">
       <div class="section-title">
-        <span class="badge" style="background:#B6D7FB;">CLOUD</span>
+        <span class="badge" style="background: var(--g-blue-bg); color: var(--g-blue-fg);">CLOUD</span>
         雲端資料來源（Google 試算表）
       </div>
       <div class="desc" style="margin-bottom:10px;">
@@ -391,9 +400,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.6.0';
+const APP_VERSION = '0.6.1';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'Tab A 改善：検索＋處/組フィルタ、會議列の折り畳み、Confluence列統合（favicon＋ページ名）、Remarks 改名、空狀態をISSUE/TASKバッジに';
+const APP_NOTE  = '繁體中文統一 + Google 色系設計：版面色、字型 Roboto、按鈕與標籤改採 Google Material 風格';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -569,7 +578,7 @@ function freshnessCell(dateStr) {
   let cls = 'upd-fresh';
   if (days > 14) cls = 'upd-stale';
   else if (days > 7) cls = 'upd-warn';
-  const label = days <= 0 ? '今日' : `${days}日前`;
+  const label = days <= 0 ? '今天' : `${days} 天前`;
   return `<td class="upd ${cls}" title="${escapeHtml(v)}">${label}</td>`;
 }
 
@@ -581,7 +590,7 @@ function confluenceCell(pageName, url) {
   const u = (url || '').trim();
   if (!name && !u) return '<td class="conf"></td>';
   const iconHtml = `<img src="${CONF_FAVICON}" alt="Confluence" onerror="this.style.display='none'">`;
-  const text = `<span class="conf-text" title="${escapeAttr(name)}">${escapeHtml(name || 'Confluenceページ')}</span>`;
+  const text = `<span class="conf-text" title="${escapeAttr(name)}">${escapeHtml(name || 'Confluence 頁面')}</span>`;
   const inner = u
     ? `<a href="${escapeAttr(u)}" target="_blank" rel="noopener" title="${escapeAttr(u)}">${iconHtml}${text}</a>`
     : `${iconHtml}${text}`;
@@ -695,7 +704,7 @@ function setupTabAFilters() {
 
   const curDept = deptSel.value;
   const curGrp  = grpSel.value;
-  deptSel.innerHTML = '<option value="">處：すべて</option>'
+  deptSel.innerHTML = '<option value="">處：全部</option>'
     + [...deptSet].sort().map(d => `<option value="${escapeAttr(d)}">${escapeHtml(d)}</option>`).join('');
   if ([...deptSel.options].some(o => o.value === curDept)) deptSel.value = curDept;
 
@@ -721,7 +730,7 @@ function setupTabAFilters() {
     const d = deptSel.value;
     const groups = d ? (grpByDept.get(d) || new Set()) : new Set([].concat(...[...grpByDept.values()].map(s => [...s])));
     const cur = grpSel.value;
-    grpSel.innerHTML = '<option value="">組：すべて</option>'
+    grpSel.innerHTML = '<option value="">組：全部</option>'
       + [...groups].sort().map(g => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`).join('');
     if ([...grpSel.options].some(o => o.value === cur)) grpSel.value = cur;
   }
@@ -765,7 +774,7 @@ function applyTabAFilters() {
 
   const total = tbody.querySelectorAll('tr.issue-row').length;
   const countEl = document.getElementById('filterCountA');
-  if (countEl) countEl.textContent = (q || d || g) ? `${shownCount} / ${total} 件表示` : '';
+  if (countEl) countEl.textContent = (q || d || g) ? `顯示 ${shownCount} / ${total} 筆` : '';
 }
 
 function escapeAttr(s) {
