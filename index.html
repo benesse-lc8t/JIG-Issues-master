@@ -139,6 +139,40 @@
 
   .tab.active:nth-child(4) { background: #FBBDD3; }
 
+  /* Status badge (Tab A) */
+  .st { text-align: center; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .st-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-weight: 700; font-size: 11px; line-height: 1.5; }
+  .st-未開始 { background: #EEEAE0; color: #555; }
+  .st-進行中 { background: #DCEBFB; color: #000; }
+  .st-完成   { background: #D4F2DD; color: #000; }
+  .st-empty  { color: #BBB; }
+
+  /* Office memo (事務局備註) */
+  .memo { font-size: 11px; color: #555; font-style: italic; line-height: 1.45; min-width: 120px; max-width: 220px; white-space: normal; }
+  .memo:empty::before { content: '—'; color: #CCC; font-style: normal; }
+
+  /* Update freshness (更新日) */
+  .upd { text-align: center; font-size: 10px; font-weight: 600; color: #555; white-space: nowrap; }
+  .upd-fresh { /* ≤7d, default */ }
+  .upd-warn  { background: #FFF3CC; color: #7A5A00; }
+  .upd-stale { background: #FCD7D7; color: #8A0000; }
+  .upd:empty::before { content: '—'; color: #CCC; }
+
+  /* Confluence link */
+  .lnk { text-align: center; width: 28px; }
+  .lnk a { text-decoration: none; font-size: 14px; color: #5A78AA; }
+  .lnk a:hover { color: #000; }
+
+  /* Issue expand toggle (for tasks) */
+  .num-cell { position: relative; }
+  .toggle { display: inline-block; cursor: pointer; user-select: none; width: 12px; text-align: center; color: #666; font-size: 10px; font-weight: 700; margin-right: 2px; }
+  .toggle.no-children { visibility: hidden; }
+  tr.task-row { background: #FBF8EE; }
+  tr.task-row.hidden { display: none; }
+  tr.task-row .num { color: #7A5A00; font-weight: 600; font-size: 10px; }
+  tr.task-row .lbl { font-size: 11px; color: #333; padding-left: 18px; position: relative; }
+  tr.task-row .lbl::before { content: '↳'; position: absolute; left: 4px; color: #999; }
+
   /* Print */
   @media print {
     .tabs, .admin-btn { display: none; }
@@ -168,16 +202,20 @@
   <tr>
     <th style="width:64px;">區分</th>
     <th style="width:22px;">軸</th>
-    <th style="width:48px;">編號</th>
+    <th style="width:64px;">編號</th>
     <th style="min-width:140px;">Issue</th>
     <th style="width:62px;">處</th>
     <th style="width:62px;">組</th>
     <th style="width:40px;">戰略負責人</th>
     <th style="width:90px;">管理頁面</th><th style="width:90px;">確認會議</th><th style="width:60px;">會議時間</th>
+    <th style="width:62px;">狀態</th>
+    <th style="min-width:140px;">事務局備註</th>
+    <th style="width:56px;">更新</th>
+    <th style="width:28px;" title="Confluence">📄</th>
   </tr>
 </thead>
 <tbody>
-<tr><td colspan="10" class="sec">■ 共通Issue（橫軸管理）</td></tr>
+<tr><td colspan="14" class="sec">■ 共通Issue（橫軸管理）</td></tr>
 <tr><td class="grp grp-com" rowspan="24">共通</td><td class="ax ax-O">O</td><td class="num">共-1</td><td class="lbl">交叉銷售·客單價提升</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">JIG-經營戰略</td><td class="pc">經營戰略組會</td><td class="pc">週三15:30</td></tr>
 <tr><td class="ax ax-O">O</td><td class="num">共-2</td><td class="lbl">官方網站體驗強化·轉換提升</td><td class="dept">整合行銷</td><td class="dept">通路整合</td><td class="dept">育菱</td><td class="pc">JIG-通路整合</td><td class="pc">整合溝通-通路整合</td><td class="pc">週二15:30</td></tr>
 <tr><td class="ax ax-O">O</td><td class="num">共-3</td><td class="lbl">YOUTUBE內容強化·各事業業績貢獻·訂閱者擴大</td><td class="dept">商品事業</td><td class="dept">學習商品開發</td><td class="dept">育菱</td><td class="pc">JIG-學習商品開發</td><td class="pc">商品溝通-YT</td><td class="pc">週二14:30</td></tr>
@@ -202,7 +240,7 @@
 <tr><td class="ax ax-P">P</td><td class="num">共-22</td><td class="lbl">跨部門Issue調整方針討論</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">育菱</td><td class="pc">JIG-育菱工作一覽</td><td class="pc">育菱1on1</td><td class="pc">週四09:30</td></tr>
 <tr><td class="ax ax-P">P</td><td class="num">共-23</td><td class="lbl">業績確認以及經營會準備</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">詩雅</td><td class="pc">JIG-詩雅工作一覽</td><td class="pc">業績確認</td><td class="pc">週一14:00</td></tr>
 <tr><td class="ax ax-P">P</td><td class="num">共-24</td><td class="lbl">AI經營能力提升</td><td class="dept">經營戰略</td><td class="dept">經營戰略</td><td class="dept">詩雅</td><td class="pc">JIG-AIC</td><td class="pc">AIC會議</td><td class="pc">週五10:00</td></tr>
-<tr><td colspan="10" class="sec">■ 個別Issue（縱軸·依SKU管理）</td></tr>
+<tr><td colspan="14" class="sec">■ 個別Issue（縱軸·依SKU管理）</td></tr>
 <tr><td class="grp grp-L" rowspan="6">L<br>學習商品</td><td class="ax ax-O">O</td><td class="num">L-1</td><td class="lbl">學習商品-SKU擴大·進化</td><td class="dept">商品事業</td><td class="dept">學習商品開發</td><td class="dept">育菱</td><td class="pc">JIG-學習商品開發</td><td class="pc">商品溝通-學習商品</td><td class="pc">週二14:30</td></tr>
 <tr><td class="ax ax-CV">CV</td><td class="num">L-2</td><td class="lbl">學習商品-WEB銷售擴大</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">JIG-數位行銷</td><td class="pc">整合溝通-數位行銷</td><td class="pc">週二15:30</td></tr>
 <tr><td class="ax ax-CV">CV</td><td class="num">L-3</td><td class="lbl">學習商品-KOL銷售擴大</td><td class="dept">整合行銷</td><td class="dept">數位行銷</td><td class="dept">育菱</td><td class="pc">JIG-數位行銷</td><td class="pc">整合溝通-數位行銷</td><td class="pc">週二15:30</td></tr>
@@ -386,6 +424,9 @@ const GROUP_DEF = {
 };
 const AXIS_CLASS = { 'O':'ax-O','N':'ax-N','CV':'ax-CV','I':'ax-I','P':'ax-P' };
 const COLS = ['區分','軸','編號','Issue','Issue短縮','處','組','戰略負責人','管理頁面','確認會議','會議時間'];
+// 拡張列：Sheet に存在すれば読み込む。欠けていてもエラーにせず空文字とする。
+const OPTIONAL_COLS = ['種別','親編號','Confluence URL','狀態','事務局備註','更新日'];
+const STATUS_VALUES = new Set(['未開始','進行中','完成']);
 
 let issueData = [];   // array of row objects
 let shortNameMap = {}; // 編號 → Issue短縮（從內建 B/C/D 標籤擷取，作為雲端資料缺漏時的補值）
@@ -433,7 +474,7 @@ function parseInitialTable() {
       idx = 1;
     }
     if (tds.length - idx < 9) return;
-    out.push({
+    const row = {
       '區分': curGroup,
       '軸':   tds[idx].innerText.trim(),
       '編號': tds[idx+1].innerText.trim(),
@@ -445,7 +486,10 @@ function parseInitialTable() {
       '管理頁面':   tds[idx+6].innerText.trim(),
       '確認會議':   tds[idx+7].innerText.trim(),
       '會議時間':   tds[idx+8].innerText.trim()
-    });
+    };
+    OPTIONAL_COLS.forEach(c => { row[c] = ''; });
+    row['種別'] = 'Issue';
+    out.push(row);
   });
   return out;
 }
@@ -490,15 +534,79 @@ function harvestShortNames() {
   return map;
 }
 
+// 狀態バッジHTML
+function statusBadge(s) {
+  const v = (s || '').trim();
+  if (!v) return '<span class="st-empty">—</span>';
+  const cls = STATUS_VALUES.has(v) ? `st-${v}` : '';
+  return `<span class="st-badge ${cls}">${escapeHtml(v)}</span>`;
+}
+
+// 更新日：今日からの経過日数で色変化（≤7d 通常 / 8-14d 黄 / >14d 赤）
+function freshnessCell(dateStr) {
+  const v = (dateStr || '').trim();
+  if (!v) return '<td class="upd"></td>';
+  // 受け付ける形式：YYYY-MM-DD, YYYY/MM/DD, M/D, etc.
+  let d = null;
+  const m = v.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+  if (m) d = new Date(+m[1], +m[2]-1, +m[3]);
+  else {
+    const p = Date.parse(v);
+    if (!isNaN(p)) d = new Date(p);
+  }
+  if (!d || isNaN(d.getTime())) {
+    return `<td class="upd">${escapeHtml(v)}</td>`;
+  }
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  d.setHours(0,0,0,0);
+  const days = Math.floor((today - d) / 86400000);
+  let cls = 'upd-fresh';
+  if (days > 14) cls = 'upd-stale';
+  else if (days > 7) cls = 'upd-warn';
+  const label = days <= 0 ? '今日' : `${days}日前`;
+  return `<td class="upd ${cls}" title="${escapeHtml(v)}">${label}</td>`;
+}
+
+// Confluence リンクのセル
+function confluenceCell(url) {
+  const u = (url || '').trim();
+  if (!u) return '<td class="lnk"></td>';
+  return `<td class="lnk"><a href="${escapeHtml(u)}" target="_blank" rel="noopener" title="Confluence ページを開く">📄</a></td>`;
+}
+
+// Issue + Task 階層を組み立てる：Issue配下に親編號が一致するTaskを纏める
+function buildIssueTree(rows) {
+  const issues = [];
+  const issueByNum = new Map();
+  rows.forEach(r => {
+    if ((r['種別'] || 'Issue') !== 'Task') {
+      const issue = { row: r, tasks: [] };
+      issues.push(issue);
+      issueByNum.set((r['編號']||'').trim(), issue);
+    }
+  });
+  rows.forEach(r => {
+    if ((r['種別'] || '') === 'Task') {
+      const parent = (r['親編號'] || '').trim();
+      const owner = issueByNum.get(parent);
+      if (owner) owner.tasks.push(r);
+      else issues.push({ row: r, tasks: [], orphan: true });
+    }
+  });
+  return issues;
+}
+
 function renderTableA() {
   const tbody = document.querySelector('#panel-A tbody');
-  // Group rows by 區分 (preserve order)
+  // Group rows by 區分 (preserve order). Issue/Task は親Issueの區分グループ内に置く。
   const groups = [];
-  issueData.forEach(r => {
-    const g = r['區分'] || '';
+  const tree = buildIssueTree(issueData);
+  tree.forEach(node => {
+    const g = node.row['區分'] || '';
     const last = groups[groups.length - 1];
-    if (last && last.key === g) last.rows.push(r);
-    else groups.push({ key: g, rows: [r] });
+    if (last && last.key === g) last.nodes.push(node);
+    else groups.push({ key: g, nodes: [node] });
   });
 
   let html = '';
@@ -507,20 +615,30 @@ function renderTableA() {
   groups.forEach(g => {
     const def = GROUP_DEF[g.key] || { key:'?', label: escapeHtml(g.key), cls:'grp-com' };
     if (g.key === '共通' && !commonHeaderEmitted) {
-      html += '<tr><td colspan="10" class="sec">■ 共通Issue（橫軸管理）</td></tr>';
+      html += '<tr><td colspan="14" class="sec">■ 共通Issue（橫軸管理）</td></tr>';
       commonHeaderEmitted = true;
     } else if (g.key !== '共通' && !individualHeaderEmitted) {
-      html += '<tr><td colspan="10" class="sec">■ 個別Issue（縱軸·依SKU管理）</td></tr>';
+      html += '<tr><td colspan="14" class="sec">■ 個別Issue（縱軸·依SKU管理）</td></tr>';
       individualHeaderEmitted = true;
     }
-    g.rows.forEach((r, i) => {
+    // 區分セルの rowspan：Issue + Task の総行数
+    const totalRowsInGroup = g.nodes.reduce((sum, n) => sum + 1 + n.tasks.length, 0);
+    let cellsEmitted = 0;
+    g.nodes.forEach(node => {
+      const r = node.row;
       const axCls = AXIS_CLASS[r['軸']] || '';
+      const num = (r['編號'] || '').trim();
+      const hasTasks = node.tasks.length > 0;
+      const toggleCls = hasTasks ? 'toggle' : 'toggle no-children';
+      const toggleAttr = hasTasks ? ` onclick="toggleTasks(this, '${escapeAttr(num)}')"` : '';
+      const toggleSym = hasTasks ? '▶' : '';
+
       html += '<tr>';
-      if (i === 0) {
-        html += `<td class="grp ${def.cls}" rowspan="${g.rows.length}">${def.label}</td>`;
+      if (cellsEmitted === 0) {
+        html += `<td class="grp ${def.cls}" rowspan="${totalRowsInGroup}">${def.label}</td>`;
       }
       html += `<td class="ax ${axCls}">${escapeHtml(r['軸'])}</td>`;
-      html += `<td class="num">${escapeHtml(r['編號'])}</td>`;
+      html += `<td class="num num-cell"><span class="${toggleCls}"${toggleAttr}>${toggleSym}</span>${escapeHtml(num)}</td>`;
       html += `<td class="lbl">${escapeHtml(r['Issue'])}</td>`;
       html += `<td class="dept">${escapeHtml(r['處'])}</td>`;
       html += `<td class="dept">${escapeHtml(r['組'])}</td>`;
@@ -528,10 +646,50 @@ function renderTableA() {
       html += `<td class="pc">${escapeHtml(r['管理頁面'])}</td>`;
       html += `<td class="pc">${escapeHtml(r['確認會議'])}</td>`;
       html += `<td class="pc">${escapeHtml(r['會議時間'])}</td>`;
+      html += `<td class="st">${statusBadge(r['狀態'])}</td>`;
+      html += `<td class="memo">${escapeHtml(r['事務局備註'])}</td>`;
+      html += freshnessCell(r['更新日']);
+      html += confluenceCell(r['Confluence URL']);
       html += '</tr>';
+      cellsEmitted++;
+
+      // Task 行（デフォ折りたたみ）
+      node.tasks.forEach(t => {
+        const taCls = AXIS_CLASS[t['軸']] || axCls;
+        html += `<tr class="task-row hidden" data-parent="${escapeAttr(num)}">`;
+        html += `<td class="ax ${taCls}">${escapeHtml(t['軸'])}</td>`;
+        html += `<td class="num num-cell"><span class="toggle no-children"></span>${escapeHtml(t['編號'])}</td>`;
+        html += `<td class="lbl">${escapeHtml(t['Issue'])}</td>`;
+        html += `<td class="dept">${escapeHtml(t['處'])}</td>`;
+        html += `<td class="dept">${escapeHtml(t['組'])}</td>`;
+        html += `<td class="dept">${escapeHtml(t['戰略負責人'])}</td>`;
+        html += `<td class="pc">${escapeHtml(t['管理頁面'])}</td>`;
+        html += `<td class="pc">${escapeHtml(t['確認會議'])}</td>`;
+        html += `<td class="pc">${escapeHtml(t['會議時間'])}</td>`;
+        html += `<td class="st">${statusBadge(t['狀態'])}</td>`;
+        html += `<td class="memo">${escapeHtml(t['事務局備註'])}</td>`;
+        html += freshnessCell(t['更新日']);
+        html += confluenceCell(t['Confluence URL']);
+        html += '</tr>';
+        cellsEmitted++;
+      });
     });
   });
   tbody.innerHTML = html;
+}
+
+function escapeAttr(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Issue 行のトグルクリックで Task 行を表示／非表示
+function toggleTasks(el, parentNum) {
+  const open = el.classList.toggle('open');
+  el.textContent = open ? '▼' : '▶';
+  const tbody = el.closest('tbody');
+  tbody.querySelectorAll(`tr.task-row[data-parent="${parentNum.replace(/"/g,'\\"')}"]`).forEach(tr => {
+    tr.classList.toggle('hidden', !open);
+  });
 }
 
 // ===== Tab B: 會議 → 管理頁面 → Issues =====
@@ -673,7 +831,8 @@ function rowsToData(rows) {
   if (rows.length < 2) throw new Error('檔案無資料列');
   const headers = rows[0].map(h => String(h).trim());
   const colIdx = {};
-  COLS.forEach(c => {
+  const allCols = COLS.concat(OPTIONAL_COLS);
+  allCols.forEach(c => {
     let i = headers.indexOf(c);
     if (i < 0 && c === '管理頁面') i = headers.findIndex(h => h.startsWith('管理頁面'));
     colIdx[c] = i;
@@ -690,11 +849,13 @@ function rowsToData(rows) {
     const gRaw = String(row[colIdx['區分']] || '').trim();
     if (gRaw) lastGroup = gRaw;
     const obj = {};
-    COLS.forEach(c => {
+    allCols.forEach(c => {
       obj[c] = colIdx[c] >= 0 ? String(row[colIdx[c]] ?? '').trim() : '';
     });
     obj['區分'] = lastGroup;
     if (!obj['編號'] && !obj['Issue']) continue;
+    // 種別の正規化：列が無い、または値が空の行は Issue とみなす
+    if (!obj['種別']) obj['種別'] = 'Issue';
     data.push(obj);
   }
   return data;
