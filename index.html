@@ -134,9 +134,9 @@
   td.dept-c-teal   { background: #E0F7FA; color: #00838F; font-weight: 700; }
   td.dept-c-grey   { background: #F8F9FA; color: #5F6368; font-weight: 700; }
 
-  /* Row hover — Google Blue の薄い tint */
+  /* Row hover — Issue 地色より少し濃い Google Blue tint で「ホバーが見える」 */
   #panel-A tbody tr.issue-row:hover td,
-  #panel-A tbody tr.mission-row:hover td { background: #F0F7FF; }
+  #panel-A tbody tr.mission-row:hover td { background: #E3EEFD; }
   #panel-A tbody tr.issue-row:hover td.dept-c-blue,
   #panel-A tbody tr.issue-row:hover td.dept-c-green,
   #panel-A tbody tr.issue-row:hover td.dept-c-yellow,
@@ -233,7 +233,11 @@
   .num-cell { position: relative; }
   .toggle { display: inline-block; cursor: pointer; user-select: none; width: 12px; text-align: center; color: var(--g-grey); font-size: 10px; font-weight: 500; margin-right: 2px; }
   .toggle.no-children { visibility: hidden; }
-  tr.mission-row { background: #F8F9FA; }
+  /* Issue 行：薄い地色で「主な行」と認識させる */
+  tr.issue-row { background: #F4F7FB; }
+  /* Mission 行：白＋約 80% の行高（padding と font-size を控えめに） */
+  tr.mission-row { background: #FFFFFF; }
+  tr.mission-row td { padding-top: 3px; padding-bottom: 3px; line-height: 1.25; font-size: 11px; }
   tr.mission-row.hidden { display: none; }
   tr.mission-row .num { color: var(--g-grey); font-weight: 500; font-size: 10px; }
   tr.mission-row .lbl { font-size: 11px; color: #3C4043; padding-left: 18px; position: relative; }
@@ -430,9 +434,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.8.1';
+const APP_VERSION = '0.8.2';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'Mission の擔當は親から継承せず空欄のまま表示（戰略負責人は引き続き継承）。';
+const APP_NOTE  = '視認性向上：Issue 行に薄い地色（#F4F7FB）、Mission 行は白＋約 80% の行高に。階層が一目で分かるように。';
 
 // ===== Tab switch =====
 function show(id, e) {
