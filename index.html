@@ -160,6 +160,10 @@
   .lnk a { text-decoration: none; font-size: 14px; color: #5A78AA; }
   .lnk a:hover { color: #000; }
 
+  /* Version badge */
+  .ver { display: inline-block; margin-left: 10px; padding: 2px 8px; font-size: 10px; font-weight: 600; color: #888; background: #F2EEE3; border: 1px solid #DCD5C0; border-radius: 10px; vertical-align: middle; letter-spacing: 0.03em; cursor: help; }
+  .ver:hover { background: #ECE6D6; color: #000; }
+
   /* Issue expand toggle (for tasks) */
   .num-cell { position: relative; }
   .toggle { display: inline-block; cursor: pointer; user-select: none; width: 12px; text-align: center; color: #666; font-size: 10px; font-weight: 700; margin-right: 2px; }
@@ -181,7 +185,7 @@
 </head>
 <body>
 <div class="topbar">
-  <h1>TBBS-經營Issue管理系統</h1>
+  <h1>TBBS-經營Issue管理系統<span class="ver" id="verBadge" title="">v?.?.?</span></h1>
   <button id="adminBtn" class="admin-btn" onclick="show('E',event)" title="僅供管理者使用：資料來源設定">⚙ 管理者專用</button>
 </div>
 
@@ -398,6 +402,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
+// ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
+const APP_VERSION = '0.3.0';
+const APP_BUILD = '2026-05-30';
+const APP_NOTE  = 'バージョン管理 開始 — デプロイ確認用に右上に版號表示';
+
 // ===== Tab switch =====
 function show(id, e) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -898,6 +907,12 @@ async function loadFromSheet() {
 
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', async () => {
+  // バージョンバッジを反映（デプロイ確認用）
+  const verEl = document.getElementById('verBadge');
+  if (verEl) {
+    verEl.textContent = `v${APP_VERSION}`;
+    verEl.title = `v${APP_VERSION} · build ${APP_BUILD}\n${APP_NOTE}`;
+  }
   issueData = parseInitialTable();
   // 從內建 B/C/D 標籤擷取 編號→短縮 對照，作為雲端資料缺漏時的補值
   shortNameMap = harvestShortNames();
