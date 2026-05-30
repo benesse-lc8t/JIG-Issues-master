@@ -321,6 +321,7 @@
   <select id="filterGroupA"><option value="">組：全部</option></select>
   <select id="filterOwnerA"><option value="">擔當：全部</option></select>
   <span class="ctrl-sep"></span>
+  <button type="button" class="ctrl-clear" id="expandAllA">▶ 全部展開</button>
   <label><input type="checkbox" id="toggleMtgA">顯示會議欄</label>
   <span class="ctrl-sep"></span>
   <button type="button" class="ctrl-clear" id="clearFilterA">清除</button>
@@ -479,9 +480,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.8.5';
+const APP_VERSION = '0.8.6';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'Mission 編號をバッジ化、Issue/Mission 狀態バッジを縮小、Mission 行の處・組は空欄に、會議列はデフォルト非表示。';
+const APP_NOTE  = '上部に「全部展開/全部收合」ボタンを追加：1 クリックで全 Mission を一括表示／非表示。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -797,6 +798,11 @@ function renderTableA() {
     });
   });
   tbody.innerHTML = html;
+  // 描画直後は全 Mission が hidden で、トグルアイコンも ▶（閉じた状態）。
+  // 一括展開フラグもそれに合わせてリセット。
+  _allMissionsExpanded = false;
+  const expandBtn = document.getElementById('expandAllA');
+  if (expandBtn) expandBtn.textContent = '▶ 全部展開';
   setupTabAFilters();
   applyTabAFilters();
 }
@@ -848,6 +854,7 @@ function setupTabAFilters() {
   document.getElementById('toggleMtgA').addEventListener('change', e => {
     document.getElementById('tableA').classList.toggle('hide-mtg', !e.target.checked);
   });
+  document.getElementById('expandAllA').addEventListener('click', toggleAllMissions);
   document.getElementById('clearFilterA').addEventListener('click', () => {
     document.getElementById('searchA').value = '';
     deptSel.value = '';
@@ -915,7 +922,7 @@ function escapeAttr(s) {
   return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-// Issue 行のトグルクリックで Task 行を表示／非表示
+// Issue 行のトグルクリックで Mission 行を表示／非表示
 function toggleMissions(el, parentNum) {
   const open = el.classList.toggle('open');
   el.textContent = open ? '▼' : '▶';
@@ -923,6 +930,27 @@ function toggleMissions(el, parentNum) {
   tbody.querySelectorAll(`tr.mission-row[data-parent="${parentNum.replace(/"/g,'\\"')}"]`).forEach(tr => {
     tr.classList.toggle('hidden', !open);
   });
+}
+
+// 全 Mission の一括展開／折り畳み（ヘッダのボタンから呼ばれる）
+let _allMissionsExpanded = false;
+function toggleAllMissions() {
+  _allMissionsExpanded = !_allMissionsExpanded;
+  const tbody = document.querySelector('#panel-A tbody');
+  if (!tbody) return;
+  // 全 Mission 行の hidden を切替（フィルタ用の row-hidden は別レイヤなので影響しない）
+  tbody.querySelectorAll('tr.mission-row').forEach(tr => {
+    tr.classList.toggle('hidden', !_allMissionsExpanded);
+  });
+  // 全 Issue 行の ▶/▼ トグルアイコンも同期（子持ち行のみ）
+  tbody.querySelectorAll('tr.issue-row .toggle').forEach(el => {
+    if (el.classList.contains('no-children')) return;
+    el.classList.toggle('open', _allMissionsExpanded);
+    el.textContent = _allMissionsExpanded ? '▼' : '▶';
+  });
+  // ボタンラベルも入れ替え
+  const btn = document.getElementById('expandAllA');
+  if (btn) btn.textContent = _allMissionsExpanded ? '▼ 全部收合' : '▶ 全部展開';
 }
 
 // ===== Tab B: 會議 → 管理頁面 → Issues =====
