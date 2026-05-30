@@ -331,6 +331,30 @@
   .simple-table td.conf-icon a { display: inline-block; opacity: 0.85; transition: opacity 0.15s; }
   .simple-table td.conf-icon a:hover { opacity: 1; }
   .simple-table td.conf-icon img { width: 14px; height: 14px; vertical-align: middle; }
+
+  /* 編集可能セル（停滯警報タブ） */
+  .simple-table td.cell-editable { cursor: pointer; position: relative; }
+  .simple-table td.cell-editable:hover { background: #FFF9DB !important; outline: 1px solid #F9AB00; outline-offset: -1px; }
+  .simple-table td.cell-editable::after { content: '✎'; position: absolute; top: 1px; right: 2px; font-size: 8px; color: transparent; }
+  .simple-table td.cell-editable:hover::after { color: #F9AB00; }
+  .simple-table td.cell-saving { background: #E8F0FE !important; outline: 1px solid var(--g-blue); pointer-events: none; }
+  .simple-table td.cell-saved  { background: #E6F4EA !important; transition: background 0.3s; }
+  .simple-table select.inline-edit, .simple-table textarea.inline-edit, .simple-table input.inline-edit {
+    width: 100%; box-sizing: border-box; font: inherit; font-family: var(--font);
+    border: 1px solid var(--g-blue); border-radius: 3px; padding: 2px 4px;
+    background: #fff; box-shadow: 0 0 0 2px var(--g-blue-bg); outline: none;
+  }
+  .simple-table textarea.inline-edit { min-height: 36px; resize: vertical; font-size: 10px; line-height: 1.3; }
+  .simple-table input.inline-edit[type="date"] { font-size: 10px; }
+  .simple-table select.inline-edit { font-size: 10px; }
+
+  /* トースト通知 */
+  .toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; pointer-events: none; }
+  .toast { padding: 10px 16px; border-radius: 6px; font-size: 12px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: toast-in 0.2s ease-out; max-width: 320px; }
+  .toast-success { background: #34A853; color: #fff; }
+  .toast-error   { background: #EA4335; color: #fff; }
+  .toast-info    { background: #5F6368; color: #fff; }
+  @keyframes toast-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   /* 親 Issue セル（最初の行のみ表示、以降は空白） */
   .simple-table .parent-cell { font-size: 10px; line-height: 1.3; padding: 2px 8px; white-space: nowrap; overflow: hidden; }
   .simple-table .parent-cell .pc-num { display: inline-block; padding: 1px 5px; border-radius: 8px; font-size: 9px; font-weight: 700; background: #E8EAED; color: #3C4043; margin-right: 4px; vertical-align: middle; }
@@ -404,6 +428,7 @@
 </style>
 </head>
 <body>
+<div class="toast-container" id="toastContainer"></div>
 <div class="topbar">
   <h1 style="display:flex; align-items:center; gap:10px;">
     <img src="favicon.svg" alt="" width="32" height="32" style="vertical-align:middle; flex-shrink:0;">
@@ -513,10 +538,10 @@
   </table>
 </div>
 
-<!-- ===== C：停滯警報（Mission 専用） ===== -->
+<!-- ===== C：停滯警報（Mission 専用・インライン編集対応） ===== -->
 <div class="panel" id="panel-C">
-  <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    依更新日由舊至新排序的 <b>Mission</b> 停滯清單（&gt;14 天 紅・&gt;7 天 黃・未設定 灰）
+  <div style="padding:6px 14px; background:#FEF7E0; border-bottom:1px solid #F9AB00; font-size:10px; color:#B06000;">
+    💡 <b>狀態</b> セルをクリック ／ <b>備註</b> セルをダブルクリック ／ <b>更新</b> セルをクリックで編集できます（保存は Sheet に即反映）
   </div>
   <div class="ctrl-bar">
     <select id="filterDeptC"><option value="">處：全部</option></select>
@@ -752,9 +777,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.9.12';
+const APP_VERSION = '0.10.0';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '全タブの Mission に Confluence リンク追加（favicon クリッカブル）。「顯示結案」トグル（全タブ連動・既定 OFF）。';
+const APP_NOTE  = '停滯警報タブにインライン編集機能を追加（狀態/備註/更新日を直接書き換え、Apps Script Web App 経由で Sheet に即反映）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -798,6 +823,16 @@ const SHEET_NAME = 'Issue主檔';
 // Mission シート名（v0.7.0〜）。後方互換のため旧名「Task一覽」もフォールバックで読む。
 const MISSION_SHEET_NAME = 'Mission一覽';
 const TASK_SHEET_NAME    = 'Task一覽'; // legacy 名（Phase 2 で完全に Mission へ移行予定）
+
+// 編集 API（停滯警報タブのインライン編集に使用）
+// 1. scripts/setup-sheet.gs の doPost を Web App としてデプロイ
+//    （Apps Script エディタ → デプロイ → 新しいデプロイ → ウェブアプリ
+//     実行ユーザー：自分、アクセス：全員）
+// 2. 取得した URL を下記 SHEET_WRITE_URL に入れる
+// 3. WRITE_TOKEN は Apps Script 側と同じ値（変更は両方一斉に）
+// SHEET_WRITE_URL が空文字のときは編集機能は無効（読み取りのみ）
+const SHEET_WRITE_URL = ''; // ← デプロイ後に Web App URL を入れる
+const WRITE_TOKEN     = 'JIG-WRITE-TBBS-2026';
 // 先以工作表名稱抓取；若分頁名不符則退而抓取第一個分頁。
 function sheetCsvUrls() {
   if (!SHEET_ID) return [];
@@ -948,24 +983,38 @@ function parseDateLoose(v) {
   return null;
 }
 
-function freshnessCell(dateStr) {
+function freshnessCell(dateStr, editOpts) {
   const v = (dateStr || '').toString().trim();
-  if (!v) return '<td class="upd"></td>';
-  const d = parseDateLoose(v);
-  if (!d || isNaN(d.getTime())) {
-    // パース失敗時：生の値を出す。debug 用に console にも残す
-    console.warn('[freshnessCell] 日付の解析に失敗:', JSON.stringify(v));
-    return `<td class="upd" title="解析できず：${escapeAttr(v)}">${escapeHtml(v)}</td>`;
-  }
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  d.setHours(0,0,0,0);
-  const days = Math.floor((today - d) / 86400000);
+  // 編集可能セルの場合、ISO 形式の raw 値を data-raw に詰める
+  let rawIso = '';
+  let label = '';
   let cls = 'upd-fresh';
-  if (days > 14) cls = 'upd-stale';
-  else if (days > 7) cls = 'upd-warn';
-  const label = days <= 0 ? '今天' : `${days} 天前`;
-  return `<td class="upd ${cls}" title="${escapeHtml(v)}">${label}</td>`;
+  if (v) {
+    const d = parseDateLoose(v);
+    if (!d || isNaN(d.getTime())) {
+      console.warn('[freshnessCell] 日付の解析に失敗:', JSON.stringify(v));
+      const editAttr = editOpts && editOpts.editable
+        ? ` cell-editable" data-edit="date" data-mission="${escapeAttr(editOpts.missionId)}" data-raw=""`
+        : '"';
+      return `<td class="upd${editAttr} title="解析できず：${escapeAttr(v)}">${escapeHtml(v)}</td>`;
+    }
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    d.setHours(0,0,0,0);
+    const days = Math.floor((today - d) / 86400000);
+    if (days > 14) cls = 'upd-stale';
+    else if (days > 7) cls = 'upd-warn';
+    label = days <= 0 ? '今天' : `${days} 天前`;
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    rawIso = `${d.getFullYear()}-${mm}-${dd}`;
+  } else {
+    label = '';
+  }
+  if (editOpts && editOpts.editable) {
+    return `<td class="upd ${cls} cell-editable" data-edit="date" data-mission="${escapeAttr(editOpts.missionId)}" data-raw="${escapeAttr(rawIso)}" title="クリックで日付編集（${escapeAttr(v||'未設定')}）">${escapeHtml(label)}</td>`;
+  }
+  return `<td class="upd ${cls}" title="${escapeHtml(v)}">${escapeHtml(label)}</td>`;
 }
 
 // Confluence セル：管理頁面（ページ名）＋ favicon ＋ リンク
@@ -1227,6 +1276,196 @@ function escapeAttr(s) {
   return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
+// ===== トースト通知 =====
+function toast(msg, kind) {
+  const c = document.getElementById('toastContainer');
+  if (!c) return;
+  const el = document.createElement('div');
+  el.className = 'toast toast-' + (kind || 'info');
+  el.textContent = msg;
+  c.appendChild(el);
+  setTimeout(() => { el.style.transition = 'opacity 0.3s'; el.style.opacity = '0'; }, 3000);
+  setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 3500);
+}
+
+// ===== 編集 API：Apps Script Web App に POST =====
+async function saveMissionEdit(missionId, fields) {
+  if (!SHEET_WRITE_URL) {
+    toast('編集機能 未配置：管理者に Web App URL の設定を依頼してください', 'error');
+    return null;
+  }
+  try {
+    const res = await fetch(SHEET_WRITE_URL, {
+      method: 'POST',
+      // CORS preflight を避けるため text/plain で送る（中身は JSON 文字列）
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ token: WRITE_TOKEN, mission: missionId, ...fields }),
+      redirect: 'follow',
+    });
+    const text = await res.text();
+    let data; try { data = JSON.parse(text); } catch (_) { data = { ok: false, error: 'bad_response', raw: text }; }
+    if (!data.ok) {
+      toast(`儲存失敗：${data.error || 'unknown'}`, 'error');
+      console.warn('[saveMissionEdit] failed:', data);
+      return null;
+    }
+    return data;
+  } catch (e) {
+    toast(`網路錯誤：${e.message}`, 'error');
+    console.warn('[saveMissionEdit] exception:', e);
+    return null;
+  }
+}
+
+// 編集後にローカル issueData を同期更新
+function applyLocalEdit(missionId, changes) {
+  const row = issueData.find(r => (r['編號']||'').trim() === missionId);
+  if (!row) return;
+  if (changes['狀態']    !== undefined) row['狀態']        = changes['狀態'];
+  if (changes['備註']    !== undefined) row['事務局備註'] = changes['備註'];
+  if (changes['更新日']  !== undefined) row['更新日']     = changes['更新日'];
+}
+
+// セル保存後の見た目フィードバック
+function flashSaved(td) {
+  td.classList.add('cell-saved');
+  setTimeout(() => td.classList.remove('cell-saved'), 600);
+}
+
+// ===== インライン編集ハンドラ（Tab C 用、イベント委譲）=====
+function onTabCClick(e) {
+  const td = e.target.closest('td.cell-editable');
+  if (!td) return;
+  if (td.querySelector('input,select,textarea')) return; // 既に編集中
+  const editType = td.dataset.edit;
+  const missionId = td.dataset.mission;
+  if (!missionId) return;
+  if (editType === 'status') startStatusEdit(td, missionId);
+  else if (editType === 'date') startDateEdit(td, missionId);
+  // 備註は dblclick で発火（onTabCDblClick）
+}
+
+function onTabCDblClick(e) {
+  const td = e.target.closest('td.cell-editable[data-edit="remark"]');
+  if (!td) return;
+  if (td.querySelector('input,select,textarea')) return;
+  startRemarkEdit(td, td.dataset.mission);
+}
+
+function startStatusEdit(td, missionId) {
+  const current = td.dataset.current || '';
+  const select = document.createElement('select');
+  select.className = 'inline-edit';
+  ['','未開始','策劃中','需確認','進行中','結案'].forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s; opt.textContent = s || '（空）';
+    if (s === current) opt.selected = true;
+    select.appendChild(opt);
+  });
+  td.innerHTML = '';
+  td.appendChild(select);
+  select.focus();
+  let committed = false;
+  const cancel = () => {
+    if (committed) return;
+    td.innerHTML = statusBadge(current, true);
+  };
+  select.addEventListener('change', async () => {
+    committed = true;
+    const v = select.value;
+    if (v === current) { td.innerHTML = statusBadge(current, true); return; }
+    td.classList.add('cell-saving');
+    td.innerHTML = '⏳';
+    const result = await saveMissionEdit(missionId, { '狀態': v });
+    td.classList.remove('cell-saving');
+    if (!result) { td.innerHTML = statusBadge(current, true); return; }
+    applyLocalEdit(missionId, result.changes || { '狀態': v });
+    td.dataset.current = v;
+    td.innerHTML = statusBadge(v, true);
+    flashSaved(td);
+    toast(`已儲存：${missionId} → ${v || '（空）'}`, 'success');
+    // 更新日 cell も再描画したいので軽く Tab C 再描画
+    setTimeout(() => renderTableC(), 300);
+  });
+  select.addEventListener('blur', () => setTimeout(cancel, 100));
+}
+
+function startRemarkEdit(td, missionId) {
+  const current = td.textContent;
+  const ta = document.createElement('textarea');
+  ta.className = 'inline-edit';
+  ta.value = current;
+  ta.rows = 2;
+  td.innerHTML = '';
+  td.appendChild(ta);
+  ta.focus();
+  ta.select();
+  let committed = false;
+  const cancel = () => { if (!committed) td.textContent = current; };
+  const commit = async () => {
+    if (committed) return;
+    committed = true;
+    const v = ta.value;
+    if (v === current) { td.textContent = current; return; }
+    td.classList.add('cell-saving');
+    td.textContent = '⏳';
+    const result = await saveMissionEdit(missionId, { '備註': v });
+    td.classList.remove('cell-saving');
+    if (!result) { td.textContent = current; return; }
+    applyLocalEdit(missionId, result.changes || { '備註': v });
+    td.textContent = v;
+    flashSaved(td);
+    toast(`已儲存：${missionId} 備註`, 'success');
+    setTimeout(() => renderTableC(), 300);
+  };
+  ta.addEventListener('blur', commit);
+  ta.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); ta.blur(); }
+    if (ev.key === 'Escape') { committed = true; cancel(); }
+  });
+}
+
+function startDateEdit(td, missionId) {
+  const currentRaw = td.dataset.raw || '';
+  const currentLabel = td.textContent;
+  const input = document.createElement('input');
+  input.type = 'date';
+  input.className = 'inline-edit';
+  input.value = currentRaw;
+  td.innerHTML = '';
+  td.appendChild(input);
+  input.focus();
+  let committed = false;
+  const cancel = () => { if (!committed) td.textContent = currentLabel; };
+  const commit = async () => {
+    if (committed) return;
+    committed = true;
+    const v = input.value; // YYYY-MM-DD
+    if (v === currentRaw) { td.textContent = currentLabel; return; }
+    td.classList.add('cell-saving');
+    td.textContent = '⏳';
+    const result = await saveMissionEdit(missionId, { '更新日': v });
+    td.classList.remove('cell-saving');
+    if (!result) { td.textContent = currentLabel; return; }
+    applyLocalEdit(missionId, result.changes || { '更新日': v });
+    toast(`已儲存：${missionId} 更新日`, 'success');
+    setTimeout(() => renderTableC(), 300);
+  };
+  input.addEventListener('change', commit);
+  input.addEventListener('blur', () => setTimeout(commit, 100));
+  input.addEventListener('keydown', ev => {
+    if (ev.key === 'Escape') { committed = true; cancel(); }
+  });
+}
+
+function wireTabCEditing() {
+  const panel = document.getElementById('panel-C');
+  if (!panel || panel._editWired) return;
+  panel._editWired = true;
+  panel.addEventListener('click', onTabCClick);
+  panel.addEventListener('dblclick', onTabCDblClick);
+}
+
 // Issue 行のトグルクリックで Mission 行を表示／非表示
 function toggleMissions(el, parentNum) {
   const open = el.classList.toggle('open');
@@ -1303,10 +1542,18 @@ function simpleRow(r, opts) {
     h += `<td>${escapeHtml(owner)}</td>`;
   }
   if (opts.showRemark !== false) {
-    h += `<td class="memo">${escapeHtml(remark)}</td>`;
+    if (opts.editable && isMission) {
+      h += `<td class="memo cell-editable" data-edit="remark" data-mission="${escapeAttr(num)}" title="ダブルクリックで編集">${escapeHtml(remark)}</td>`;
+    } else {
+      h += `<td class="memo">${escapeHtml(remark)}</td>`;
+    }
   }
-  h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;
-  h += freshnessCell(r['更新日']);
+  if (opts.editable && isMission) {
+    h += `<td class="st cell-editable" data-edit="status" data-mission="${escapeAttr(num)}" data-current="${escapeAttr((r['狀態']||'').trim())}" title="クリックで変更">${statusBadge(r['狀態'], isMission)}</td>`;
+  } else {
+    h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;
+  }
+  h += freshnessCell(r['更新日'], opts.editable && isMission ? { editable: true, missionId: num } : null);
   if (opts.showConf) {
     const url = (r['Confluence URL']||'').trim();
     if (url) {
@@ -1569,7 +1816,7 @@ function renderTableC() {
                    : days != null && days > 7  ? 'stalled-yellow'
                    : '';
     const parent = makeParentInfo(r, issueMap, prevParent);
-    html += simpleRow(r, { ownerField: '擔當', parent, rowClass, showGroup: true, showConf: true });
+    html += simpleRow(r, { ownerField: '擔當', parent, rowClass, showGroup: true, showConf: true, editable: true });
     prevParent = parent.num;
   });
   if (!html) html = `<tr><td colspan="10" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>`;
@@ -1785,6 +2032,7 @@ function renderAll() {
   renderPersonView('E', '育菱');
   renderTabF();
   wireClosedToggles();
+  wireTabCEditing();
 }
 
 // ===== 列陣列 → 資料物件（雲端載入用）=====

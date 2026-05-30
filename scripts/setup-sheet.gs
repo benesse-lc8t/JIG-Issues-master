@@ -9,6 +9,16 @@
  *   5. 初回のみ権限承認が必要（このスクリプトを自分のアカウントで実行する許可）
  *   6. 完了。スプレッドシートに戻ると「JIG」メニューが出る（次回はメニューから 1 クリック）
  *
+ * 編集 API（インライン編集を有効化したい場合）
+ *   1. 上記セットアップ後、エディタ右上の「デプロイ」→「新しいデプロイ」
+ *   2. 種類：ウェブアプリ
+ *   3. 説明：JIG Mission 編集 API
+ *   4. 実行ユーザー：自分
+ *   5. アクセスできるユーザー：全員
+ *   6. 「デプロイ」→ 権限承認 → Web App URL をコピー
+ *   7. index.html の SHEET_WRITE_URL に貼り付け
+ *   ※ WRITE_TOKEN（下記）は index.html 側と同じ値にする
+ *
  * 再実行しても安全（idempotent）：
  *   - 既存の列・タブ・行は壊さない
  *   - 不足している列のみ追加、既にある列は触らない
@@ -37,6 +47,19 @@ const MISSION_HEADERS = [
 ];
 const MISSION_COL_WIDTHS = { 1: 100, 2: 320, 3: 90, 4: 90, 5: 80, 6: 220, 7: 90, 8: 240 };
 
+// ===== 編集 API 設定 =====
+// 編集 API のトークン（index.html の WRITE_TOKEN と同じ値にする）
+const WRITE_TOKEN = 'JIG-WRITE-TBBS-2026';
+// 編集対象シート
+const MISSION_SHEET_FOR_WRITE = 'Mission一覽';
+// ダッシュボード側のキー → Sheet 列名のマッピング
+const WRITE_FIELDS = {
+  '狀態':   '狀態',
+  '備註':   '事務局備註',
+  '更新日': '更新日'
+};
+const ALLOWED_STATUS = new Set(STATUS_VALUES);
+
 // ===== メニュー登録 =====
 function onOpen() {
   SpreadsheetApp.getUi()
@@ -44,6 +67,113 @@ function onOpen() {
     .addItem('セットアップ（不足分のみ追加）', 'setupJIG')
     .addItem('もう一度すべて整える（条件付き書式を入れ直す）', 'resetAndSetup')
     .addToUi();
+}
+
+// ===== 編集 API（Web App エンドポイント）=====
+// ダッシュボードから fetch POST で呼ばれる。
+// 本文（Content-Type: text/plain）に JSON：
+//   { token, mission: '戰略-1-M1', 狀態: '進行中', 備註: '...', 更新日: '2026-05-30' }
+// 狀態 / 備註 のみが指定されていれば、更新日は自動で today にセット。
+// 更新日が明示されていればそちらを優先（手動補正可）。
+function doPost(e) {
+  try {
+    if (!e || !e.postData || !e.postData.contents) return _writeJson({ ok: false, error: 'no_payload' });
+    let data;
+    try { data = JSON.parse(e.postData.contents); }
+    catch (_) { return _writeJson({ ok: false, error: 'invalid_json' }); }
+
+    if (!data || data.token !== WRITE_TOKEN) return _writeJson({ ok: false, error: 'forbidden' });
+
+    const missionId = String(data.mission || '').trim();
+    if (!missionId) return _writeJson({ ok: false, error: 'mission_required' });
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(MISSION_SHEET_FOR_WRITE);
+    if (!sheet) return _writeJson({ ok: false, error: 'mission_sheet_not_found' });
+
+    // 編號（A 列）で行を特定
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return _writeJson({ ok: false, error: 'no_data_rows' });
+    const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+    let rowIdx = -1;
+    for (let i = 0; i < ids.length; i++) {
+      if (String(ids[i][0]).trim() === missionId) { rowIdx = i + 2; break; }
+    }
+    if (rowIdx < 0) return _writeJson({ ok: false, error: 'mission_not_found', mission: missionId });
+
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => String(h).trim());
+    const changes = {};
+    let touchedContent = false;
+
+    // 狀態
+    if (Object.prototype.hasOwnProperty.call(data, '狀態')) {
+      const v = String(data['狀態']).trim();
+      if (v && !ALLOWED_STATUS.has(v)) return _writeJson({ ok: false, error: 'invalid_status', value: v });
+      const col = headers.indexOf(WRITE_FIELDS['狀態']) + 1;
+      if (col > 0) {
+        sheet.getRange(rowIdx, col).setValue(v);
+        changes['狀態'] = v;
+        touchedContent = true;
+      }
+    }
+
+    // 備註
+    if (Object.prototype.hasOwnProperty.call(data, '備註')) {
+      const col = headers.indexOf(WRITE_FIELDS['備註']) + 1;
+      if (col > 0) {
+        sheet.getRange(rowIdx, col).setValue(String(data['備註']));
+        changes['備註'] = String(data['備註']);
+        touchedContent = true;
+      }
+    }
+
+    // 更新日：明示指定があればそれを、なければ狀態/備註変更時に today を自動セット
+    let updValue = null;
+    if (Object.prototype.hasOwnProperty.call(data, '更新日')) {
+      updValue = _parseDateLooseGS(String(data['更新日']));
+      if (!updValue && String(data['更新日']).trim()) {
+        return _writeJson({ ok: false, error: 'invalid_date', value: data['更新日'] });
+      }
+    }
+    if (!updValue && touchedContent) {
+      updValue = new Date();
+    }
+    if (updValue) {
+      const col = headers.indexOf(WRITE_FIELDS['更新日']) + 1;
+      if (col > 0) {
+        sheet.getRange(rowIdx, col).setValue(updValue);
+        changes['更新日'] = Utilities.formatDate(updValue, Session.getScriptTimeZone() || 'Asia/Taipei', 'yyyy-MM-dd');
+      }
+    }
+
+    return _writeJson({ ok: true, mission: missionId, row: rowIdx, changes });
+  } catch (err) {
+    return _writeJson({ ok: false, error: 'exception', message: String(err && err.message || err) });
+  }
+}
+
+// 動作確認用：ブラウザで URL を直接開くと簡易な OK 応答を返す
+function doGet() {
+  return _writeJson({ ok: true, service: 'JIG Mission write API', version: 1 });
+}
+
+function _writeJson(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function _parseDateLooseGS(v) {
+  if (!v) return null;
+  v = String(v).trim();
+  let m;
+  m = v.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  m = v.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);
+  if (m) {
+    const a = +m[1], b = +m[2], y = +m[3];
+    return (a > 12) ? new Date(y, b-1, a) : new Date(y, a-1, b);
+  }
+  const p = Date.parse(v);
+  return isNaN(p) ? null : new Date(p);
 }
 
 // ===== メインのセットアップ =====
