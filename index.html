@@ -267,9 +267,10 @@
 <!-- ===== A ===== -->
 <div class="panel active" id="panel-A">
 <div class="ctrl-bar" id="ctrlBarA">
-  <input type="search" id="searchA" placeholder="🔍 搜尋 Issue / Mission / 負責人 / 組..." autocomplete="off">
+  <input type="search" id="searchA" placeholder="🔍 搜尋 Issue / Mission / 擔當 / 組..." autocomplete="off">
   <select id="filterDeptA"><option value="">處：全部</option></select>
   <select id="filterGroupA"><option value="">組：全部</option></select>
+  <select id="filterOwnerA"><option value="">擔當：全部</option></select>
   <span class="ctrl-sep"></span>
   <label><input type="checkbox" id="toggleMtgA" checked>顯示會議欄</label>
   <span class="ctrl-sep"></span>
@@ -283,6 +284,7 @@
     <th style="min-width:160px;">Issue / Mission</th>
     <th style="width:74px;">處</th>
     <th style="width:74px;">組</th>
+    <th style="width:60px;">擔當</th>
     <th style="width:60px;">戰略負責人</th>
     <th style="width:160px;">Confluence</th>
     <th class="mtg-col" style="width:110px;">確認會議</th>
@@ -293,7 +295,7 @@
   </tr>
 </thead>
 <tbody>
-<tr><td colspan="11" style="text-align:center; color:#80868B; padding:20px; font-size:11px;">正在從雲端載入資料…</td></tr>
+<tr><td colspan="12" style="text-align:center; color:#80868B; padding:20px; font-size:11px;">正在從雲端載入資料…</td></tr>
 </tbody>
 </table>
 </div>
@@ -428,9 +430,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.7.2';
+const APP_VERSION = '0.8.0';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'Mission シート検出を堅牢化：gviz が無効シート名に対し 1 枚目を返す挙動を「親編號」列の存在で弾く。雲端ステータスに読込元と件数の診断情報を表示。';
+const APP_NOTE  = '「擔當」列を組と戰略負責人の間に追加。上部に擔當フィルタも追加（自分のものに素早くフォーカス）。Sheet 側で擔當列が無くても動作（空欄表示）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -456,7 +458,7 @@ const GROUP_DEF = {
 const AXIS_CLASS = { 'O':'ax-O','N':'ax-N','CV':'ax-CV','I':'ax-I','P':'ax-P' };
 const COLS = ['區分','軸','編號','Issue','Issue短縮','處','組','戰略負責人','管理頁面','確認會議','會議時間'];
 // 拡張列：Sheet に存在すれば読み込む。欠けていてもエラーにせず空文字とする。
-const OPTIONAL_COLS = ['種別','親編號','Confluence URL','狀態','事務局備註','更新日'];
+const OPTIONAL_COLS = ['種別','親編號','擔當','Confluence URL','狀態','事務局備註','更新日'];
 const STATUS_VALUES = new Set(['未開始','進行中','完成']);
 
 let issueData = [];   // array of row objects
@@ -683,31 +685,33 @@ function renderRow(r, opts) {
   const toggleAttr = hasMissions ? ` onclick="toggleMissions(this, '${escapeAttr(num)}')"` : '';
   const toggleSym = hasMissions ? '▶' : '';
 
-  const dept = r['處'] || '';
-  const grp  = r['組'] || '';
+  const dept  = r['處'] || '';
+  const grp   = r['組'] || '';
+  const owner = r['擔當'] || '';
   // 検索用テキスト（lowercase, 連結）
   const searchStr = [
-    num, r['Issue'], dept, grp, r['戰略負責人'],
+    num, r['Issue'], dept, grp, owner, r['戰略負責人'],
     r['管理頁面'], r['確認會議'], r['事務局備註']
   ].map(v => (v||'').toString().toLowerCase()).join(' ');
 
   const cls = isMission ? 'mission-row hidden' : 'issue-row';
   let trAttrs = ` class="${cls}"`;
   if (isMission) trAttrs += ` data-parent="${escapeAttr(parentNum)}"`;
-  trAttrs += ` data-dept="${escapeAttr(dept)}" data-group="${escapeAttr(grp)}" data-search="${escapeAttr(searchStr)}"`;
+  trAttrs += ` data-dept="${escapeAttr(dept)}" data-group="${escapeAttr(grp)}" data-owner="${escapeAttr(owner)}" data-search="${escapeAttr(searchStr)}"`;
 
   let h = `<tr${trAttrs}>`;
   h += `<td class="num num-cell"><span class="${toggleCls}"${toggleAttr}>${toggleSym}</span>${escapeHtml(num)}</td>`; // 1 編號
   h += `<td class="lbl">${escapeHtml(r['Issue'])}</td>`;                                   // 2 Issue / Mission
   h += `<td class="dept ${deptColorClass(dept)}">${escapeHtml(dept)}</td>`;                // 3 處（部門色分け）
   h += `<td class="dept">${escapeHtml(grp)}</td>`;                                         // 4 組
-  h += `<td class="dept">${escapeHtml(r['戰略負責人'])}</td>`;                             // 5 戰略負責人
-  h += confluenceCell(r['管理頁面'], r['Confluence URL']);                                  // 6 Confluence
-  h += `<td class="pc mtg-col">${escapeHtml(r['確認會議'])}</td>`;                          // 7 確認會議
-  h += `<td class="pc mtg-col">${escapeHtml(r['會議時間'])}</td>`;                          // 8 會議時間
-  h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;                             // 9 狀態
-  h += `<td class="memo">${escapeHtml(r['事務局備註'])}</td>`;                              // 10 Remarks
-  h += freshnessCell(r['更新日']);                                                          // 11 更新
+  h += `<td class="dept">${escapeHtml(owner)}</td>`;                                       // 5 擔當（新規）
+  h += `<td class="dept">${escapeHtml(r['戰略負責人'])}</td>`;                             // 6 戰略負責人
+  h += confluenceCell(r['管理頁面'], r['Confluence URL']);                                  // 7 Confluence
+  h += `<td class="pc mtg-col">${escapeHtml(r['確認會議'])}</td>`;                          // 8 確認會議
+  h += `<td class="pc mtg-col">${escapeHtml(r['會議時間'])}</td>`;                          // 9 會議時間
+  h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;                             // 10 狀態
+  h += `<td class="memo">${escapeHtml(r['事務局備註'])}</td>`;                              // 11 備註
+  h += freshnessCell(r['更新日']);                                                          // 12 更新
   h += '</tr>';
   return h;
 }
@@ -736,32 +740,41 @@ function renderTableA() {
   applyTabAFilters();
 }
 
-// ===== Tab A: 處・組セレクタ、検索ボックス、會議列トグル =====
+// ===== Tab A: 處・組・擔當セレクタ、検索ボックス、會議列トグル =====
 let _filtersWired = false;
 function setupTabAFilters() {
   const deptSel  = document.getElementById('filterDeptA');
   const grpSel   = document.getElementById('filterGroupA');
-  if (!deptSel || !grpSel) return;
+  const ownerSel = document.getElementById('filterOwnerA');
+  if (!deptSel || !grpSel || !ownerSel) return;
 
-  // 處・組の選択肢を Issue 行（種別=Issue）から組み立て
-  const deptSet = new Set(), grpByDept = new Map();
+  // 處・組・擔當の選択肢を Issue 行（種別=Issue）から組み立て
+  const deptSet = new Set(), grpByDept = new Map(), ownerSet = new Set();
   issueData.forEach(r => {
     const t = r['種別'] || 'Issue';
     if (t === 'Mission' || t === 'Task') return;
     const d = (r['處']||'').trim();
     const g = (r['組']||'').trim();
+    const o = (r['擔當']||'').trim();
     if (d) deptSet.add(d);
     if (d || g) {
       if (!grpByDept.has(d)) grpByDept.set(d, new Set());
       if (g) grpByDept.get(d).add(g);
     }
+    if (o) ownerSet.add(o);
   });
 
   const curDept = deptSel.value;
   const curGrp  = grpSel.value;
+  const curOwner = ownerSel.value;
   deptSel.innerHTML = '<option value="">處：全部</option>'
     + [...deptSet].sort().map(d => `<option value="${escapeAttr(d)}">${escapeHtml(d)}</option>`).join('');
   if ([...deptSel.options].some(o => o.value === curDept)) deptSel.value = curDept;
+
+  // 擔當は處/組に依存せず全担当者を独立リスト化（「自分のものにフォーカス」を即時にできるよう）
+  ownerSel.innerHTML = '<option value="">擔當：全部</option>'
+    + [...ownerSet].sort().map(o => `<option value="${escapeAttr(o)}">${escapeHtml(o)}</option>`).join('');
+  if ([...ownerSel.options].some(o => o.value === curOwner)) ownerSel.value = curOwner;
 
   rebuildGroupOptions();
 
@@ -769,6 +782,7 @@ function setupTabAFilters() {
   _filtersWired = true;
   deptSel.addEventListener('change', () => { rebuildGroupOptions(); applyTabAFilters(); });
   grpSel.addEventListener('change',  applyTabAFilters);
+  ownerSel.addEventListener('change', applyTabAFilters);
   document.getElementById('searchA').addEventListener('input', applyTabAFilters);
   document.getElementById('toggleMtgA').addEventListener('change', e => {
     document.getElementById('tableA').classList.toggle('hide-mtg', !e.target.checked);
@@ -778,6 +792,7 @@ function setupTabAFilters() {
     deptSel.value = '';
     rebuildGroupOptions();
     grpSel.value = '';
+    ownerSel.value = '';
     applyTabAFilters();
   });
 
@@ -795,6 +810,7 @@ function applyTabAFilters() {
   const q = (document.getElementById('searchA')?.value || '').trim().toLowerCase();
   const d = (document.getElementById('filterDeptA')?.value || '').trim();
   const g = (document.getElementById('filterGroupA')?.value || '').trim();
+  const o = (document.getElementById('filterOwnerA')?.value || '').trim();
   const tbody = document.querySelector('#panel-A tbody');
   if (!tbody) return;
 
@@ -802,11 +818,13 @@ function applyTabAFilters() {
   const visibleIssueNums = new Set();
   let shownCount = 0;
   tbody.querySelectorAll('tr.issue-row').forEach(tr => {
-    const rowDept = tr.dataset.dept || '';
-    const rowGrp  = tr.dataset.group || '';
-    const rowTxt  = tr.dataset.search || '';
+    const rowDept  = tr.dataset.dept  || '';
+    const rowGrp   = tr.dataset.group || '';
+    const rowOwner = tr.dataset.owner || '';
+    const rowTxt   = tr.dataset.search || '';
     const match = (!d || rowDept === d)
                && (!g || rowGrp  === g)
+               && (!o || rowOwner === o)
                && (!q || rowTxt.includes(q));
     tr.classList.toggle('row-hidden', !match);
     if (match) {
@@ -1061,7 +1079,7 @@ async function loadMissionsAndMerge(issues) {
         continue;
       }
       const idx = {};
-      ['編號','Mission','Task','Issue','親編號','戰略負責人','狀態','事務局備註','更新日','Confluence URL']
+      ['編號','Mission','Task','Issue','親編號','擔當','戰略負責人','狀態','事務局備註','更新日','Confluence URL']
         .forEach(c => { idx[c] = headers.indexOf(c); });
       const issueByNum = new Map();
       issues.forEach(r => issueByNum.set((r['編號']||'').trim(), r));
@@ -1086,6 +1104,7 @@ async function loadMissionsAndMerge(issues) {
           'Issue短縮':  '',
           '處':         (parentRow && parentRow['處']) || '',
           '組':         (parentRow && parentRow['組']) || '',
+          '擔當':       get('擔當') || (parentRow && parentRow['擔當']) || '',
           '戰略負責人': get('戰略負責人') || (parentRow && parentRow['戰略負責人']) || '',
           '管理頁面':   (parentRow && parentRow['管理頁面']) || '',
           '確認會議':   (parentRow && parentRow['確認會議']) || '',
