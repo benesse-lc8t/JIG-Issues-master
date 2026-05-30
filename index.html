@@ -318,6 +318,9 @@
   .simple-table tr.stalled-red { background: #FCE8E6; }
   .simple-table tr.stalled-yellow { background: #FEF7E0; }
   .simple-table .parent-hint { color: #80868B; font-size: 10px; margin-left: 4px; }
+  /* 列の折り返しを抑制（処・擔當・狀態・更新） */
+  .simple-table td.dept, .simple-table td.num, .simple-table td.st, .simple-table td.upd { white-space: nowrap; }
+  .simple-table td.memo { white-space: normal; }
   /* 詩雅 / 育菱パネルの角色バッジ */
   .simple-table .role-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 700; letter-spacing: 0.03em; margin-right: 3px; white-space: nowrap; }
   .simple-table .role-owner     { background: #FEF7E0; color: #B06000; border: 1px solid #F9AB00; } /* 擔當 = 橙 */
@@ -425,16 +428,38 @@
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
     依確認會議分組顯示 <b>Mission</b>，依星期與時間排序的會議週次議程
   </div>
+  <div class="ctrl-bar">
+    <select id="filterDeptB"><option value="">處：全部</option></select>
+    <select id="filterOwnerB"><option value="">擔當：全部</option></select>
+    <select id="filterStatusB">
+      <option value="">狀態：全部</option>
+      <option value="未開始">未開始</option>
+      <option value="策劃中">策劃中</option>
+      <option value="需確認">需確認</option>
+      <option value="進行中">進行中</option>
+      <option value="結案">結案</option>
+    </select>
+    <select id="filterStaleB">
+      <option value="">更新：全部</option>
+      <option value="14">&gt;14 天無更新</option>
+      <option value="7">8-14 天無更新</option>
+      <option value="fresh">≤7 天</option>
+      <option value="none">未設定</option>
+    </select>
+    <span class="ctrl-sep"></span>
+    <button type="button" class="ctrl-clear" id="clearFilterB">清除</button>
+    <span class="ctrl-count" id="filterCountB"></span>
+  </div>
   <table class="simple-table">
     <thead>
       <tr>
-        <th style="width:170px;">親 Issue</th>
-        <th style="width:90px;">編號</th>
+        <th style="width:160px;">親 Issue</th>
+        <th style="width:88px;">編號</th>
         <th>Mission</th>
-        <th style="width:80px;">處</th>
-        <th style="width:70px;">擔當</th>
-        <th style="width:74px;">狀態</th>
+        <th style="width:76px;">處</th>
+        <th style="width:76px;">擔當</th>
         <th style="min-width:120px;">備註</th>
+        <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
       </tr>
     </thead>
@@ -491,6 +516,33 @@
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
     詩雅 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單
   </div>
+  <div class="ctrl-bar">
+    <select id="filterDeptD"><option value="">處：全部</option></select>
+    <select id="filterRoleD">
+      <option value="">角色：全部</option>
+      <option value="owner">擔當</option>
+      <option value="strategic">戰略負責人</option>
+      <option value="both">兩者</option>
+    </select>
+    <select id="filterStatusD">
+      <option value="">狀態：全部</option>
+      <option value="未開始">未開始</option>
+      <option value="策劃中">策劃中</option>
+      <option value="需確認">需確認</option>
+      <option value="進行中">進行中</option>
+      <option value="結案">結案</option>
+    </select>
+    <select id="filterStaleD">
+      <option value="">更新：全部</option>
+      <option value="14">&gt;14 天無更新</option>
+      <option value="7">8-14 天無更新</option>
+      <option value="fresh">≤7 天</option>
+      <option value="none">未設定</option>
+    </select>
+    <span class="ctrl-sep"></span>
+    <button type="button" class="ctrl-clear" id="clearFilterD">清除</button>
+    <span class="ctrl-count" id="filterCountD"></span>
+  </div>
   <table class="simple-table">
     <thead>
       <tr>
@@ -512,6 +564,33 @@
 <div class="panel" id="panel-E">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
     育菱 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單
+  </div>
+  <div class="ctrl-bar">
+    <select id="filterDeptE"><option value="">處：全部</option></select>
+    <select id="filterRoleE">
+      <option value="">角色：全部</option>
+      <option value="owner">擔當</option>
+      <option value="strategic">戰略負責人</option>
+      <option value="both">兩者</option>
+    </select>
+    <select id="filterStatusE">
+      <option value="">狀態：全部</option>
+      <option value="未開始">未開始</option>
+      <option value="策劃中">策劃中</option>
+      <option value="需確認">需確認</option>
+      <option value="進行中">進行中</option>
+      <option value="結案">結案</option>
+    </select>
+    <select id="filterStaleE">
+      <option value="">更新:全部</option>
+      <option value="14">&gt;14 天無更新</option>
+      <option value="7">8-14 天無更新</option>
+      <option value="fresh">≤7 天</option>
+      <option value="none">未設定</option>
+    </select>
+    <span class="ctrl-sep"></span>
+    <button type="button" class="ctrl-clear" id="clearFilterE">清除</button>
+    <span class="ctrl-count" id="filterCountE"></span>
   </div>
   <table class="simple-table">
     <thead>
@@ -599,9 +678,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.9.7';
+const APP_VERSION = '0.9.8';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '詩雅・育菱パネルは 擔當 だけでなく 戰略負責人 マッチも表示。角色列で「擔當／負責人」を識別。';
+const APP_NOTE  = '會議議程の列ズレ修正（狀態↔備註）、B/D/E にもフィルタ追加、列幅整理。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1171,14 +1250,81 @@ function makeParentInfo(missionRow, issueMap, prevParentNum) {
   return { num, name, show: num !== prevParentNum };
 }
 
-// ===== Tab B：會議議程（Mission を確認會議ごとに曜日順、親 Issue 列付き）=====
+// ===== フィルタ用共通：日数からカテゴリへ =====
+function stalenessDays(r) {
+  const upd = parseDateLoose(r['更新日']);
+  if (!upd) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  upd.setHours(0,0,0,0);
+  return Math.floor((today - upd) / 86400000);
+}
+function matchStale(fStale, days) {
+  if (!fStale) return true;
+  if (fStale === '14')    return days != null && days > 14;
+  if (fStale === '7')     return days != null && days > 7 && days <= 14;
+  if (fStale === 'fresh') return days != null && days <= 7;
+  if (fStale === 'none')  return days === null;
+  return true;
+}
+function matchStatus(fStatus, status) {
+  if (!fStatus) return true;
+  if (fStatus === '結案') return status === '結案' || status === '完成';
+  return status === fStatus;
+}
+
+// ===== Tab B：會議議程（Mission を確認會議ごとに曜日順、親 Issue 列付き、フィルタ可）=====
+let _filtersWiredB = false;
+function setupTabBFilters() {
+  const deptSel  = document.getElementById('filterDeptB');
+  const ownerSel = document.getElementById('filterOwnerB');
+  if (!deptSel || !ownerSel) return;
+  const deptSet = new Set(), ownerSet = new Set();
+  issueData.forEach(r => {
+    if (!isMissionDatum(r)) return;
+    const d = (r['處']||'').trim();
+    const o = (r['擔當']||'').trim();
+    if (d) deptSet.add(d);
+    if (o) ownerSet.add(o);
+  });
+  const curD = deptSel.value, curO = ownerSel.value;
+  deptSel.innerHTML  = '<option value="">處：全部</option>'   + [...deptSet ].sort().map(d => `<option value="${escapeAttr(d)}">${escapeHtml(d)}</option>`).join('');
+  ownerSel.innerHTML = '<option value="">擔當：全部</option>' + [...ownerSet].sort().map(o => `<option value="${escapeAttr(o)}">${escapeHtml(o)}</option>`).join('');
+  if ([...deptSel.options ].some(o => o.value === curD)) deptSel.value  = curD;
+  if ([...ownerSel.options].some(o => o.value === curO)) ownerSel.value = curO;
+  if (_filtersWiredB) return;
+  _filtersWiredB = true;
+  ['filterDeptB','filterOwnerB','filterStatusB','filterStaleB'].forEach(id => {
+    document.getElementById(id).addEventListener('change', renderTableB);
+  });
+  document.getElementById('clearFilterB').addEventListener('click', () => {
+    ['filterDeptB','filterOwnerB','filterStatusB','filterStaleB'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    renderTableB();
+  });
+}
+
 function renderTableB() {
   const tbody = document.querySelector('#panel-B tbody');
   if (!tbody) return;
+  setupTabBFilters();
+  const fDept   = (document.getElementById('filterDeptB')?.value   || '').trim();
+  const fOwner  = (document.getElementById('filterOwnerB')?.value  || '').trim();
+  const fStatus = (document.getElementById('filterStatusB')?.value || '').trim();
+  const fStale  = (document.getElementById('filterStaleB')?.value  || '').trim();
+
   const issueMap = buildIssueMap();
   const meetMap = new Map();
+  let totalAll = 0, totalShown = 0;
   issueData.forEach(r => {
     if (!isMissionDatum(r)) return;
+    totalAll++;
+    // フィルタ
+    if (fDept   && (r['處']||'').trim()   !== fDept)  return;
+    if (fOwner  && (r['擔當']||'').trim() !== fOwner) return;
+    if (!matchStatus(fStatus, (r['狀態']||'').trim())) return;
+    if (!matchStale(fStale, stalenessDays(r))) return;
+    totalShown++;
     const meeting = (r['確認會議']||'').trim() || '（會議未設定）';
     const time = (r['會議時間']||'').trim();
     const key = `${meeting}|${time}`;
@@ -1190,7 +1336,6 @@ function renderTableB() {
   const meets = [...meetMap.values()].sort((a,b) => a.sortKey - b.sortKey);
   let html = '';
   meets.forEach(g => {
-    // 同じ親 Issue の Mission を連続させて dedup を効かせる
     g.items.sort((a, b) => (a['親編號']||'').localeCompare(b['親編號']||''));
     html += `<tr class="mtg-header"><th colspan="8">📅 ${escapeHtml(g.meeting)}<span class="mtg-time">${escapeHtml(g.time)}</span> · ${g.items.length} 件</th></tr>`;
     let prevParent = null;
@@ -1200,8 +1345,15 @@ function renderTableB() {
       prevParent = parent.num;
     });
   });
-  if (!html) html = '<tr><td colspan="8" style="text-align:center; padding:30px; color:#999;">Mission がまだ登録されていません</td></tr>';
+  if (!html) html = '<tr><td colspan="8" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>';
   tbody.innerHTML = html;
+
+  const countEl = document.getElementById('filterCountB');
+  if (countEl) {
+    countEl.textContent = (fDept || fOwner || fStatus || fStale)
+      ? `顯示 ${totalShown} / ${totalAll} 筆`
+      : `${totalAll} 筆`;
+  }
 }
 
 // ===== Tab C：停滯警報（Mission を更新日が古い順に、親 Issue 列付き、フィルタ可）=====
@@ -1311,10 +1463,47 @@ function renderTableC() {
   }
 }
 
-// ===== Tab D / E：特定担当者の Mission 一覧（擔當 or 戰略負責人、親 Issue 列付き）=====
+// ===== Tab D / E：特定担当者の Mission 一覧（擔當 or 戰略負責人、フィルタ可）=====
+const _filtersWiredDE = { D: false, E: false };
+function setupTabDEFilters(panelKey, personName) {
+  const deptSel = document.getElementById(`filterDept${panelKey}`);
+  if (!deptSel) return;
+  // 處 候補：このパネルに表示される Mission の 處 だけ
+  const deptSet = new Set();
+  issueData.forEach(r => {
+    if (!isMissionDatum(r)) return;
+    const isOwner = (r['擔當']||'').trim() === personName;
+    const isStrategic = (r['戰略負責人']||'').trim() === personName;
+    if (!isOwner && !isStrategic) return;
+    const d = (r['處']||'').trim();
+    if (d) deptSet.add(d);
+  });
+  const curD = deptSel.value;
+  deptSel.innerHTML = '<option value="">處：全部</option>' + [...deptSet].sort().map(d => `<option value="${escapeAttr(d)}">${escapeHtml(d)}</option>`).join('');
+  if ([...deptSel.options].some(o => o.value === curD)) deptSel.value = curD;
+
+  if (_filtersWiredDE[panelKey]) return;
+  _filtersWiredDE[panelKey] = true;
+  [`filterDept${panelKey}`,`filterRole${panelKey}`,`filterStatus${panelKey}`,`filterStale${panelKey}`].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => renderPersonView(panelKey, personName));
+  });
+  document.getElementById(`clearFilter${panelKey}`).addEventListener('click', () => {
+    [`filterDept${panelKey}`,`filterRole${panelKey}`,`filterStatus${panelKey}`,`filterStale${panelKey}`].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    renderPersonView(panelKey, personName);
+  });
+}
+
 function renderPersonView(panelKey, personName) {
   const tbody = document.querySelector(`#panel-${panelKey} tbody`);
   if (!tbody) return;
+  setupTabDEFilters(panelKey, personName);
+  const fDept   = (document.getElementById(`filterDept${panelKey}`)?.value   || '').trim();
+  const fRole   = (document.getElementById(`filterRole${panelKey}`)?.value   || '').trim();
+  const fStatus = (document.getElementById(`filterStatus${panelKey}`)?.value || '').trim();
+  const fStale  = (document.getElementById(`filterStale${panelKey}`)?.value  || '').trim();
+
   const issueMap = buildIssueMap();
   // 擔當 もしくは 戰略負責人 が personName の Mission を全部拾う
   const decorated = [];
@@ -1325,23 +1514,36 @@ function renderPersonView(panelKey, personName) {
     if (!isOwner && !isStrategic) return;
     decorated.push({ row: r, isOwner, isStrategic });
   });
-  // 親 Issue 編號でソートして dedup を効かせる
-  decorated.sort((a, b) => (a.row['親編號']||'').localeCompare(b.row['親編號']||''));
+  const totalAll = decorated.length;
 
-  // 役割別カウント（見出し用）
-  const ownerOnly = decorated.filter(d => d.isOwner && !d.isStrategic).length;
-  const strategicOnly = decorated.filter(d => !d.isOwner && d.isStrategic).length;
-  const both = decorated.filter(d => d.isOwner && d.isStrategic).length;
+  // フィルタ適用
+  const filtered = decorated.filter(({ row: r, isOwner, isStrategic }) => {
+    if (fDept   && (r['處']||'').trim() !== fDept)   return false;
+    if (!matchStatus(fStatus, (r['狀態']||'').trim())) return false;
+    if (!matchStale(fStale, stalenessDays(r)))         return false;
+    if (fRole === 'owner'     && !isOwner)             return false;
+    if (fRole === 'strategic' && !isStrategic)         return false;
+    if (fRole === 'both'      && !(isOwner && isStrategic)) return false;
+    return true;
+  });
+
+  // 親 Issue 編號でソートして dedup を効かせる
+  filtered.sort((a, b) => (a.row['親編號']||'').localeCompare(b.row['親編號']||''));
+
+  // 役割別カウント（フィルタ後の表示分内訳）
+  const ownerOnly     = filtered.filter(d => d.isOwner && !d.isStrategic).length;
+  const strategicOnly = filtered.filter(d => !d.isOwner && d.isStrategic).length;
+  const both          = filtered.filter(d => d.isOwner && d.isStrategic).length;
 
   let html = '';
-  if (decorated.length) {
+  if (filtered.length) {
     const breakdown = [];
-    if (ownerOnly) breakdown.push(`擔當 ${ownerOnly}`);
+    if (ownerOnly)     breakdown.push(`擔當 ${ownerOnly}`);
     if (strategicOnly) breakdown.push(`戰略負責人 ${strategicOnly}`);
-    if (both) breakdown.push(`兩者 ${both}`);
-    html += `<tr class="sec-row"><th colspan="8">▶ ${escapeHtml(personName)} 相關 Mission · 合計 ${decorated.length} 筆（${breakdown.join(' / ')}）</th></tr>`;
+    if (both)          breakdown.push(`兩者 ${both}`);
+    html += `<tr class="sec-row"><th colspan="8">▶ ${escapeHtml(personName)} 相關 Mission · 顯示 ${filtered.length} 筆${breakdown.length ? `（${breakdown.join(' / ')}）` : ''}</th></tr>`;
     let prevParent = null;
-    decorated.forEach(({ row: r, isOwner, isStrategic }) => {
+    filtered.forEach(({ row: r, isOwner, isStrategic }) => {
       const parent = makeParentInfo(r, issueMap, prevParent);
       let roleHtml = '';
       if (isOwner)     roleHtml += '<span class="role-badge role-owner">擔當</span>';
@@ -1351,9 +1553,16 @@ function renderPersonView(panelKey, personName) {
       prevParent = parent.num;
     });
   } else {
-    html = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#999;">${escapeHtml(personName)} 為擔當或戰略負責人的 Mission 沒有</td></tr>`;
+    html = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>`;
   }
   tbody.innerHTML = html;
+
+  const countEl = document.getElementById(`filterCount${panelKey}`);
+  if (countEl) {
+    countEl.textContent = (fDept || fRole || fStatus || fStale)
+      ? `顯示 ${filtered.length} / ${totalAll} 筆`
+      : `${totalAll} 筆`;
+  }
 }
 
 // ===== Tab F：儀表板 =====
