@@ -406,9 +406,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.5.0';
+const APP_VERSION = '0.5.1';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '區分・軸の列を撤去（12列構成）／Task一覧シートからTaskを読込み・親に紐づけ表示';
+const APP_NOTE  = 'Task シート名のUnicode修正（覧→覽 繁體）／既存 Task の Task一覽 へのマイグレーション対応';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -449,7 +449,7 @@ let shortNameMap = {}; // 編號 → Issue短縮（從內建 B/C/D 標籤擷取�
 // 若 SHEET_ID 留空，則沿用 HTML 內建的 A 主檔資料（從前的行為）。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 const SHEET_NAME = 'Issue主檔';
-const TASK_SHEET_NAME = 'Task一覧'; // 1 枚集約型の Task シート（v0.5.0〜）
+const TASK_SHEET_NAME = 'Task一覽'; // 1 枚集約型の Task シート（v0.5.0〜）
 // 先以工作表名稱抓取；若分頁名不符則退而抓取第一個分頁。
 function sheetCsvUrls() {
   if (!SHEET_ID) return [];

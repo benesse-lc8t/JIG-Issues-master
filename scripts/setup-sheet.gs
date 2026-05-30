@@ -84,13 +84,13 @@ function setupJIG() {
     log.push(`✓ Issue主檔 に条件付き書式 ${issueRulesAdded} 件を追加`);
   }
 
-  // --- 2. Task一覧 タブ ---
-  let taskSheet = ss.getSheetByName('Task一覧');
+  // --- 2. Task一覽 タブ ---
+  let taskSheet = ss.getSheetByName('Task一覽');
   let taskCreated = false;
   if (!taskSheet) {
-    taskSheet = ss.insertSheet('Task一覧');
+    taskSheet = ss.insertSheet('Task一覽');
     taskCreated = true;
-    log.push('✓ 「Task一覧」タブを作成');
+    log.push('✓ 「Task一覽」タブを作成');
   }
   // ヘッダ
   taskSheet.getRange(1, 1, 1, TASK_HEADERS.length).setValues([TASK_HEADERS])
@@ -112,7 +112,7 @@ function setupJIG() {
   const added2 = addFreshnessRulesIfMissing(taskRules, taskSheet.getRange(2, 7, taskRows, 1), 7);
   if (added1 + added2 > 0) {
     taskSheet.setConditionalFormatRules(taskRules);
-    log.push(`✓ Task一覧 に条件付き書式 ${added1 + added2} 件を追加`);
+    log.push(`✓ Task一覽 に条件付き書式 ${added1 + added2} 件を追加`);
   }
   if (taskCreated) {
     log.push('  　└ 列幅・行 freeze・プルダウンも設定済み');
@@ -127,7 +127,7 @@ function setupJIG() {
 // ===== 条件付き書式をクリアして入れ直す（重複が気になったとき用）=====
 function resetAndSetup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  ['Issue主檔', 'Task一覧'].forEach(name => {
+  ['Issue主檔', 'Task一覽'].forEach(name => {
     const sh = ss.getSheetByName(name);
     if (sh) sh.setConditionalFormatRules([]);  // 全クリア（注意：手動で入れたルールも消える）
   });
