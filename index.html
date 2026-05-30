@@ -47,7 +47,15 @@
     --body-bg: #FFFFFF;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font); font-weight: 500; font-size: 13px; color: #000; background: var(--body-bg); padding: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  body { font-family: var(--font); font-weight: 400; font-size: 13px; color: #202124; background: var(--body-bg); padding: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+  /* Google 4-color top strip — iconic accent */
+  .g-strip { display: flex; height: 4px; margin: -16px -16px 14px -16px; }
+  .g-strip > span { flex: 1; }
+  .g-strip .gs-b { background: #4285F4; }
+  .g-strip .gs-r { background: #EA4335; }
+  .g-strip .gs-y { background: #FBBC04; }
+  .g-strip .gs-g { background: #34A853; }
   button, input, select, textarea, a { font-family: var(--font); }
   code { font-family: var(--font); font-weight: 500; font-size: 0.92em; background: var(--g-grey-bg); color: #3C4043; padding: 1px 6px; border-radius: 4px; letter-spacing: 0.01em; }
   h1 { font-size: 18px; font-weight: 500; color: #202124; margin-bottom: 14px; letter-spacing: 0; }
@@ -56,16 +64,24 @@
   .admin-btn:hover { background: var(--g-grey-bg); color: #202124; }
   .admin-btn.active { background: var(--g-blue-bg); color: var(--g-blue); border-color: var(--g-blue); }
 
-  /* Tabs */
+  /* Tabs — Google Workspace 風のフィルド配色 */
   .tabs { display: flex; gap: 4px; margin-bottom: 0; }
-  .tab { padding: 9px 24px; cursor: pointer; font-size: 13px; font-weight: 500; border: 1px solid var(--border); border-bottom: none; border-radius: 6px 6px 0 0; background: #F8F9FA; color: #5F6368; transition: all 0.15s; }
+  .tab { padding: 10px 24px; cursor: pointer; font-size: 13px; font-weight: 500; border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; background: #F8F9FA; color: #5F6368; transition: all 0.15s; letter-spacing: 0.01em; }
   .tab:hover { background: #F1F3F4; color: #202124; }
-  .tab.active:nth-child(1) { background: var(--g-green-bg);  color: var(--g-green-fg);  border-color: #C5E1CC; }
-  .tab.active:nth-child(2) { background: var(--g-blue-bg);   color: var(--g-blue-fg);   border-color: #C8D7F0; }
-  .tab.active:nth-child(3) { background: var(--g-yellow-bg); color: var(--g-yellow-fg); border-color: #F0D78A; }
-  .tab.active:nth-child(4) { background: var(--g-red-bg);    color: var(--g-red-fg);    border-color: #F5C4BE; }
-  .tab.active:nth-child(5) { background: var(--g-purple-bg); color: var(--g-purple-fg); border-color: #D8C0E8; }
-  .tab.active { font-weight: 700; box-shadow: 0 -1px 4px rgba(0,0,0,0.04); }
+  .tab.active { font-weight: 700; box-shadow: 0 -2px 8px rgba(0,0,0,0.08); transform: translateY(-1px); }
+  .tab.active:nth-child(1) { background: #34A853; color: #fff; border-color: #1E8E3E; }
+  .tab.active:nth-child(2) { background: #4285F4; color: #fff; border-color: #1A73E8; }
+  .tab.active:nth-child(3) { background: #FBBC04; color: #202124; border-color: #F9AB00; }
+  .tab.active:nth-child(4) { background: #EA4335; color: #fff; border-color: #D93025; }
+  .tab.active:nth-child(5) { background: #9334E6; color: #fff; border-color: #8430CE; }
+
+  /* Panel：active タブと連動した色アクセントを上端に持たせる */
+  #panel-A.active { border-top: 3px solid #34A853; }
+  #panel-B.active { border-top: 3px solid #4285F4; }
+  #panel-C.active { border-top: 3px solid #FBBC04; }
+  #panel-D.active { border-top: 3px solid #EA4335; }
+  #panel-E.active { border-top: 3px solid #9334E6; }
+  .panel.active { box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
 
   /* Console (Tab E) */
   .console { padding: 18px 20px; }
@@ -117,6 +133,26 @@
   .dept { text-align: center; font-size: 11px; font-weight: 500; color: #3C4043; white-space: nowrap; }
   .pc { text-align: center; font-size: 11px; font-weight: 500; color: #3C4043; white-space: nowrap; }
 
+  /* 處（部門）の色分け：軽い tint で行を読みやすく */
+  td.dept-c-blue   { background: #E8F0FE; color: #1967D2; font-weight: 700; }
+  td.dept-c-green  { background: #E6F4EA; color: #137333; font-weight: 700; }
+  td.dept-c-yellow { background: #FEF7E0; color: #B06000; font-weight: 700; }
+  td.dept-c-red    { background: #FCE8E6; color: #B31412; font-weight: 700; }
+  td.dept-c-purple { background: #F3E8FD; color: #7026A6; font-weight: 700; }
+  td.dept-c-teal   { background: #E0F7FA; color: #00838F; font-weight: 700; }
+  td.dept-c-grey   { background: #F8F9FA; color: #5F6368; font-weight: 700; }
+
+  /* Row hover — Google Blue の薄い tint */
+  #panel-A tbody tr.issue-row:hover td,
+  #panel-A tbody tr.task-row:hover td { background: #F0F7FF; }
+  #panel-A tbody tr.issue-row:hover td.dept-c-blue,
+  #panel-A tbody tr.issue-row:hover td.dept-c-green,
+  #panel-A tbody tr.issue-row:hover td.dept-c-yellow,
+  #panel-A tbody tr.issue-row:hover td.dept-c-red,
+  #panel-A tbody tr.issue-row:hover td.dept-c-purple,
+  #panel-A tbody tr.issue-row:hover td.dept-c-teal,
+  #panel-A tbody tr.issue-row:hover td.dept-c-grey { filter: brightness(0.97); }
+
   /* B table */
   .mc { font-weight: 700; text-align: center; font-size: 12px; background: var(--mtg-bg); color: #202124; vertical-align: middle; white-space: nowrap; }
   .pgc { font-weight: 500; font-size: 12px; background: var(--pgc-bg); color: #202124; text-align: center; vertical-align: middle; white-space: nowrap; }
@@ -149,16 +185,16 @@
   .cal-tags { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 2px; }
   .cal-tags .tag { font-size: 9px; padding: 1px 4px; margin: 0; white-space: normal; }
 
-  /* Status badge (Tab A) */
+  /* Status badge (Tab A) — solid fill / pill shape */
   .st { text-align: center; font-size: 11px; font-weight: 500; white-space: nowrap; }
-  .st-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-weight: 500; font-size: 11px; line-height: 1.5; }
-  .st-未開始 { background: var(--g-grey-bg);   color: var(--g-grey); }
-  .st-進行中 { background: var(--g-blue-bg);   color: var(--g-blue-fg); }
-  .st-完成   { background: var(--g-green-bg);  color: var(--g-green-fg); }
+  .st-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-weight: 700; font-size: 11px; line-height: 1.4; letter-spacing: 0.02em; }
+  .st-未開始 { background: #9AA0A6; color: #fff; }
+  .st-進行中 { background: #4285F4; color: #fff; }
+  .st-完成   { background: #34A853; color: #fff; }
   /* 空欄時は行種別バッジで埋める（欠落ではなく未評価と分かる） */
-  .st-type   { display: inline-block; padding: 1px 7px; border-radius: 12px; font-weight: 500; font-size: 10px; line-height: 1.5; letter-spacing: 0.05em; }
-  .st-type-issue { background: transparent; color: var(--g-green);  border: 1px dashed #B5DCC0; }
-  .st-type-task  { background: transparent; color: var(--g-blue);   border: 1px dashed #C8D7F0; }
+  .st-type   { display: inline-block; padding: 2px 8px; border-radius: 12px; font-weight: 700; font-size: 10px; line-height: 1.4; letter-spacing: 0.05em; }
+  .st-type-issue { background: #E6F4EA; color: #137333; border: 1px dashed #34A853; }
+  .st-type-task  { background: #E8F0FE; color: #1967D2; border: 1px dashed #4285F4; }
 
   /* Tab A controls bar */
   .ctrl-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; background: var(--hdr-bg); border-bottom: 1px solid var(--border); font-size: 12px; }
@@ -174,10 +210,10 @@
   .row-hidden { display: none !important; }
 
   /* Confluence cell（管理頁面の位置に配置） */
-  .conf { white-space: nowrap; font-size: 11px; }
-  .conf a { color: var(--g-blue); text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+  .conf { white-space: nowrap; font-size: 11px; background: #F8FBFF; }
+  .conf a { color: var(--g-blue); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
   .conf a:hover { text-decoration: underline; color: var(--g-blue-fg); }
-  .conf img { width: 13px; height: 13px; vertical-align: middle; flex-shrink: 0; }
+  .conf img { width: 14px; height: 14px; vertical-align: middle; flex-shrink: 0; }
   .conf .conf-text { display: inline-block; max-width: 130px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
 
   /* 確認會議・會議時間 折り畳み */
@@ -197,9 +233,9 @@
   .lnk a { text-decoration: none; font-size: 14px; color: var(--g-blue); }
   .lnk a:hover { color: var(--g-blue-fg); }
 
-  /* Version badge */
-  .ver { display: inline-block; margin-left: 10px; padding: 2px 8px; font-size: 10px; font-weight: 500; color: var(--g-grey); background: var(--g-grey-bg); border: 1px solid var(--border); border-radius: 10px; vertical-align: middle; letter-spacing: 0.03em; cursor: help; }
-  .ver:hover { background: #E8EAED; color: #202124; }
+  /* Version badge — Google Blue pill */
+  .ver { display: inline-block; margin-left: 10px; padding: 2px 10px; font-size: 10px; font-weight: 700; color: var(--g-blue); background: var(--g-blue-bg); border: 1px solid #D2E3FC; border-radius: 12px; vertical-align: middle; letter-spacing: 0.05em; cursor: help; }
+  .ver:hover { background: #D2E3FC; color: var(--g-blue-fg); }
 
   /* Issue expand toggle (for tasks) */
   .num-cell { position: relative; }
@@ -221,9 +257,10 @@
 </style>
 </head>
 <body>
+<div class="g-strip"><span class="gs-b"></span><span class="gs-r"></span><span class="gs-y"></span><span class="gs-g"></span></div>
 <div class="topbar">
   <h1 style="display:flex; align-items:center; gap:10px;">
-    <img src="favicon.svg" alt="" width="28" height="28" style="vertical-align:middle; flex-shrink:0;">
+    <img src="favicon.svg" alt="" width="32" height="32" style="vertical-align:middle; flex-shrink:0;">
     <span>TBBS-經營Issue管理系統<span class="ver" id="verBadge" title="">v?.?.?</span></span>
   </h1>
   <button id="adminBtn" class="admin-btn" onclick="show('E',event)" title="僅供管理者使用：資料來源設定">⚙ 管理者專用</button>
@@ -400,9 +437,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.6.1';
+const APP_VERSION = '0.6.2';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '繁體中文統一 + Google 色系設計：版面色、字型 Roboto、按鈕與標籤改採 Google Material 風格';
+const APP_NOTE  = '配色更鮮明：4色頂部色帶、填色分頁、實心狀態徽章、處欄按部門色分、列 hover 加色';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -619,6 +656,21 @@ function buildIssueTree(rows) {
   return issues;
 }
 
+// 處（部門）→ Google カラークラスのマッピング
+// マッチしない部門名は dept-c-grey にフォールバック
+const DEPT_COLOR_MAP = {
+  '經營戰略': 'dept-c-blue',
+  '整合行銷': 'dept-c-green',
+  '商品事業': 'dept-c-yellow',
+  'CX計劃':   'dept-c-red',
+  '資訊事業': 'dept-c-purple',
+  '財務':     'dept-c-teal',
+  '總管理':   'dept-c-grey',
+};
+function deptColorClass(d) {
+  return DEPT_COLOR_MAP[(d||'').trim()] || 'dept-c-grey';
+}
+
 // 1 行を 11 セル固定で生成する共通ヘルパー（v0.6.0：Confluence 列統合 + 管理頁面廃止 + 📄列廃止）
 function renderRow(r, opts) {
   const isTask = !!opts.isTask;
@@ -645,7 +697,7 @@ function renderRow(r, opts) {
   let h = `<tr${trAttrs}>`;
   h += `<td class="num num-cell"><span class="${toggleCls}"${toggleAttr}>${toggleSym}</span>${escapeHtml(num)}</td>`; // 1 編號
   h += `<td class="lbl">${escapeHtml(r['Issue'])}</td>`;                                   // 2 Issue / Task
-  h += `<td class="dept">${escapeHtml(dept)}</td>`;                                        // 3 處
+  h += `<td class="dept ${deptColorClass(dept)}">${escapeHtml(dept)}</td>`;                // 3 處（部門色分け）
   h += `<td class="dept">${escapeHtml(grp)}</td>`;                                         // 4 組
   h += `<td class="dept">${escapeHtml(r['戰略負責人'])}</td>`;                             // 5 戰略負責人
   h += confluenceCell(r['管理頁面'], r['Confluence URL']);                                  // 6 Confluence
