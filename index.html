@@ -145,18 +145,15 @@
   .st-未開始 { background: #EEEAE0; color: #555; }
   .st-進行中 { background: #DCEBFB; color: #000; }
   .st-完成   { background: #D4F2DD; color: #000; }
-  .st-empty  { color: #BBB; }
+  .st-empty  { color: #DDD; font-weight: 400; }
 
-  /* Office memo (事務局備註) */
-  .memo { font-size: 11px; color: #555; font-style: italic; line-height: 1.45; min-width: 120px; max-width: 220px; white-space: normal; }
-  .memo:empty::before { content: '—'; color: #CCC; font-style: normal; }
+  /* Office memo (事務局備註) — 空のときは何も表示しない */
+  .memo { font-size: 11px; color: #555; font-style: italic; line-height: 1.45; min-width: 100px; max-width: 200px; white-space: normal; }
 
-  /* Update freshness (更新日) */
+  /* Update freshness (更新日) — 空のときは何も表示しない */
   .upd { text-align: center; font-size: 10px; font-weight: 600; color: #555; white-space: nowrap; }
-  .upd-fresh { /* ≤7d, default */ }
   .upd-warn  { background: #FFF3CC; color: #7A5A00; }
   .upd-stale { background: #FCD7D7; color: #8A0000; }
-  .upd:empty::before { content: '—'; color: #CCC; }
 
   /* Confluence link */
   .lnk { text-align: center; width: 28px; }
@@ -609,15 +606,21 @@ function renderTableA() {
     else groups.push({ key: g, nodes: [node] });
   });
 
+  // セクション見出しは「共通／個別」両方が存在する場合のみ出す。
+  // 新データ体系で 區分=共通 が無い場合は見出しを出さない（古い枠を押し付けない）。
+  const hasCommon = groups.some(g => g.key === '共通');
+  const hasOther  = groups.some(g => g.key !== '共通');
+  const showSectionHeaders = hasCommon && hasOther;
+
   let html = '';
   let commonHeaderEmitted = false;
   let individualHeaderEmitted = false;
   groups.forEach(g => {
     const def = GROUP_DEF[g.key] || { key:'?', label: escapeHtml(g.key), cls:'grp-com' };
-    if (g.key === '共通' && !commonHeaderEmitted) {
+    if (showSectionHeaders && g.key === '共通' && !commonHeaderEmitted) {
       html += '<tr><td colspan="14" class="sec">■ 共通Issue（橫軸管理）</td></tr>';
       commonHeaderEmitted = true;
-    } else if (g.key !== '共通' && !individualHeaderEmitted) {
+    } else if (showSectionHeaders && g.key !== '共通' && !individualHeaderEmitted) {
       html += '<tr><td colspan="14" class="sec">■ 個別Issue（縱軸·依SKU管理）</td></tr>';
       individualHeaderEmitted = true;
     }
