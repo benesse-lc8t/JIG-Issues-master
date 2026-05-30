@@ -34,7 +34,7 @@
 // スプレッドシートの ID（URL の /d/XXXX/ 部分）
 // スタンドアロン型 Apps Script として Web App デプロイする場合は必須。
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
-const SHEET_ID = '';
+const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 
 const STATUS_VALUES = ['未開始', '策劃中', '需確認', '進行中', '結案'];
 const STATUS_COLORS = {
