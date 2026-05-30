@@ -5,6 +5,43 @@
 
 ---
 
+## v0.7.0 — 2026-05-30
+
+**用語変更 Phase 1：Task → Mission（コード側のみ・後方互換あり）**
+
+「Task」は作業的なニュアンスが強いため「Mission」に統一。
+本リリースはダッシュボード側だけ先行で対応し、スプレッドシートは未移行でも動く。
+
+### UI 表記の変更（すべて Mission に）
+- 列ヘッダ：`Issue / Task` → `Issue / Mission`
+- 空狀態バッジ：`TASK` → `MISSION`
+- 検索プレースホルダ：`Task` → `Mission`
+- 雲端ステータス：`Issue N / Task M` → `Issue N / Mission M`
+
+### 内部実装の Mission 化
+- CSS class：`.task-row` → `.mission-row`、`.st-type-task` → `.st-type-mission`
+- 関数名：`toggleTasks` → `toggleMissions`、`loadTasksAndMerge` → `loadMissionsAndMerge`
+- フラグ：`isTask` → `isMission`、`hasTasks` → `hasMissions`
+- ツリー構造：`node.tasks` → `node.missions`
+
+### 後方互換（Phase 2 完了まで保持）
+- シート名：`Mission一覽` を**優先**、無ければ旧 `Task一覽` をフォールバック取得
+- 列名：`Mission` / `Task` / `Issue` のどれでも内容列として認識
+- 種別値：`'Mission'` も `'Task'` も Mission 行として判定（rowsToData で
+  `'Task'` → `'Mission'` に正規化、内部判定は Mission のみ）
+- 主檔（Issue主檔）の `種別` 列に `Task` 値が残っていても自動で Mission 扱い
+
+### Phase 2 で行うこと（次回）
+- `build-template-xlsx.py` を Mission 対応に拡張：
+  - 旧 `Task一覽` シート → `Mission一覽` にリネーム
+  - 列 `Task` → `Mission`、`種別=Task` 値 → `'Mission'`
+  - 編號 `*-T#` → `*-M#`
+- `scripts/setup-sheet.gs` も Mission 命名に追随
+- 事務局がスプレッドシートを再インポート
+- 動作確認後、Phase 3 で後方互換コードを段階撤去（数週間後で OK）
+
+---
+
 ## v0.6.4 — 2026-05-30
 
 頂部の 4 色帶（青/紅/黃/綠）を撤去。CSS（`.g-strip`）と HTML 双方を削除。

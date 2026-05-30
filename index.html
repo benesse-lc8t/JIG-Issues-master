@@ -136,7 +136,7 @@
 
   /* Row hover — Google Blue の薄い tint */
   #panel-A tbody tr.issue-row:hover td,
-  #panel-A tbody tr.task-row:hover td { background: #F0F7FF; }
+  #panel-A tbody tr.mission-row:hover td { background: #F0F7FF; }
   #panel-A tbody tr.issue-row:hover td.dept-c-blue,
   #panel-A tbody tr.issue-row:hover td.dept-c-green,
   #panel-A tbody tr.issue-row:hover td.dept-c-yellow,
@@ -186,7 +186,7 @@
   /* 空欄時は行種別バッジで埋める（欠落ではなく未評価と分かる） */
   .st-type   { display: inline-block; padding: 2px 8px; border-radius: 12px; font-weight: 700; font-size: 10px; line-height: 1.4; letter-spacing: 0.05em; }
   .st-type-issue { background: #E6F4EA; color: #137333; border: 1px dashed #34A853; }
-  .st-type-task  { background: #E8F0FE; color: #1967D2; border: 1px dashed #4285F4; }
+  .st-type-mission  { background: #E8F0FE; color: #1967D2; border: 1px dashed #4285F4; }
 
   /* Tab A controls bar */
   .ctrl-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; background: var(--hdr-bg); border-bottom: 1px solid var(--border); font-size: 12px; }
@@ -229,15 +229,15 @@
   .ver { display: inline-block; margin-left: 10px; padding: 2px 10px; font-size: 10px; font-weight: 700; color: var(--g-blue); background: var(--g-blue-bg); border: 1px solid #D2E3FC; border-radius: 12px; vertical-align: middle; letter-spacing: 0.05em; cursor: help; }
   .ver:hover { background: #D2E3FC; color: var(--g-blue-fg); }
 
-  /* Issue expand toggle (for tasks) */
+  /* Issue expand toggle (for missions) */
   .num-cell { position: relative; }
   .toggle { display: inline-block; cursor: pointer; user-select: none; width: 12px; text-align: center; color: var(--g-grey); font-size: 10px; font-weight: 500; margin-right: 2px; }
   .toggle.no-children { visibility: hidden; }
-  tr.task-row { background: #F8F9FA; }
-  tr.task-row.hidden { display: none; }
-  tr.task-row .num { color: var(--g-grey); font-weight: 500; font-size: 10px; }
-  tr.task-row .lbl { font-size: 11px; color: #3C4043; padding-left: 18px; position: relative; }
-  tr.task-row .lbl::before { content: '↳'; position: absolute; left: 4px; color: #80868B; }
+  tr.mission-row { background: #F8F9FA; }
+  tr.mission-row.hidden { display: none; }
+  tr.mission-row .num { color: var(--g-grey); font-weight: 500; font-size: 10px; }
+  tr.mission-row .lbl { font-size: 11px; color: #3C4043; padding-left: 18px; position: relative; }
+  tr.mission-row .lbl::before { content: '↳'; position: absolute; left: 4px; color: #80868B; }
 
   /* Print */
   @media print {
@@ -267,7 +267,7 @@
 <!-- ===== A ===== -->
 <div class="panel active" id="panel-A">
 <div class="ctrl-bar" id="ctrlBarA">
-  <input type="search" id="searchA" placeholder="🔍 搜尋 Issue / Task / 負責人 / 組..." autocomplete="off">
+  <input type="search" id="searchA" placeholder="🔍 搜尋 Issue / Mission / 負責人 / 組..." autocomplete="off">
   <select id="filterDeptA"><option value="">處：全部</option></select>
   <select id="filterGroupA"><option value="">組：全部</option></select>
   <span class="ctrl-sep"></span>
@@ -280,7 +280,7 @@
 <thead>
   <tr>
     <th style="width:74px;">編號</th>
-    <th style="min-width:160px;">Issue / Task</th>
+    <th style="min-width:160px;">Issue / Mission</th>
     <th style="width:74px;">處</th>
     <th style="width:74px;">組</th>
     <th style="width:60px;">戰略負責人</th>
@@ -428,9 +428,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.6.4';
+const APP_VERSION = '0.7.0';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '頂部 4 色帶を撤去';
+const APP_NOTE  = '用語変更 Phase 1：Task → Mission に統一（UI 全面 Mission 表記）。Mission一覽 シートを優先、旧 Task一覽 は後方互換で読込。スプレッドシート未移行でも動作。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -471,17 +471,23 @@ let shortNameMap = {}; // 編號 → Issue短縮（從內建 B/C/D 標籤擷取�
 // 若 SHEET_ID 留空，則沿用 HTML 內建的 A 主檔資料（從前的行為）。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 const SHEET_NAME = 'Issue主檔';
-const TASK_SHEET_NAME = 'Task一覽'; // 1 枚集約型の Task シート（v0.5.0〜）
+// Mission シート名（v0.7.0〜）。後方互換のため旧名「Task一覽」もフォールバックで読む。
+const MISSION_SHEET_NAME = 'Mission一覽';
+const TASK_SHEET_NAME    = 'Task一覽'; // legacy 名（Phase 2 で完全に Mission へ移行予定）
 // 先以工作表名稱抓取；若分頁名不符則退而抓取第一個分頁。
 function sheetCsvUrls() {
   if (!SHEET_ID) return [];
   const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
   return [`${base}&sheet=${encodeURIComponent(SHEET_NAME)}`, base];
 }
-function taskSheetCsvUrl() {
-  if (!SHEET_ID) return null;
+// Mission シートを優先、無ければ旧 Task シートを試す
+function missionSheetCsvUrls() {
+  if (!SHEET_ID) return [];
   const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
-  return `${base}&sheet=${encodeURIComponent(TASK_SHEET_NAME)}`;
+  return [
+    `${base}&sheet=${encodeURIComponent(MISSION_SHEET_NAME)}`,
+    `${base}&sheet=${encodeURIComponent(TASK_SHEET_NAME)}`,
+  ];
 }
 function sheetEditUrl() {
   return SHEET_ID ? `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit` : '';
@@ -573,11 +579,11 @@ function harvestShortNames() {
 
 // 狀態バッジHTML
 // 空欄時は行種別バッジ（ISSUE / TASK）で埋めて「未評価」と分かるようにする
-function statusBadge(s, isTask) {
+function statusBadge(s, isMission) {
   const v = (s || '').trim();
   if (!v) {
-    return isTask
-      ? '<span class="st-type st-type-task">TASK</span>'
+    return isMission
+      ? '<span class="st-type st-type-mission">MISSION</span>'
       : '<span class="st-type st-type-issue">ISSUE</span>';
   }
   const cls = STATUS_VALUES.has(v) ? `st-${v}` : '';
@@ -629,19 +635,24 @@ function confluenceCell(pageName, url) {
 function buildIssueTree(rows) {
   const issues = [];
   const issueByNum = new Map();
+  // 種別正規化済み（'Mission' or 'Issue'）を前提。後方互換で 'Task' も Mission として扱う。
+  const isMissionRow = r => {
+    const t = r['種別'] || 'Issue';
+    return t === 'Mission' || t === 'Task';
+  };
   rows.forEach(r => {
-    if ((r['種別'] || 'Issue') !== 'Task') {
-      const issue = { row: r, tasks: [] };
+    if (!isMissionRow(r)) {
+      const issue = { row: r, missions: [] };
       issues.push(issue);
       issueByNum.set((r['編號']||'').trim(), issue);
     }
   });
   rows.forEach(r => {
-    if ((r['種別'] || '') === 'Task') {
+    if (isMissionRow(r)) {
       const parent = (r['親編號'] || '').trim();
       const owner = issueByNum.get(parent);
-      if (owner) owner.tasks.push(r);
-      else issues.push({ row: r, tasks: [], orphan: true });
+      if (owner) owner.missions.push(r);
+      else issues.push({ row: r, missions: [], orphan: true });
     }
   });
   return issues;
@@ -664,13 +675,13 @@ function deptColorClass(d) {
 
 // 1 行を 11 セル固定で生成する共通ヘルパー（v0.6.0：Confluence 列統合 + 管理頁面廃止 + 📄列廃止）
 function renderRow(r, opts) {
-  const isTask = !!opts.isTask;
+  const isMission = !!opts.isMission;
   const parentNum = opts.parentNum || '';
   const num = (r['編號'] || '').trim();
-  const hasTasks = !!opts.hasTasks;
-  const toggleCls = hasTasks ? 'toggle' : 'toggle no-children';
-  const toggleAttr = hasTasks ? ` onclick="toggleTasks(this, '${escapeAttr(num)}')"` : '';
-  const toggleSym = hasTasks ? '▶' : '';
+  const hasMissions = !!opts.hasMissions;
+  const toggleCls = hasMissions ? 'toggle' : 'toggle no-children';
+  const toggleAttr = hasMissions ? ` onclick="toggleMissions(this, '${escapeAttr(num)}')"` : '';
+  const toggleSym = hasMissions ? '▶' : '';
 
   const dept = r['處'] || '';
   const grp  = r['組'] || '';
@@ -680,21 +691,21 @@ function renderRow(r, opts) {
     r['管理頁面'], r['確認會議'], r['事務局備註']
   ].map(v => (v||'').toString().toLowerCase()).join(' ');
 
-  const cls = isTask ? 'task-row hidden' : 'issue-row';
+  const cls = isMission ? 'task-row hidden' : 'issue-row';
   let trAttrs = ` class="${cls}"`;
-  if (isTask) trAttrs += ` data-parent="${escapeAttr(parentNum)}"`;
+  if (isMission) trAttrs += ` data-parent="${escapeAttr(parentNum)}"`;
   trAttrs += ` data-dept="${escapeAttr(dept)}" data-group="${escapeAttr(grp)}" data-search="${escapeAttr(searchStr)}"`;
 
   let h = `<tr${trAttrs}>`;
   h += `<td class="num num-cell"><span class="${toggleCls}"${toggleAttr}>${toggleSym}</span>${escapeHtml(num)}</td>`; // 1 編號
-  h += `<td class="lbl">${escapeHtml(r['Issue'])}</td>`;                                   // 2 Issue / Task
+  h += `<td class="lbl">${escapeHtml(r['Issue'])}</td>`;                                   // 2 Issue / Mission
   h += `<td class="dept ${deptColorClass(dept)}">${escapeHtml(dept)}</td>`;                // 3 處（部門色分け）
   h += `<td class="dept">${escapeHtml(grp)}</td>`;                                         // 4 組
   h += `<td class="dept">${escapeHtml(r['戰略負責人'])}</td>`;                             // 5 戰略負責人
   h += confluenceCell(r['管理頁面'], r['Confluence URL']);                                  // 6 Confluence
   h += `<td class="pc mtg-col">${escapeHtml(r['確認會議'])}</td>`;                          // 7 確認會議
   h += `<td class="pc mtg-col">${escapeHtml(r['會議時間'])}</td>`;                          // 8 會議時間
-  h += `<td class="st">${statusBadge(r['狀態'], isTask)}</td>`;                             // 9 狀態
+  h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;                             // 9 狀態
   h += `<td class="memo">${escapeHtml(r['事務局備註'])}</td>`;                              // 10 Remarks
   h += freshnessCell(r['更新日']);                                                          // 11 更新
   h += '</tr>';
@@ -708,14 +719,14 @@ function renderTableA() {
   tree.forEach(node => {
     const num = (node.row['編號'] || '').trim();
     html += renderRow(node.row, {
-      isTask: false,
-      hasTasks: node.tasks.length > 0,
+      isMission: false,
+      hasMissions: node.missions.length > 0,
       parentNum: num
     });
-    node.tasks.forEach(t => {
+    node.missions.forEach(t => {
       html += renderRow(t, {
-        isTask: true,
-        hasTasks: false,
+        isMission: true,
+        hasMissions: false,
         parentNum: num
       });
     });
@@ -735,7 +746,8 @@ function setupTabAFilters() {
   // 處・組の選択肢を Issue 行（種別=Issue）から組み立て
   const deptSet = new Set(), grpByDept = new Map();
   issueData.forEach(r => {
-    if ((r['種別']||'Issue') === 'Task') return;
+    const t = r['種別'] || 'Issue';
+    if (t === 'Mission' || t === 'Task') return;
     const d = (r['處']||'').trim();
     const g = (r['組']||'').trim();
     if (d) deptSet.add(d);
@@ -805,7 +817,7 @@ function applyTabAFilters() {
   });
 
   // Task 行：親 Issue が表示中なら、検索条件にもマッチさせる（部門は親に追随）
-  tbody.querySelectorAll('tr.task-row').forEach(tr => {
+  tbody.querySelectorAll('tr.mission-row').forEach(tr => {
     const parent = tr.dataset.parent || '';
     const rowTxt = tr.dataset.search || '';
     const parentVisible = visibleIssueNums.has(parent);
@@ -825,11 +837,11 @@ function escapeAttr(s) {
 }
 
 // Issue 行のトグルクリックで Task 行を表示／非表示
-function toggleTasks(el, parentNum) {
+function toggleMissions(el, parentNum) {
   const open = el.classList.toggle('open');
   el.textContent = open ? '▼' : '▶';
   const tbody = el.closest('tbody');
-  tbody.querySelectorAll(`tr.task-row[data-parent="${parentNum.replace(/"/g,'\\"')}"]`).forEach(tr => {
+  tbody.querySelectorAll(`tr.mission-row[data-parent="${parentNum.replace(/"/g,'\\"')}"]`).forEach(tr => {
     tr.classList.toggle('hidden', !open);
   });
 }
@@ -996,71 +1008,75 @@ function rowsToData(rows) {
     });
     obj['區分'] = lastGroup;
     if (!obj['編號'] && !obj['Issue']) continue;
-    // 種別の正規化：列が無い、または値が空の行は Issue とみなす
+    // 種別の正規化：列が無い／空 → Issue。'Task'（旧名）は 'Mission' に統一して内部判定を一本化。
     if (!obj['種別']) obj['種別'] = 'Issue';
+    else if (obj['種別'] === 'Task') obj['種別'] = 'Mission';
     data.push(obj);
   }
   return data;
 }
 
-// ===== Task 一覧シート（任意）から Task を取得して issueData にマージ =====
-// Task 行は以下の方針で扱う：
-//   - 種別 = 'Task' を強制
-//   - 親 Issue から 處/組/管理頁面/確認會議/會議時間/區分/軸 を継承（Task行が空のとき）
-//   - 戰略負責人 は Task 行自身の値を優先（親と違う担当も許容）
-async function loadTasksAndMerge(issues) {
-  const url = taskSheetCsvUrl();
-  if (!url) return issues;
-  try {
-    const res = await fetch(url + '&_=' + Date.now(), { cache: 'no-store' });
-    if (!res.ok) return issues; // Task シートが無くてもエラーにしない
-    const csv = await res.text();
-    const wb = XLSX.read(csv, { type: 'string' });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
-    if (rows.length < 2) return issues;
-    const headers = rows[0].map(h => String(h).trim());
-    const idx = {};
-    ['編號','Task','Issue','親編號','戰略負責人','狀態','事務局備註','更新日','Confluence URL']
-      .forEach(c => { idx[c] = headers.indexOf(c); });
-    const issueByNum = new Map();
-    issues.forEach(r => issueByNum.set((r['編號']||'').trim(), r));
-    const tasks = [];
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i];
-      if (!row || row.every(v => v === '' || v == null)) continue;
-      const get = c => idx[c] >= 0 ? String(row[idx[c]] ?? '').trim() : '';
-      const num = get('編號');
-      // Issue または Task いずれの列名でも内容を拾う
-      const content = get('Task') || get('Issue');
-      const parent = get('親編號');
-      if (!num && !content) continue;
-      const parentRow = issueByNum.get(parent) || {};
-      tasks.push({
-        '區分':       parentRow['區分'] || '',
-        '軸':         parentRow['軸'] || '',
-        '編號':       num,
-        'Issue':      content,                                    // Task の説明文を Issue 列に詰める（描画ロジック共有のため）
-        'Issue短縮':  '',
-        '處':         parentRow['處'] || '',
-        '組':         parentRow['組'] || '',
-        '戰略負責人': get('戰略負責人') || parentRow['戰略負責人'] || '',
-        '管理頁面':   parentRow['管理頁面'] || '',
-        '確認會議':   parentRow['確認會議'] || '',
-        '會議時間':   parentRow['會議時間'] || '',
-        '種別':       'Task',
-        '親編號':     parent,
-        'Confluence URL': get('Confluence URL') || parentRow['Confluence URL'] || '',
-        '狀態':       get('狀態'),
-        '事務局備註': get('事務局備註'),
-        '更新日':     get('更新日'),
-      });
+// ===== Mission 一覽シート（任意）から Mission を取得して issueData にマージ =====
+// v0.7.0〜：Mission一覽 を優先、なければ旧 Task一覽 を後方互換で読む。
+// 列名は 'Mission' / 'Task' / 'Issue' のいずれでも内容として拾う。
+// 取得した行は常に 種別='Mission' に正規化（内部で Mission として扱う）。
+async function loadMissionsAndMerge(issues) {
+  const urls = missionSheetCsvUrls();
+  if (!urls.length) return issues;
+  for (const baseUrl of urls) {
+    try {
+      const res = await fetch(baseUrl + '&_=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) continue;
+      const csv = await res.text();
+      // gviz は存在しないシート名でも 200 OK ＋ HTML エラーページを返すことがあるので簡易判定
+      if (!csv || csv.trim().startsWith('<')) continue;
+      const wb = XLSX.read(csv, { type: 'string' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+      if (rows.length < 2) continue;
+      const headers = rows[0].map(h => String(h).trim());
+      const idx = {};
+      ['編號','Mission','Task','Issue','親編號','戰略負責人','狀態','事務局備註','更新日','Confluence URL']
+        .forEach(c => { idx[c] = headers.indexOf(c); });
+      const issueByNum = new Map();
+      issues.forEach(r => issueByNum.set((r['編號']||'').trim(), r));
+      const missions = [];
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row.every(v => v === '' || v == null)) continue;
+        const get = c => idx[c] >= 0 ? String(row[idx[c]] ?? '').trim() : '';
+        const num = get('編號');
+        // 'Mission' / 'Task' / 'Issue' いずれの列名でも内容として拾う
+        const content = get('Mission') || get('Task') || get('Issue');
+        const parent = get('親編號');
+        if (!num && !content) continue;
+        const parentRow = issueByNum.get(parent) || {};
+        missions.push({
+          '區分':       parentRow['區分'] || '',
+          '軸':         parentRow['軸'] || '',
+          '編號':       num,
+          'Issue':      content,                                    // Mission の説明文を Issue 列に詰める（描画ロジック共有のため）
+          'Issue短縮':  '',
+          '處':         parentRow['處'] || '',
+          '組':         parentRow['組'] || '',
+          '戰略負責人': get('戰略負責人') || parentRow['戰略負責人'] || '',
+          '管理頁面':   parentRow['管理頁面'] || '',
+          '確認會議':   parentRow['確認會議'] || '',
+          '會議時間':   parentRow['會議時間'] || '',
+          '種別':       'Mission',                                  // 取得元シート名に関わらず内部は Mission に統一
+          '親編號':     parent,
+          'Confluence URL': get('Confluence URL') || parentRow['Confluence URL'] || '',
+          '狀態':       get('狀態'),
+          '事務局備註': get('事務局備註'),
+          '更新日':     get('更新日'),
+        });
+      }
+      return issues.concat(missions);
+    } catch (e) {
+      console.warn('[mission] 載入失敗（次の候補へ）:', e.message);
     }
-    return issues.concat(tasks);
-  } catch (e) {
-    console.warn('[task] 載入失敗（任意のためスキップ）:', e.message);
-    return issues;
   }
+  return issues;
 }
 
 // ===== 從 Google 試算表載入（唯一資料來源）=====
@@ -1082,16 +1098,19 @@ async function loadFromSheet() {
       const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
       let data = rowsToData(rows);
       // Task 一覧シートからの Task を結合（任意・存在しなくてもよい）
-      const taskCountBefore = data.filter(r => (r['種別']||'') === 'Task').length;
-      data = await loadTasksAndMerge(data);
-      const taskCountAfter = data.filter(r => (r['種別']||'') === 'Task').length;
-      const taskAdded = taskCountAfter - taskCountBefore;
+      const missionCountBefore = data.filter(r => (r['種別']||'') === 'Mission').length;
+      data = await loadMissionsAndMerge(data);
+      const missionCountAfter = data.filter(r => (r['種別']||'') === 'Mission').length;
+      const missionAdded = missionCountAfter - missionCountBefore;
       fillShortNames(data);
       issueData = data;
       renderAll();
       const ts = new Date().toLocaleString('zh-TW', { hour12:false });
-      const issueCount = data.filter(r => (r['種別']||'Issue') !== 'Task').length;
-      setCloudStatus(`✅ 雲端最新（Issue ${issueCount} / Task ${taskCountAfter}）· ${ts}`);
+      const issueCount = data.filter(r => {
+        const t = r['種別'] || 'Issue';
+        return t !== 'Mission' && t !== 'Task';
+      }).length;
+      setCloudStatus(`✅ 雲端最新（Issue ${issueCount} / Mission ${missionCountAfter}）· ${ts}`);
       return true;
     } catch (err) {
       lastErr = err;
