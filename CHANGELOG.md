@@ -5,6 +5,20 @@
 
 ---
 
+## v0.7.1 — 2026-05-30
+
+**v0.7.0 のバグ修正：Mission 行のクラス名漏れ**
+
+v0.7.0 でクラス名を `task-row` → `mission-row` に変えたが、`renderRow` 内の文字列リテラル 1 箇所だけ書き換え漏れがあり、Mission 行が描画時に旧名 `task-row hidden` のままになっていた。結果：
+
+- CSS の `tr.mission-row.hidden { display: none }` が当たらず、本来折りたたまれているはずの Mission 行が無スタイルで普通に表示
+- `toggleMissions` の `tr.mission-row[data-parent=...]` セレクタも当たらず、▶ クリックが効かない
+- 区別が付かないため「Mission 行が見えない」状態に見えていた
+
+修正：`const cls = isMission ? 'mission-row hidden' : 'issue-row'` に統一。
+
+---
+
 ## v0.7.0 — 2026-05-30
 
 **用語変更 Phase 1：Task → Mission（コード側のみ・後方互換あり）**

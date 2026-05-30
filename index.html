@@ -428,9 +428,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.7.0';
+const APP_VERSION = '0.7.1';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '用語変更 Phase 1：Task → Mission に統一（UI 全面 Mission 表記）。Mission一覽 シートを優先、旧 Task一覽 は後方互換で読込。スプレッドシート未移行でも動作。';
+const APP_NOTE  = 'Mission 行のクラス名漏れ修正（task-row → mission-row）。これにより ▶ で Mission 行が正しく展開・折りたたみされる。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -691,7 +691,7 @@ function renderRow(r, opts) {
     r['管理頁面'], r['確認會議'], r['事務局備註']
   ].map(v => (v||'').toString().toLowerCase()).join(' ');
 
-  const cls = isMission ? 'task-row hidden' : 'issue-row';
+  const cls = isMission ? 'mission-row hidden' : 'issue-row';
   let trAttrs = ` class="${cls}"`;
   if (isMission) trAttrs += ` data-parent="${escapeAttr(parentNum)}"`;
   trAttrs += ` data-dept="${escapeAttr(dept)}" data-group="${escapeAttr(grp)}" data-search="${escapeAttr(searchStr)}"`;
