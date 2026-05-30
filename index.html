@@ -309,9 +309,9 @@
   }
 
   /* Tab B/C/D/E 共通：シンプル表 */
-  .simple-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-  .simple-table th { background: #E8EAED; color: #202124; padding: 7px 10px; text-align: left; font-weight: 700; border: 1px solid var(--border); }
-  .simple-table td { padding: 5px 10px; border: 1px solid var(--border); vertical-align: middle; }
+  .simple-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+  .simple-table th { background: #E8EAED; color: #202124; padding: 6px 8px; text-align: left; font-weight: 700; border: 1px solid var(--border); font-size: 11px; }
+  .simple-table td { padding: 2px 8px; border: 1px solid var(--border); vertical-align: middle; line-height: 1.3; font-size: 10px; }
   .simple-table tr.sec-row th { background: #F1F3F4; color: #5F6368; font-size: 12px; padding: 8px 12px; letter-spacing: 0.02em; }
   .simple-table tr.mtg-header th { background: #FEF7E0; color: #B06000; font-size: 12px; padding: 8px 12px; }
   .simple-table tr.mtg-header .mtg-time { color: #5F6368; font-weight: 500; margin-left: 8px; }
@@ -326,7 +326,7 @@
   .simple-table .role-owner     { background: #FEF7E0; color: #B06000; border: 1px solid #F9AB00; } /* 擔當 = 橙 */
   .simple-table .role-strategic { background: #F3E8FD; color: #7026A6; border: 1px solid #9334E6; } /* 戰略負責人 = 紫 */
   /* 親 Issue セル（最初の行のみ表示、以降は空白） */
-  .simple-table .parent-cell { font-size: 11px; line-height: 1.3; padding: 5px 8px; white-space: nowrap; overflow: hidden; }
+  .simple-table .parent-cell { font-size: 10px; line-height: 1.3; padding: 2px 8px; white-space: nowrap; overflow: hidden; }
   .simple-table .parent-cell .pc-num { display: inline-block; padding: 1px 5px; border-radius: 8px; font-size: 9px; font-weight: 700; background: #E8EAED; color: #3C4043; margin-right: 4px; vertical-align: middle; }
   .simple-table .parent-cell .pc-name { display: inline-block; color: #202124; font-weight: 500; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
   .simple-table .parent-cell-cont { background: #FBFBFB; border-top: 1px solid #F1F3F4 !important; }
@@ -362,6 +362,37 @@
   .dash-bar-bd .dash-bar-fill { background: #4285F4; }
   .dash-bar-gn .dash-bar-fill { background: #34A853; }
   .dash-bar-rd .dash-bar-fill { background: #EA4335; }
+
+  /* DASHBOARD Pipeline（横スタック型） */
+  .dash-pipeline { display: flex; gap: 6px; align-items: stretch; }
+  .dash-pipeline .pipe-seg { flex-grow: 1; flex-basis: 0; padding: 14px 10px; border-radius: 8px; text-align: center; transition: transform 0.15s; min-width: 60px; }
+  .dash-pipeline .pipe-seg:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .dash-pipeline .pipe-num { font-size: 26px; font-weight: 900; line-height: 1; }
+  .dash-pipeline .pipe-label { font-size: 11px; font-weight: 700; margin-top: 4px; }
+  .dash-pipeline .pipe-pct { font-size: 10px; opacity: 0.7; margin-top: 2px; }
+  .dash-pipeline .pipe-未開始 { background: #F1F3F4; color: #5F6368; }
+  .dash-pipeline .pipe-策劃中 { background: #D1F2F7; color: #00838F; }
+  .dash-pipeline .pipe-需確認 { background: #FEE7BB; color: #B06000; }
+  .dash-pipeline .pipe-進行中 { background: #DCEBFB; color: #1967D2; }
+  .dash-pipeline .pipe-結案   { background: #D4F2DD; color: #137333; }
+
+  /* DASHBOARD グリッド：KPI カード用に少し小さく */
+  .dash-grid-kpi .dash-card { padding: 10px 8px; }
+  .dash-grid-kpi .dash-num { font-size: 22px; }
+
+  /* DASHBOARD リスト（停滞・最近活躍） */
+  .dash-list { display: flex; flex-direction: column; gap: 3px; }
+  .dash-list-row { display: grid; grid-template-columns: 90px 1fr 70px 80px 60px; gap: 10px; padding: 6px 12px; background: #F8F9FA; border-radius: 5px; font-size: 11px; align-items: center; }
+  .dash-list-row.dl-stale { background: #FCE8E6; }
+  .dash-list-row.dl-warn  { background: #FEF7E0; }
+  .dash-list-row .dl-id { font-weight: 700; color: #5F6368; font-size: 10px; white-space: nowrap; }
+  .dash-list-row .dl-title { color: #202124; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dash-list-row .dl-owner { color: var(--g-grey); font-size: 10px; text-align: center; white-space: nowrap; }
+  .dash-list-row .dl-status { text-align: center; }
+  .dash-list-row .dl-days { text-align: right; font-weight: 700; font-size: 10px; color: var(--g-grey); white-space: nowrap; }
+  .dash-list-row.dl-stale .dl-days { color: #B31412; }
+  .dash-list-row.dl-warn .dl-days { color: #B06000; }
+  .dash-list .empty { padding: 20px; text-align: center; color: #999; font-size: 11px; }
 </style>
 </head>
 <body>
@@ -383,7 +414,7 @@
   <div class="tab active" onclick="show('A',event)">Issue &amp; Mission</div>
   <div class="tab" onclick="show('B',event)">會議議程</div>
   <div class="tab" onclick="show('C',event)">停滯警報</div>
-  <div class="tab" onclick="show('F',event)">儀表板</div>
+  <div class="tab" onclick="show('F',event)">DASHBOARD</div>
 </div>
 
 <!-- ===== A ===== -->
@@ -617,40 +648,53 @@
   </table>
 </div>
 
-<!-- ===== F：儀表板（Mission 専用） ===== -->
+<!-- ===== F：DASHBOARD（Mission 専用） ===== -->
 <div class="panel" id="panel-F">
   <div class="dash-container">
+
+    <!-- 1. Pipeline 可視化（横スタックバー） -->
     <div class="dash-section">
-      <h3>Mission 概況</h3>
-      <div class="dash-grid">
-        <div class="dash-card dash-blue"><div class="dash-num" id="dashMissionTotal">-</div><div class="dash-label">Mission 總數</div></div>
-        <div class="dash-card dash-grey"><div class="dash-num" id="dashMissionNotStarted">-</div><div class="dash-label">未開始</div></div>
-        <div class="dash-card dash-teal"><div class="dash-num" id="dashMissionPlanning">-</div><div class="dash-label">策劃中</div></div>
-        <div class="dash-card dash-yellow"><div class="dash-num" id="dashMissionNeedConfirm">-</div><div class="dash-label">需確認</div></div>
-        <div class="dash-card dash-blue"><div class="dash-num" id="dashMissionWip">-</div><div class="dash-label">進行中</div></div>
-        <div class="dash-card dash-green"><div class="dash-num" id="dashMissionClosed">-</div><div class="dash-label">結案</div></div>
-        <div class="dash-card dash-red"><div class="dash-num" id="dashMissionNoOwner">-</div><div class="dash-label">擔當未割当</div></div>
+      <h3>Mission Pipeline — 全 Mission の進度分布</h3>
+      <div class="dash-pipeline" id="dashPipeline"></div>
+    </div>
+
+    <!-- 2. 健康指標 -->
+    <div class="dash-section">
+      <h3>健康指標</h3>
+      <div class="dash-grid dash-grid-kpi">
+        <div class="dash-card dash-blue">
+          <div class="dash-num" id="kpiTotal">-</div>
+          <div class="dash-label">Mission 總數</div>
+        </div>
+        <div class="dash-card dash-yellow">
+          <div class="dash-num" id="kpiActiveRate">-</div>
+          <div class="dash-label">活躍率（進行+結案 ÷ 總數）</div>
+        </div>
+        <div class="dash-card dash-green">
+          <div class="dash-num" id="kpiClosedRate">-</div>
+          <div class="dash-label">結案率</div>
+        </div>
+        <div class="dash-card dash-red">
+          <div class="dash-num" id="kpiStaleRate">-</div>
+          <div class="dash-label">停滯率（&gt;14 天 ÷ 總數）</div>
+        </div>
+        <div class="dash-card dash-grey">
+          <div class="dash-num" id="kpiNoOwner">-</div>
+          <div class="dash-label">擔當未割当</div>
+        </div>
       </div>
     </div>
+
+    <!-- 3. 須關注：停滞 Top 10 -->
     <div class="dash-section">
-      <h3>停滯</h3>
-      <div class="dash-grid">
-        <div class="dash-card dash-red"><div class="dash-num" id="dashStalled14">-</div><div class="dash-label">&gt;14 天無更新</div></div>
-        <div class="dash-card dash-yellow"><div class="dash-num" id="dashStalled7">-</div><div class="dash-label">8-14 天無更新</div></div>
-        <div class="dash-card dash-grey"><div class="dash-num" id="dashNoDate">-</div><div class="dash-label">更新日未設定</div></div>
-      </div>
+      <h3>須關注 — 停滯 Top 10（更新日が古い順）</h3>
+      <div class="dash-list" id="dashStalledList"></div>
     </div>
+
+    <!-- 4. 最近活躍 Top 10 -->
     <div class="dash-section">
-      <h3>擔當別 Mission 件數</h3>
-      <div class="dash-bars dash-bar-bd" id="dashMissionOwnerBars"></div>
-    </div>
-    <div class="dash-section">
-      <h3>部門別 Mission 件數</h3>
-      <div class="dash-bars dash-bar-gn" id="dashMissionDeptBars"></div>
-    </div>
-    <div class="dash-section">
-      <h3>親 Issue 別 Mission 件數</h3>
-      <div class="dash-bars dash-bar-rd" id="dashMissionParentBars"></div>
+      <h3>最近活躍 — 直近 10 件（更新日が新しい順）</h3>
+      <div class="dash-list" id="dashActiveList"></div>
     </div>
   </div>
 </div>
@@ -686,9 +730,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.9.10';
+const APP_VERSION = '0.9.11';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'B/C/D/E に「組」列とセレクタを追加。處 → 組カスケード（處を選ぶと組はその傘下のみ）。';
+const APP_NOTE  = 'B/C/D/E 行密度を A Mission 同等に。C は Sheet 自然順に。儀表板→DASHBOARD 改名＋全面再設計（Pipeline／KPI／停滯 Top10／最近活躍 Top10）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1440,15 +1484,22 @@ function renderTableC() {
     return true;
   });
 
-  // 並べ替え：更新日が古い順、同日数なら親編號でグループ化（dedup を効かせる）
+  // 並べ替え：Tab A と同じ自然順（親 Issue の Sheet 順 → Mission 自身の Sheet 順）
+  // 停滯度は行背景色（赤/黃）で表現済みなので、並びは Sheet 順で読みやすく
+  const issueOrder = new Map();
+  const missionOrder = new Map();
+  let ix = 0, mx = 0;
+  issueData.forEach(r => {
+    if (isMissionDatum(r)) missionOrder.set(r, mx++);
+    else issueOrder.set((r['編號']||'').trim(), ix++);
+  });
   filtered.sort((a, b) => {
-    if (a.days === null && b.days === null) {
-      return (a.row['親編號']||'').localeCompare(b.row['親編號']||'');
-    }
-    if (a.days === null) return 1;
-    if (b.days === null) return -1;
-    if (a.days !== b.days) return b.days - a.days;
-    return (a.row['親編號']||'').localeCompare(b.row['親編號']||'');
+    const ap = (a.row['親編號']||'').trim();
+    const bp = (b.row['親編號']||'').trim();
+    const ai = issueOrder.has(ap) ? issueOrder.get(ap) : 9999;
+    const bi = issueOrder.has(bp) ? issueOrder.get(bp) : 9999;
+    if (ai !== bi) return ai - bi;
+    return (missionOrder.get(a.row) ?? 0) - (missionOrder.get(b.row) ?? 0);
   });
 
   let html = '';
@@ -1568,75 +1619,95 @@ function renderPersonView(panelKey, personName) {
 
 // ===== Tab F：儀表板 =====
 function renderTabF() {
-  // Mission only — 5 段階の狀態に対応
-  let missionTotal = 0, missionNotStarted = 0, missionPlanning = 0, missionNeedConfirm = 0,
-      missionWip = 0, missionClosed = 0, missionNoOwner = 0;
-  let stalled14 = 0, stalled7 = 0, noDate = 0;
-  const missionOwnerCounts = {};   // 擔當
-  const missionDeptCounts  = {};   // 親 Issue の 處
-  const missionParentCounts = {};  // 親 Issue 名（編號 + Issue タイトル）
+  // Mission only — 5 段階＋停滯
+  const counts = { '未開始':0, '策劃中':0, '需確認':0, '進行中':0, '結案':0 };
+  let missionTotal = 0, stalled14 = 0, noOwner = 0;
+  const allMissions = [];
   const issueMap = buildIssueMap();
   const today = new Date(); today.setHours(0,0,0,0);
 
   issueData.forEach(r => {
     if (!isMissionDatum(r)) return;
     missionTotal++;
-    const status = (r['狀態']||'').trim();
-    if (status === '結案' || status === '完成') missionClosed++;        // 結案（旧 完成 も同義扱い）
-    else if (status === '進行中') missionWip++;
-    else if (status === '需確認') missionNeedConfirm++;
-    else if (status === '策劃中') missionPlanning++;
-    else missionNotStarted++;                                            // '未開始' または空欄
-    const own = (r['擔當']||'').trim();
-    if (!own) missionNoOwner++;
-    else missionOwnerCounts[own] = (missionOwnerCounts[own]||0)+1;
-    const dept = (r['處']||'').trim();
-    if (dept) missionDeptCounts[dept] = (missionDeptCounts[dept]||0)+1;
-    const parentNum = (r['親編號']||'').trim();
-    if (parentNum) {
-      const parentRow = issueMap.get(parentNum);
-      const label = parentRow ? `${parentNum} ${parentRow['Issue']||''}` : parentNum;
-      missionParentCounts[label] = (missionParentCounts[label]||0)+1;
-    }
+    let status = (r['狀態']||'').trim();
+    if (status === '完成') status = '結案'; // 旧ラベル互換
+    if (!status) status = '未開始';
+    if (counts[status] !== undefined) counts[status]++;
+    if (!(r['擔當']||'').trim()) noOwner++;
     const upd = parseDateLoose(r['更新日']);
-    if (!upd) noDate++;
-    else {
-      upd.setHours(0,0,0,0);
-      const days = Math.floor((today - upd) / 86400000);
-      if (days > 14) stalled14++;
-      else if (days > 7) stalled7++;
-    }
+    const days = upd ? Math.floor((today - new Date(upd.getFullYear(), upd.getMonth(), upd.getDate())) / 86400000) : null;
+    if (days != null && days > 14) stalled14++;
+    allMissions.push({ row: r, days });
   });
 
-  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  set('dashMissionTotal', missionTotal);
-  set('dashMissionNotStarted', missionNotStarted);
-  set('dashMissionPlanning', missionPlanning);
-  set('dashMissionNeedConfirm', missionNeedConfirm);
-  set('dashMissionWip', missionWip);
-  set('dashMissionClosed', missionClosed);
-  set('dashMissionNoOwner', missionNoOwner);
-  set('dashStalled14', stalled14);
-  set('dashStalled7', stalled7);
-  set('dashNoDate', noDate);
-
-  function renderBars(elId, counts) {
-    const el = document.getElementById(elId);
-    if (!el) return;
-    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    if (!entries.length) { el.innerHTML = '<div style="color:#999;font-size:11px;padding:10px;">資料無し</div>'; return; }
-    const max = Math.max(1, ...entries.map(e => e[1]));
-    el.innerHTML = entries.map(([name, count]) => `
-      <div class="dash-bar-row">
-        <div class="dash-bar-name" title="${escapeAttr(name)}">${escapeHtml(name)}</div>
-        <div class="dash-bar-track"><div class="dash-bar-fill" style="width:${(count/max*100).toFixed(1)}%;"></div></div>
-        <div class="dash-bar-count">${count}</div>
-      </div>
-    `).join('');
+  // --- 1. Pipeline 横スタックバー
+  const pipeEl = document.getElementById('dashPipeline');
+  if (pipeEl) {
+    const stages = ['未開始','策劃中','需確認','進行中','結案'];
+    pipeEl.innerHTML = stages.map(s => {
+      const c = counts[s] || 0;
+      const pct = missionTotal ? (c / missionTotal * 100).toFixed(0) : 0;
+      const flex = Math.max(c, 0.5); // 0 でも最小幅を確保
+      return `<div class="pipe-seg pipe-${s}" style="flex-grow:${flex};">
+        <div class="pipe-num">${c}</div>
+        <div class="pipe-label">${s}</div>
+        <div class="pipe-pct">${pct}%</div>
+      </div>`;
+    }).join('');
   }
-  renderBars('dashMissionOwnerBars',  missionOwnerCounts);
-  renderBars('dashMissionDeptBars',   missionDeptCounts);
-  renderBars('dashMissionParentBars', missionParentCounts);
+
+  // --- 2. 健康指標（KPI）
+  const active = (counts['進行中']||0) + (counts['結案']||0);
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  const pct = (n, d) => d ? `${(n/d*100).toFixed(0)}%` : '–';
+  set('kpiTotal', missionTotal);
+  set('kpiActiveRate', pct(active, missionTotal));
+  set('kpiClosedRate', pct(counts['結案']||0, missionTotal));
+  set('kpiStaleRate',  pct(stalled14, missionTotal));
+  set('kpiNoOwner', noOwner);
+
+  // --- 3. 停滯 Top 10（更新日が古い順）
+  const stalled = allMissions
+    .filter(m => m.days != null && m.days > 7)
+    .sort((a, b) => b.days - a.days)
+    .slice(0, 10);
+  const dashListRow = (m) => {
+    const r = m.row;
+    const parentNum = (r['親編號']||'').trim();
+    const parentRow = issueMap.get(parentNum);
+    const parentName = parentRow ? (parentRow['Issue']||'') : '';
+    const id = (r['編號']||'').trim();
+    const title = `${escapeHtml(r['Issue']||'')} <span style="color:#80868B; font-size:9px;">（${escapeHtml(parentNum)} ${escapeHtml(parentName)}）</span>`;
+    const owner = (r['擔當']||'').trim() || '（未割当）';
+    const status = (r['狀態']||'').trim();
+    const daysLabel = m.days == null ? '未設定' : m.days <= 0 ? '今天' : `${m.days} 天前`;
+    const cls = m.days != null && m.days > 14 ? 'dl-stale' : m.days != null && m.days > 7 ? 'dl-warn' : '';
+    return `<div class="dash-list-row ${cls}">
+      <div class="dl-id" title="${escapeAttr(id)}">${escapeHtml(id)}</div>
+      <div class="dl-title" title="${escapeAttr((r['Issue']||'') + ' / ' + parentNum + ' ' + parentName)}">${title}</div>
+      <div class="dl-owner" title="${escapeAttr(owner)}">${escapeHtml(owner)}</div>
+      <div class="dl-status">${statusBadge(status, true)}</div>
+      <div class="dl-days">${escapeHtml(daysLabel)}</div>
+    </div>`;
+  };
+  const stalledEl = document.getElementById('dashStalledList');
+  if (stalledEl) {
+    stalledEl.innerHTML = stalled.length
+      ? stalled.map(dashListRow).join('')
+      : '<div class="empty">7 天以上動いてない Mission はありません 👍</div>';
+  }
+
+  // --- 4. 最近活躍 Top 10（更新日が新しい順、データ有り＋7日以内）
+  const recent = allMissions
+    .filter(m => m.days != null && m.days <= 7)
+    .sort((a, b) => a.days - b.days)
+    .slice(0, 10);
+  const recentEl = document.getElementById('dashActiveList');
+  if (recentEl) {
+    recentEl.innerHTML = recent.length
+      ? recent.map(dashListRow).join('')
+      : '<div class="empty">直近 7 天で更新された Mission はありません</div>';
+  }
 }
 
 function renderAll() {
