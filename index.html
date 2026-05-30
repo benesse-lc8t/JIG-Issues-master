@@ -326,9 +326,9 @@
   .simple-table .role-owner     { background: #FEF7E0; color: #B06000; border: 1px solid #F9AB00; } /* 擔當 = 橙 */
   .simple-table .role-strategic { background: #F3E8FD; color: #7026A6; border: 1px solid #9334E6; } /* 戰略負責人 = 紫 */
   /* 親 Issue セル（最初の行のみ表示、以降は空白） */
-  .simple-table .parent-cell { font-size: 11px; line-height: 1.3; padding: 5px 8px; }
+  .simple-table .parent-cell { font-size: 11px; line-height: 1.3; padding: 5px 8px; white-space: nowrap; overflow: hidden; }
   .simple-table .parent-cell .pc-num { display: inline-block; padding: 1px 5px; border-radius: 8px; font-size: 9px; font-weight: 700; background: #E8EAED; color: #3C4043; margin-right: 4px; vertical-align: middle; }
-  .simple-table .parent-cell .pc-name { color: #202124; font-weight: 500; }
+  .simple-table .parent-cell .pc-name { display: inline-block; color: #202124; font-weight: 500; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
   .simple-table .parent-cell-cont { background: #FBFBFB; border-top: 1px solid #F1F3F4 !important; }
   .simple-table .type-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 700; letter-spacing: 0.05em; }
   .simple-table .type-issue   { background: #E6F4EA; color: #137333; border: 1px dashed #34A853; }
@@ -678,9 +678,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.9.8';
+const APP_VERSION = '0.9.9';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '會議議程の列ズレ修正（狀態↔備註）、B/D/E にもフィルタ追加、列幅整理。';
+const APP_NOTE  = '親 Issue 列を 1 行表示に：はみ出しは ellipsis、ホバーで全文 tooltip。B/C/D/E すべてに適用。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1195,7 +1195,7 @@ function simpleRow(r, opts) {
   let h = `<tr${cls ? ` class="${cls}"` : ''}>`;
   if (opts.parent) {
     if (opts.parent.show) {
-      h += `<td class="parent-cell"><span class="pc-num">${escapeHtml(opts.parent.num)}</span><span class="pc-name">${escapeHtml(opts.parent.name)}</span></td>`;
+      h += `<td class="parent-cell" title="${escapeAttr((opts.parent.num + ' ' + opts.parent.name).trim())}"><span class="pc-num">${escapeHtml(opts.parent.num)}</span><span class="pc-name">${escapeHtml(opts.parent.name)}</span></td>`;
     } else {
       h += '<td class="parent-cell-cont"></td>';
     }

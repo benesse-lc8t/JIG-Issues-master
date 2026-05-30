@@ -5,6 +5,20 @@
 
 ---
 
+## v0.9.9 — 2026-05-30
+
+**親 Issue 列を 1 行表示に制限**
+
+B / C / D / E の親 Issue セルが長い Issue 名で 2 行になっていたのを、常に **1 行表示**に：
+
+- `.parent-cell` に `white-space: nowrap; overflow: hidden`
+- `.pc-name` を `display: inline-block` ＋ `max-width: 100px` ＋ `text-overflow: ellipsis` で末尾 `…` 切り
+- セル全体に `title="戰略-1 BCL註冊用戶擴大"` を付与 → **ホバーで全文ツールチップ表示**
+
+短い Issue 名はそのまま、長い名前のみ末尾省略になり、行の高さが安定。
+
+---
+
 ## v0.9.8 — 2026-05-30
 
 **B/D/E にフィルタ追加・會議議程の列ズレ修正・列幅整理**
