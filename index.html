@@ -428,9 +428,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.7.1';
+const APP_VERSION = '0.7.2';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = 'Mission 行のクラス名漏れ修正（task-row → mission-row）。これにより ▶ で Mission 行が正しく展開・折りたたみされる。';
+const APP_NOTE  = 'Mission シート検出を堅牢化：gviz が無効シート名に対し 1 枚目を返す挙動を「親編號」列の存在で弾く。雲端ステータスに読込元と件数の診断情報を表示。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1020,62 +1020,93 @@ function rowsToData(rows) {
 // v0.7.0〜：Mission一覽 を優先、なければ旧 Task一覽 を後方互換で読む。
 // 列名は 'Mission' / 'Task' / 'Issue' のいずれでも内容として拾う。
 // 取得した行は常に 種別='Mission' に正規化（内部で Mission として扱う）。
+// 注意：gviz は存在しないシート名でも 1 枚目（Issue主檔）の CSV を返してくることがあるため、
+//      「親編號」列の存在を Mission シートの必須条件として誤検出を防ぐ。
 async function loadMissionsAndMerge(issues) {
-  const urls = missionSheetCsvUrls();
-  if (!urls.length) return issues;
-  for (const baseUrl of urls) {
+  if (!SHEET_ID) return issues;
+  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+  const tries = [
+    { name: MISSION_SHEET_NAME, url: `${base}&sheet=${encodeURIComponent(MISSION_SHEET_NAME)}` },
+    { name: TASK_SHEET_NAME,    url: `${base}&sheet=${encodeURIComponent(TASK_SHEET_NAME)}` },
+  ];
+  window._missionLoadDebug = []; // 後でユーザに見せる為のログ
+  for (const t of tries) {
     try {
-      const res = await fetch(baseUrl + '&_=' + Date.now(), { cache: 'no-store' });
-      if (!res.ok) continue;
+      const res = await fetch(t.url + '&_=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) {
+        const m = `sheet "${t.name}": HTTP ${res.status}`;
+        console.info('[mission] ' + m); window._missionLoadDebug.push(m);
+        continue;
+      }
       const csv = await res.text();
-      // gviz は存在しないシート名でも 200 OK ＋ HTML エラーページを返すことがあるので簡易判定
-      if (!csv || csv.trim().startsWith('<')) continue;
+      if (!csv || csv.trim().startsWith('<')) {
+        const m = `sheet "${t.name}": HTML/empty レスポンス（シートが存在しない可能性）`;
+        console.info('[mission] ' + m); window._missionLoadDebug.push(m);
+        continue;
+      }
       const wb = XLSX.read(csv, { type: 'string' });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
-      if (rows.length < 2) continue;
+      if (rows.length < 2) {
+        const m = `sheet "${t.name}": header のみ・データ無し`;
+        console.info('[mission] ' + m); window._missionLoadDebug.push(m);
+        continue;
+      }
       const headers = rows[0].map(h => String(h).trim());
+      // 重要：gviz は無効なシート名に対して 1 枚目（Issue主檔）の CSV を返すことがある。
+      // Mission シートは必ず「親編號」列を持つので、無ければ偽の Mission シートと判断してスキップ。
+      if (headers.indexOf('親編號') < 0) {
+        const m = `sheet "${t.name}": 「親編號」列が無いため Mission シートと認識せずスキップ（gviz が代替シートを返した可能性）`;
+        console.warn('[mission] ' + m); window._missionLoadDebug.push(m);
+        continue;
+      }
       const idx = {};
       ['編號','Mission','Task','Issue','親編號','戰略負責人','狀態','事務局備註','更新日','Confluence URL']
         .forEach(c => { idx[c] = headers.indexOf(c); });
       const issueByNum = new Map();
       issues.forEach(r => issueByNum.set((r['編號']||'').trim(), r));
       const missions = [];
+      const parentHits = {}, parentMisses = [];
       for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
         if (!row || row.every(v => v === '' || v == null)) continue;
         const get = c => idx[c] >= 0 ? String(row[idx[c]] ?? '').trim() : '';
         const num = get('編號');
-        // 'Mission' / 'Task' / 'Issue' いずれの列名でも内容として拾う
         const content = get('Mission') || get('Task') || get('Issue');
         const parent = get('親編號');
         if (!num && !content) continue;
-        const parentRow = issueByNum.get(parent) || {};
+        const parentRow = issueByNum.get(parent) || null;
+        if (parentRow) parentHits[parent] = (parentHits[parent]||0)+1;
+        else parentMisses.push({ num, parent });
         missions.push({
-          '區分':       parentRow['區分'] || '',
-          '軸':         parentRow['軸'] || '',
+          '區分':       (parentRow && parentRow['區分']) || '',
+          '軸':         (parentRow && parentRow['軸']) || '',
           '編號':       num,
-          'Issue':      content,                                    // Mission の説明文を Issue 列に詰める（描画ロジック共有のため）
+          'Issue':      content,
           'Issue短縮':  '',
-          '處':         parentRow['處'] || '',
-          '組':         parentRow['組'] || '',
-          '戰略負責人': get('戰略負責人') || parentRow['戰略負責人'] || '',
-          '管理頁面':   parentRow['管理頁面'] || '',
-          '確認會議':   parentRow['確認會議'] || '',
-          '會議時間':   parentRow['會議時間'] || '',
-          '種別':       'Mission',                                  // 取得元シート名に関わらず内部は Mission に統一
+          '處':         (parentRow && parentRow['處']) || '',
+          '組':         (parentRow && parentRow['組']) || '',
+          '戰略負責人': get('戰略負責人') || (parentRow && parentRow['戰略負責人']) || '',
+          '管理頁面':   (parentRow && parentRow['管理頁面']) || '',
+          '確認會議':   (parentRow && parentRow['確認會議']) || '',
+          '會議時間':   (parentRow && parentRow['會議時間']) || '',
+          '種別':       'Mission',
           '親編號':     parent,
-          'Confluence URL': get('Confluence URL') || parentRow['Confluence URL'] || '',
+          'Confluence URL': get('Confluence URL') || (parentRow && parentRow['Confluence URL']) || '',
           '狀態':       get('狀態'),
           '事務局備註': get('事務局備註'),
           '更新日':     get('更新日'),
         });
       }
+      const m = `sheet "${t.name}": ${missions.length} 件読込 / 親一致 ${Object.keys(parentHits).length} / 親不明 ${parentMisses.length}`;
+      console.info('[mission] ' + m, { parentHits, parentMisses }); window._missionLoadDebug.push(m);
       return issues.concat(missions);
     } catch (e) {
-      console.warn('[mission] 載入失敗（次の候補へ）:', e.message);
+      const m = `sheet "${t.name}": エラー ${e.message}`;
+      console.warn('[mission] ' + m); window._missionLoadDebug.push(m);
     }
   }
+  window._missionLoadDebug.push('全候補で Mission シートを取得できず');
   return issues;
 }
 
@@ -1110,7 +1141,11 @@ async function loadFromSheet() {
         const t = r['種別'] || 'Issue';
         return t !== 'Mission' && t !== 'Task';
       }).length;
-      setCloudStatus(`✅ 雲端最新（Issue ${issueCount} / Mission ${missionCountAfter}）· ${ts}`);
+      // Mission がゼロのときは Mission シート読込ログを末尾に付けてデバッグを容易に
+      const tail = missionCountAfter === 0 && Array.isArray(window._missionLoadDebug)
+        ? ` ｜ Mission 読込: ${window._missionLoadDebug.join(' / ')}`
+        : '';
+      setCloudStatus(`✅ 雲端最新（Issue ${issueCount} / Mission ${missionCountAfter}）· ${ts}${tail}`);
       return true;
     } catch (err) {
       lastErr = err;
