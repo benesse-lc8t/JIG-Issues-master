@@ -215,6 +215,50 @@ function _writeJson(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 
+/**
+ * 診断用：Mission一覽 の全列ヘッダと最初の 3 行のデータを実行ログに出力する。
+ * setupJIG でヘッダがズレた疑いがあるときに実行して確認する。
+ */
+function diagnoseMissionSheet() {
+  const ss = _getSpreadsheet();
+  const sheet = ss.getSheetByName('Mission一覽');
+  if (!sheet) { console.log('Mission一覽 が見つかりません'); return; }
+  const lastCol = sheet.getLastColumn();
+  const rows = sheet.getRange(1, 1, Math.min(sheet.getLastRow(), 4), lastCol).getValues();
+  const headers = rows[0];
+  console.log('=== Mission一覽 列構成 ===');
+  headers.forEach((h, i) => {
+    const samples = rows.slice(1).map(r => String(r[i] || '').slice(0, 20)).join(' | ');
+    console.log(`  Col ${i + 1} (${String.fromCharCode(65 + i)}): ヘッダ="${h}"  サンプル: ${samples}`);
+  });
+}
+
+/**
+ * ヘッダ修復用：実際のデータに合わせたヘッダを書き直す。
+ * diagnoseMissionSheet の出力を見てから CORRECT_HEADERS を編集して実行。
+ */
+function fixMissionHeaders() {
+  // ↓ diagnoseMissionSheet の結果を見て、実際の列順に合わせて書き直す
+  const CORRECT_HEADERS = [
+    '編號',         // A
+    'Mission',      // B
+    '親編號',       // C
+    '確認會議',     // D ← 実際に入っているデータに合わせる
+    '戰略負責人',   // E
+    '擔當',         // F
+    '狀態',         // G
+    'Mission進度',  // H
+    '更新日',       // I
+    'Confluence URL', // J
+  ];
+  const ss = _getSpreadsheet();
+  const sheet = ss.getSheetByName('Mission一覽');
+  if (!sheet) { console.log('Mission一覽 が見つかりません'); return; }
+  sheet.getRange(1, 1, 1, CORRECT_HEADERS.length).setValues([CORRECT_HEADERS])
+    .setFontWeight('bold').setBackground('#F7F4EC');
+  console.log('[fixMissionHeaders] 完了：', CORRECT_HEADERS.join(' / '));
+}
+
 function _parseDateLooseGS(v) {
   if (!v) return null;
   v = String(v).trim();
