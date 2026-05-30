@@ -235,13 +235,20 @@
   .toggle.no-children { visibility: hidden; }
   /* Issue 行：薄い地色で「主な行」と認識させる */
   tr.issue-row { background: #F4F7FB; }
-  /* Mission 行：白＋約 80% の行高（padding と font-size を控えめに） */
+  /* Mission 行：白＋約 70% の行高（padding と line-height を更に控えめに） */
   tr.mission-row { background: #FFFFFF; }
-  tr.mission-row td { padding-top: 3px; padding-bottom: 3px; line-height: 1.25; font-size: 11px; }
+  tr.mission-row td { padding-top: 2px; padding-bottom: 2px; line-height: 1.2; font-size: 11px; }
   tr.mission-row.hidden { display: none; }
   tr.mission-row .num { color: var(--g-grey); font-weight: 500; font-size: 10px; }
-  tr.mission-row .lbl { font-size: 11px; color: #3C4043; padding-left: 18px; position: relative; }
-  tr.mission-row .lbl::before { content: '↳'; position: absolute; left: 4px; color: #80868B; }
+  /* Mission 行のラベル先頭マークを ↳ → ▶ に。位置も右寄せに */
+  tr.mission-row .lbl { font-size: 11px; color: #3C4043; padding-left: 28px; position: relative; }
+  tr.mission-row .lbl::before { content: '▶'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #9AA0A6; font-size: 7px; }
+  /* Mission 行の處セルは色塗りなし（白）にして親階層の主張を弱める */
+  tr.mission-row td[class*="dept-c-"] {
+    background: #FFFFFF !important;
+    color: var(--g-grey);
+    font-weight: 400;
+  }
 
   /* Print */
   @media print {
@@ -434,9 +441,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.8.2';
+const APP_VERSION = '0.8.3';
 const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '視認性向上：Issue 行に薄い地色（#F4F7FB）、Mission 行は白＋約 80% の行高に。階層が一目で分かるように。';
+const APP_NOTE  = 'Mission 行を更に控えめに：行高 70%、↳ → ▶（右に寄せて配置）、處セルの色塗りを白に。';
 
 // ===== Tab switch =====
 function show(id, e) {
