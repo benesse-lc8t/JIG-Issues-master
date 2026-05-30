@@ -282,9 +282,16 @@ function setupJIG() {
     taskCreated = true;
     log.push('✓ 「Mission一覽」タブを作成');
   }
-  // ヘッダ
+  // ヘッダ（8 列に上書き）
   taskSheet.getRange(1, 1, 1, MISSION_HEADERS.length).setValues([MISSION_HEADERS])
     .setFontWeight('bold').setBackground('#F7F4EC');
+
+  // 余分な列を削除（8 列を超えている場合）
+  const lastCol = taskSheet.getLastColumn();
+  if (lastCol > MISSION_HEADERS.length) {
+    taskSheet.deleteColumns(MISSION_HEADERS.length + 1, lastCol - MISSION_HEADERS.length);
+    log.push(`✓ Mission一覽 の余分な列（${lastCol - MISSION_HEADERS.length} 列）を削除`);
+  }
 
   // 列幅
   Object.keys(MISSION_COL_WIDTHS).forEach(k => taskSheet.setColumnWidth(Number(k), MISSION_COL_WIDTHS[k]));
