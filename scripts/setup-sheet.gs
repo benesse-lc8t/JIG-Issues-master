@@ -19,6 +19,11 @@
  *   7. index.html の SHEET_WRITE_URL に貼り付け
  *   ※ WRITE_TOKEN（下記）は index.html 側と同じ値にする
  *
+ * ★ スタンドアロン型でデプロイする場合（Sheet に紐づけない場合）
+ *   - 下記 SHEET_ID にスプレッドシートの ID を設定すること
+ *   - スプレッドシート URL の /d/XXXX/ の XXXX 部分が ID
+ *   - Sheet 紐づけ型（Bound Script）なら SHEET_ID は空欄のままでよい
+ *
  * 再実行しても安全（idempotent）：
  *   - 既存の列・タブ・行は壊さない
  *   - 不足している列のみ追加、既にある列は触らない
@@ -26,6 +31,11 @@
  */
 
 // ===== 設定 =====
+// スプレッドシートの ID（URL の /d/XXXX/ 部分）
+// スタンドアロン型 Apps Script として Web App デプロイする場合は必須。
+// Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
+const SHEET_ID = '';
+
 const STATUS_VALUES = ['未開始', '策劃中', '需確認', '進行中', '結案'];
 const STATUS_COLORS = {
   '未開始': '#EEEAE0',
@@ -105,10 +115,10 @@ function doPost(e) {
       return _writeJson({ ok: false, error: 'mission_required' });
     }
 
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = _getSpreadsheet();
     if (!ss) {
-      console.log('  → no_active_spreadsheet (script may be standalone, not Sheet-bound)');
-      return _writeJson({ ok: false, error: 'no_active_spreadsheet' });
+      console.log('  → no_spreadsheet. SHEET_ID=', SHEET_ID || '(empty)');
+      return _writeJson({ ok: false, error: 'no_spreadsheet', hint: 'Set SHEET_ID in the script.' });
     }
     console.log('  spreadsheet:', ss.getName(), ' id:', ss.getId());
     console.log('  available sheets:', ss.getSheets().map(s => s.getName()).join(' / '));
@@ -196,6 +206,11 @@ function doGet() {
   return _writeJson({ ok: true, service: 'JIG Mission write API', version: 1 });
 }
 
+function _getSpreadsheet() {
+  if (SHEET_ID) return SpreadsheetApp.openById(SHEET_ID);
+  return SpreadsheetApp.getActiveSpreadsheet();
+}
+
 function _writeJson(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
@@ -217,7 +232,7 @@ function _parseDateLooseGS(v) {
 
 // ===== メインのセットアップ =====
 function setupJIG() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = _getSpreadsheet();
   const log = [];
 
   // --- 1. Issue主檔 の列補完 ---
@@ -301,7 +316,7 @@ function setupJIG() {
 
 // ===== 条件付き書式をクリアして入れ直す（重複が気になったとき用）=====
 function resetAndSetup() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = _getSpreadsheet();
   ['Issue主檔', 'Mission一覽'].forEach(name => {
     const sh = ss.getSheetByName(name);
     if (sh) sh.setConditionalFormatRules([]);  // 全クリア（注意：手動で入れたルールも消える）
