@@ -1310,9 +1310,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.26.2';
+const APP_VERSION = '0.26.3';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '追加機能を入力規則に強く：データ入力規則（無効値拒否）で弾かれた列はスキップして行作成は継続し、warnings で通知。Issue の 狀態 が規則違反でも Issue 自体は作成される。※Apps Script の再公開が必要。';
+const APP_NOTE  = 'フリーズ修正：gviz のヘッダー誤検出（2行結合）で Issue主檔 が読めず全体が止まる問題を解消。gviz URL に headers=1 を付与＋ rowsToData にヘッダー行探索の防御を追加。Apps Script 変更なし（再公開不要）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1401,13 +1401,13 @@ const WRITE_TOKEN     = 'JIG-WRITE-TBBS-2026';
 // 先以工作表名稱抓取；若分頁名不符則退而抓取第一個分頁。
 function sheetCsvUrls() {
   if (!SHEET_ID) return [];
-  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1`;
   return [`${base}&sheet=${encodeURIComponent(SHEET_NAME)}`, base];
 }
 // Mission シートを優先、無ければ旧 Task シートを試す
 function missionSheetCsvUrls() {
   if (!SHEET_ID) return [];
-  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1`;
   return [
     `${base}&sheet=${encodeURIComponent(MISSION_SHEET_NAME)}`,
     `${base}&sheet=${encodeURIComponent(TASK_SHEET_NAME)}`,
@@ -1776,7 +1776,7 @@ const PERSON_SHEET_NAME = '人員';
 async function loadPersonMaster() {
   window.personMap = {};
   if (!SHEET_ID) return;
-  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1`;
   const url = `${base}&sheet=${encodeURIComponent(PERSON_SHEET_NAME)}`;
   try {
     const res = await fetch(url + '&_=' + Date.now(), { cache: 'no-store' });
@@ -3709,7 +3709,16 @@ function renderAll() {
 // ===== 列陣列 → 資料物件（雲端載入用）=====
 function rowsToData(rows) {
   if (rows.length < 2) throw new Error('檔案無資料列');
-  const headers = rows[0].map(h => String(h).trim());
+  // ヘッダー行を特定：通常は先頭行。gviz のヘッダー誤検出（2 行結合等）に備え、
+  // 先頭行に必須列が無ければ、先頭数行から「編號 と Issue を含む行」を探して使う。
+  const hasReq = arr => { const h = (arr || []).map(x => String(x).trim()); return h.includes('編號') && h.includes('Issue'); };
+  let hIdx = 0;
+  if (!hasReq(rows[0])) {
+    for (let i = 1; i < Math.min(rows.length, 6); i++) {
+      if (hasReq(rows[i])) { hIdx = i; break; }
+    }
+  }
+  const headers = rows[hIdx].map(h => String(h).trim());
   const colIdx = {};
   const allCols = COLS.concat(OPTIONAL_COLS);
   allCols.forEach(c => {
@@ -3723,7 +3732,7 @@ function rowsToData(rows) {
 
   const data = [];
   let lastGroup = '';
-  for (let r = 1; r < rows.length; r++) {
+  for (let r = hIdx + 1; r < rows.length; r++) {
     const row = rows[r];
     if (!row || row.every(v => v === '' || v == null)) continue;
     const gRaw = String(row[colIdx['區分']] || '').trim();
@@ -3750,7 +3759,7 @@ function rowsToData(rows) {
 //      「親編號」列の存在を Mission シートの必須条件として誤検出を防ぐ。
 async function loadMissionsAndMerge(issues) {
   if (!SHEET_ID) return issues;
-  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1`;
   const tries = [
     { name: MISSION_SHEET_NAME, url: `${base}&sheet=${encodeURIComponent(MISSION_SHEET_NAME)}` },
     { name: TASK_SHEET_NAME,    url: `${base}&sheet=${encodeURIComponent(TASK_SHEET_NAME)}` },
@@ -3859,7 +3868,7 @@ window.missionLog = window.missionLog || {};
 async function loadMissionLog() {
   window.missionLog = {};
   if (!SHEET_ID) return;
-  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1`;
   const url = `${base}&sheet=${encodeURIComponent(LOG_SHEET_NAME)}`;
   try {
     const res = await fetch(url + '&_=' + Date.now(), { cache: 'no-store' });
