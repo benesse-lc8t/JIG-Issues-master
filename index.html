@@ -356,6 +356,14 @@
   .simple-table th .conf-th-icon { display: inline-block; width: 14px; height: 14px; vertical-align: middle;
     background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMDA1MkNDIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjY4NEZGIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0idXJsKCNnKSIvPjxwYXRoIGQ9Ik02IDIxLjVjNS02LjUgMTEuNS03LjUgMTgtMy4ybC0yLjYgNEMxNi44IDE5IDEyLjQgMTkuNiA5IDIzLjh6IiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTI2IDEwLjVjLTUgNi41LTExLjUgNy41LTE4IDMuMmwyLjYtNEMxNS4yIDEzIDE5LjYgMTIuNCAyMyA4LjJ6IiBmaWxsPSIjREVFQkZGIi8+PC9zdmc+') no-repeat center / contain; }
   .simple-table td.conf-icon .conf-add-hint { color: var(--g-blue); font-weight: 700; opacity: 0.55; margin-right: 2px; }
+  /* 複数リンクは 1 アイコン＋件数バッジに集約 */
+  .simple-table td.conf-icon .conf-multi { position: relative; display: inline-block; line-height: 0; }
+  .simple-table td.conf-icon .conf-multi .conf-badge {
+    position: absolute; top: -5px; right: -7px; min-width: 13px; height: 13px; padding: 0 3px;
+    box-sizing: border-box; background: var(--g-blue); color: #fff; border-radius: 7px;
+    font-size: 8px; font-weight: 700; line-height: 13px; text-align: center;
+    box-shadow: 0 0 0 1.5px #fff;
+  }
   /* Confluence URL 貼り付け編集 UI */
   .simple-table td.conf-editing { padding: 4px; text-align: left; white-space: normal; }
   .conf-edit { display: flex; flex-direction: column; gap: 4px; min-width: 220px; }
@@ -491,6 +499,13 @@
     transition: background 0.1s; padding: 0;
   }
   .remark-modal-conf-del:hover { background: #FEECED; color: #D93025; }
+  .remark-modal-conf-open {
+    flex-shrink: 0; width: 24px; height: 24px; border: 1.5px solid #DADCE0; background: #fff; cursor: pointer;
+    border-radius: 5px; font-size: 13px; color: var(--g-blue); display: flex; align-items: center; justify-content: center;
+    transition: background 0.1s, border-color 0.1s; padding: 0;
+  }
+  .remark-modal-conf-open:hover { background: #E8F0FE; border-color: var(--g-blue); }
+  .remark-modal-conf-open:disabled { opacity: 0.35; cursor: default; color: #9AA0A6; }
   .remark-modal-conf-add {
     align-self: flex-start; border: none; background: none; cursor: pointer;
     font: inherit; font-size: 11px; color: var(--g-blue); padding: 2px 0; font-weight: 500;
@@ -982,9 +997,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.17.6';
+const APP_VERSION = '0.18.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'モーダルに狀態・Mission進度・Confluence URLを統合。狀態/URLセルクリックでもモーダルが開く。親Issueラベル表示。';
+const APP_NOTE  = '複数 Confluence リンクを 1 アイコン＋件数バッジに集約。モーダルの各 URL 行に ↗ 開くボタンを追加。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1292,14 +1307,24 @@ function confluenceCell(pageName, url) {
 
 // Tab C 専用：Confluence URL セル（Mission 自身の複数 URL のみを favicon リンクで表示。クリックで貼り付け編集）
 // 親 Issue からの継承リンクはここには出さない（セル内で参照が衝突するため）。継承表示は A/B/D/E タブが担う。
+// 複数 URL でも 1 アイコンに集約し、2 件以上なら右上に件数バッジを出す
+function confIconHtml(urls) {
+  const first = urls[0];
+  const img = `<img src="${escapeAttr(faviconFor(first))}" alt="" onerror="this.onerror=null;this.src='${CONF_FAVICON}'">`;
+  const badge = urls.length > 1 ? `<span class="conf-badge">${urls.length}</span>` : '';
+  return `<span class="conf-multi">${img}${badge}</span>`;
+}
+
 function confEditCell(ownRaw, missionId, isMission) {
   const urls = parseConfUrls(ownRaw);
-  let icons = urls.map(u =>
-    `<a href="${escapeAttr(u)}" target="_blank" rel="noopener" title="${escapeAttr(u)}"><img src="${escapeAttr(faviconFor(u))}" alt="" onerror="this.onerror=null;this.src='${CONF_FAVICON}'"></a>`
-  ).join('');
-  if (!isMission) return `<td class="conf-icon">${icons}</td>`;
-  const body = icons || `<span class="conf-add-hint">＋</span>`;
-  return `<td class="conf-icon cell-editable" data-edit="conf" data-mission="${escapeAttr(missionId)}" title="點擊貼上 Confluence 連結">${body}</td>`;
+  if (!isMission) {
+    // 他タブ：単一アイコン＋件数バッジ。先頭 URL へ直接リンク
+    if (!urls.length) return `<td class="conf-icon"></td>`;
+    return `<td class="conf-icon"><a href="${escapeAttr(urls[0])}" target="_blank" rel="noopener" title="${escapeAttr(urls.join('\n'))}">${confIconHtml(urls)}</a></td>`;
+  }
+  const body = urls.length ? confIconHtml(urls) : `<span class="conf-add-hint">＋</span>`;
+  const titleTxt = urls.length ? `${urls.length} 件連結（點擊編輯・開啟）` : '點擊貼上 Confluence 連結';
+  return `<td class="conf-icon cell-editable" data-edit="conf" data-mission="${escapeAttr(missionId)}" title="${escapeAttr(titleTxt)}">${body}</td>`;
 }
 
 // Issue + Task 階層を組み立てる：Issue配下に親編號が一致するTaskを纏める
@@ -1760,11 +1785,21 @@ function startStatusEdit(td, missionId) {
     const inp = document.createElement('input');
     inp.type = 'url'; inp.className = 'remark-modal-conf-inp';
     inp.placeholder = '貼上 Confluence 連結…'; inp.value = val || '';
+    // ↗ 開く：入力された URL を別タブで開く（http(s) のみ有効）
+    const open = document.createElement('button');
+    open.type = 'button'; open.className = 'remark-modal-conf-open'; open.textContent = '↗'; open.title = '在新分頁開啟';
+    const refreshOpen = () => { open.disabled = !/^https?:\/\//i.test(inp.value.trim()); };
+    open.addEventListener('click', () => {
+      const v = inp.value.trim();
+      if (/^https?:\/\//i.test(v)) window.open(v, '_blank', 'noopener');
+    });
+    inp.addEventListener('input', refreshOpen);
     const del = document.createElement('button');
     del.type = 'button'; del.className = 'remark-modal-conf-del'; del.textContent = '✕'; del.title = '移除';
     del.addEventListener('click', () => row.remove());
-    row.appendChild(inp); row.appendChild(del);
+    row.appendChild(inp); row.appendChild(open); row.appendChild(del);
     list.appendChild(row);
+    refreshOpen();
     return inp;
   }
 
