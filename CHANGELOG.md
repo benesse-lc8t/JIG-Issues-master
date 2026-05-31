@@ -5,6 +5,16 @@
 
 ---
 
+## ドキュメント更新 — 2026-05-31
+
+**Apps Script 再デプロイ完了を反映（コード変更なし）**
+
+- 旧 §10 TODO①（「Confluence URL 編集時の `更新日` 自動更新」「応答 JSON に時刻 `HH:mm` を含める」）はデプロイ済みで**完了**。`scripts/setup-sheet.gs` のサーバー実装（L179-206）がそのまま稼働。
+- `index.html` の `ensureEditTimestamp()` は**無害な防御的フォールバックとして残置**（引数に時刻があればそのまま返すため、時刻入り応答は素通り）。撤去は任意。
+- CLAUDE.md §10 の TODO 記述と作業ブランチ名（`claude/stoic-fermat-McakE`）を実態に合わせて更新。
+
+---
+
 ## v0.22.1 — 2026-05-31
 
 **Confluence 列ヘッダーを favicon に**
