@@ -366,9 +366,9 @@
   .sum-stale { background: #FCE8E6; color: #B31412; }
   .simple-table td.st-clickable { cursor: pointer; }
   .simple-table td.st-clickable:hover { filter: brightness(0.95); }
-  /* Tab D/E：私的備註セル */
-  .simple-table td.memo-personal { max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; font-size: 11px; color: #5F6368; }
-  .simple-table td.memo-personal.has-memo { color: #6D4C00; background: #FFFCF2; }
+  /* Tab D/E：私的備註セル（細いアイコン列） */
+  .simple-table td.memo-personal { width: 46px; text-align: center; cursor: pointer; font-size: 13px; }
+  .simple-table td.memo-personal.has-memo { background: #FFFCF2; }
   .simple-table td.memo-personal:hover { background: #FEF7E0; }
   .memo-personal .memo-add { color: #C9A227; font-weight: 700; }
   .simple-table td.conf-icon { text-align: center; padding: 2px 4px; }
@@ -1257,7 +1257,7 @@
         <th style="width:80px;">狀態</th>
         <th style="width:64px;">更新</th>
         <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
-        <th style="width:130px;">私的備註</th>
+        <th style="width:46px;" title="私的備註（只給自己看）">📝</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -1312,7 +1312,7 @@
         <th style="width:80px;">狀態</th>
         <th style="width:64px;">更新</th>
         <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
-        <th style="width:130px;">私的備註</th>
+        <th style="width:46px;" title="私的備註（只給自己看）">📝</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -1401,9 +1401,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.30.0';
+const APP_VERSION = '0.30.1';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '個人備註を追加：詩雅／育菱タブの各 Mission に「私的備註」列。本人のタブにのみ表示（編號＋姓名で upsert・端末をまたぐ）。新タブ「個人備註」＋ saveMemo。※Apps Script 再公開＋setupJIG が必要（codeVersion=memo1）。';
+const APP_NOTE  = '私的備註列を細いアイコン列（📝/＋）に変更し、Tab D/E の横はみ出しを解消。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -4029,7 +4029,7 @@ function renderPersonView(panelKey, personName) {
     const extraCell = `<td>${typeTag}${roleHtml}</td>`;
     const num = (r['編號'] || '').trim();
     const memo = getMemo(num, personName);
-    const memoCell = `<td class="memo-personal${memo ? ' has-memo' : ''}" title="${memo ? escapeAttr(memo) : '點擊新增個人備註'}" onclick="openMemoModal('${escapeAttr(num)}','${escapeAttr(personName)}')">${memo ? escapeHtml(memo) : '<span class="memo-add">＋ 備註</span>'}</td>`;
+    const memoCell = `<td class="memo-personal${memo ? ' has-memo' : ''}" title="${memo ? escapeAttr(memo) : '點擊新增個人備註'}" onclick="openMemoModal('${escapeAttr(num)}','${escapeAttr(personName)}')">${memo ? '📝' : '<span class="memo-add">＋</span>'}</td>`;
     return simpleRow(r, { showOwner: false, showRemark: true, parent, showGroup: true, showConf: true, extraCellAfterDept: extraCell, showEdit: true, memoCell });
   };
 
