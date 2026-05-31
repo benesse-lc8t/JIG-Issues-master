@@ -381,8 +381,10 @@
   .sum-flag { background: #FEF7E0; color: #B06000; }
   /* メモモーダルのフィールドラベル */
   .memo-field-label { display: block; font-size: 12px; font-weight: 600; color: #5F6368; margin-bottom: 4px; }
-  .memo-mission-name { font-size: 15px; font-weight: 700; color: #202124; margin-bottom: 12px; line-height: 1.45; }
-  .memo-mn-parent { font-size: 11px; font-weight: 600; color: #1967D2; background: #E8F0FE; border-radius: 6px; padding: 1px 7px; margin-right: 5px; vertical-align: 2px; }
+  .memo-mission-name { margin-bottom: 12px; }
+  .memo-mn-issue { font-size: 12px; color: #5F6368; margin-bottom: 3px; }
+  .memo-mn-mission { font-size: 15px; font-weight: 700; color: #202124; line-height: 1.45; }
+  .memo-mn-parent { font-size: 11px; font-weight: 600; color: #1967D2; background: #E8F0FE; border-radius: 6px; padding: 1px 7px; margin-right: 5px; }
   /* 重要清單モーダルの行 */
   .imp-row { display: flex; align-items: center; gap: 8px; padding: 7px 4px; border-bottom: 1px solid #F1F3F4; font-size: 13px; }
   .imp-row .imp-num { color: #5F6368; font-size: 11px; min-width: 78px; }
@@ -1443,9 +1445,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.30.5';
+const APP_VERSION = '0.30.6';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '個人備註モーダルに Mission 名称（親Issue つき）と、Mission 進度の歷來記錄（時系列・読み取り専用）を表示。Apps Script 変更なし。';
+const APP_NOTE  = '個人備註モーダル：進度ログが空に見える問題を修正（Mission進度→事務局備註のフォールバックを一覧と統一）。親Issue 名も表示。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2063,11 +2065,14 @@ function openMemoModal(id, who) {
   const row = (issueData || []).find(r => (r['編號'] || '').trim() === id);
   const mName = row ? (row['Issue'] || '').trim() : '';
   const parentNum = row ? (row['親編號'] || '').trim() : '';
+  const parentRow = parentNum ? (issueData || []).find(r => (r['編號'] || '').trim() === parentNum && !isMissionDatum(r)) : null;
+  const parentName = parentRow ? (parentRow['Issue'] || '').trim() : '';
   document.getElementById('memoModalSub').textContent = `${id}${who ? ' · ' + who : ''}`;
-  document.getElementById('memoMissionName').innerHTML = mName
-    ? `${parentNum ? `<span class="memo-mn-parent">${escapeHtml(parentNum)}</span> ` : ''}${escapeHtml(mName)}`
-    : escapeHtml(id);
-  document.getElementById('memoLog').innerHTML = _missionLogHtml(id, row ? (row['Mission進度'] || '') : '', '尚無進度記錄');
+  document.getElementById('memoMissionName').innerHTML =
+    (parentNum ? `<div class="memo-mn-issue"><span class="memo-mn-parent">${escapeHtml(parentNum)}</span> ${escapeHtml(parentName)}</div>` : '') +
+    `<div class="memo-mn-mission">${escapeHtml(mName || id)}</div>`;
+  const curText = row ? (row['Mission進度'] || row['事務局備註'] || '') : '';
+  document.getElementById('memoLog').innerHTML = _missionLogHtml(id, curText, '尚無進度記錄');
   document.getElementById('memoModalTa').value = o.memo || '';
   document.getElementById('memoModalMsg').value = o.msg || '';
   document.getElementById('memoModalFlag').checked = !!o.flag;
