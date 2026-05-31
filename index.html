@@ -485,8 +485,19 @@
   }
   .remark-modal-ta:focus { border-color: var(--g-blue); box-shadow: 0 0 0 3px rgba(26,115,232,0.18); }
   /* Confluence URL セクション */
-  .remark-modal-conf-list { display: flex; flex-direction: column; gap: 5px; }
-  .remark-modal-conf-row { display: flex; align-items: center; gap: 6px; }
+  .remark-modal-conf-list { display: flex; flex-direction: column; gap: 10px; }
+  .remark-modal-conf-row { display: flex; flex-direction: column; gap: 3px; }
+  .remark-modal-conf-inputline { display: flex; align-items: center; gap: 6px; }
+  .remark-modal-conf-label { display: flex; align-items: center; gap: 6px; padding-left: 2px; min-width: 0; }
+  .remark-modal-conf-label .conf-label-space {
+    flex-shrink: 0; background: #E8F0FE; color: #1A73E8; font-size: 9px; font-weight: 700;
+    padding: 1px 6px; border-radius: 6px;
+  }
+  .remark-modal-conf-label .conf-label-title {
+    font-size: 11px; font-weight: 600; color: #202124;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .remark-modal-conf-label .conf-label-empty { font-size: 10px; font-style: italic; color: #BDC1C6; }
   .remark-modal-conf-inp {
     flex: 1; box-sizing: border-box; font: inherit; font-size: 11px; font-family: var(--font);
     border: 1.5px solid #DADCE0; border-radius: 6px; padding: 5px 8px; outline: none; color: #202124;
@@ -997,9 +1008,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.18.0';
+const APP_VERSION = '0.18.1';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '複数 Confluence リンクを 1 アイコン＋件数バッジに集約。モーダルの各 URL 行に ↗ 開くボタンを追加。';
+const APP_NOTE  = 'Confluence URL からページ名（スペース/タイトル/アンカー）を自動抽出してラベル表示。モーダルの各 URL 上に表示、一覧 tooltip も読めるラベルに。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1293,6 +1304,41 @@ function faviconFor(url) {
 function parseConfUrls(raw) {
   return String(raw || '').split(/[\n\r]+/).map(s => s.trim()).filter(Boolean);
 }
+function safeDecode(s) { try { return decodeURIComponent(s); } catch (_) { return s; } }
+// Confluence URL から「どのページか」を抽出（スペースキー / ページタイトル / アンカー編號）
+// 静的サイトのため API は叩けない。URL に埋め込まれた情報だけで読めるラベルを作る。
+function confLabel(url) {
+  const out = { space: '', title: '' };
+  try {
+    const u = new URL(url);
+    const path = u.pathname;
+    let m = path.match(/\/spaces\/([^/]+)/);
+    if (m) out.space = safeDecode(m[1]);
+    let pageSlug = '', pageId = '';
+    m = path.match(/\/pages\/(\d+)(?:\/([^/?#]+))?/);
+    if (m) { pageId = m[1]; if (m[2]) pageSlug = safeDecode(m[2]).replace(/\+/g, ' '); }
+    if (!pageSlug) {
+      m = path.match(/\/display\/([^/]+)\/([^/?#]+)/); // 旧 /display 形式
+      if (m) { out.space = out.space || safeDecode(m[1]); pageSlug = safeDecode(m[2]).replace(/\+/g, ' '); }
+    }
+    let title = pageSlug || (pageId ? '頁面 ' + pageId : '');
+    if (!title) {
+      const segs = path.split('/').filter(Boolean);
+      title = segs.length ? safeDecode(segs[segs.length - 1]) : u.hostname;
+    }
+    // アンカー（#編號）は所属 Issue を指すので付記すると判別しやすい
+    const anchor = u.hash ? safeDecode(u.hash.replace(/^#/, '')) : '';
+    if (anchor) title += ' #' + anchor;
+    out.title = title.trim();
+  } catch (_) {
+    out.title = String(url || '');
+  }
+  return out;
+}
+// tooltip 用：複数 URL を読めるラベルの改行リストに
+function confLabelLines(urls) {
+  return urls.map(u => { const l = confLabel(u); return (l.space ? `[${l.space}] ` : '') + l.title; }).join('\n');
+}
 function confluenceCell(pageName, url) {
   const name = (pageName || '').trim();
   const u = (url || '').trim();
@@ -1320,10 +1366,10 @@ function confEditCell(ownRaw, missionId, isMission) {
   if (!isMission) {
     // 他タブ：単一アイコン＋件数バッジ。先頭 URL へ直接リンク
     if (!urls.length) return `<td class="conf-icon"></td>`;
-    return `<td class="conf-icon"><a href="${escapeAttr(urls[0])}" target="_blank" rel="noopener" title="${escapeAttr(urls.join('\n'))}">${confIconHtml(urls)}</a></td>`;
+    return `<td class="conf-icon"><a href="${escapeAttr(urls[0])}" target="_blank" rel="noopener" title="${escapeAttr(confLabelLines(urls))}">${confIconHtml(urls)}</a></td>`;
   }
   const body = urls.length ? confIconHtml(urls) : `<span class="conf-add-hint">＋</span>`;
-  const titleTxt = urls.length ? `${urls.length} 件連結（點擊編輯・開啟）` : '點擊貼上 Confluence 連結';
+  const titleTxt = urls.length ? `${confLabelLines(urls)}\n（點擊編輯・開啟）` : '點擊貼上 Confluence 連結';
   return `<td class="conf-icon cell-editable" data-edit="conf" data-mission="${escapeAttr(missionId)}" title="${escapeAttr(titleTxt)}">${body}</td>`;
 }
 
@@ -1782,6 +1828,12 @@ function startStatusEdit(td, missionId) {
     const list = $('remarkModalConfList');
     const row = document.createElement('div');
     row.className = 'remark-modal-conf-row';
+    // ラベル行：URL から抽出した「どのページか」を表示（入力に追従）
+    const labelLine = document.createElement('div');
+    labelLine.className = 'remark-modal-conf-label';
+    // 入力行：URL 入力 ＋ ↗ 開く ＋ ✕ 削除
+    const inputLine = document.createElement('div');
+    inputLine.className = 'remark-modal-conf-inputline';
     const inp = document.createElement('input');
     inp.type = 'url'; inp.className = 'remark-modal-conf-inp';
     inp.placeholder = '貼上 Confluence 連結…'; inp.value = val || '';
@@ -1793,13 +1845,22 @@ function startStatusEdit(td, missionId) {
       const v = inp.value.trim();
       if (/^https?:\/\//i.test(v)) window.open(v, '_blank', 'noopener');
     });
-    inp.addEventListener('input', refreshOpen);
+    const refreshLabel = () => {
+      const v = inp.value.trim();
+      if (!v) { labelLine.innerHTML = '<span class="conf-label-empty">連結先未設定</span>'; return; }
+      const l = confLabel(v);
+      labelLine.innerHTML =
+        (l.space ? `<span class="conf-label-space">${escapeHtml(l.space)}</span>` : '') +
+        `<span class="conf-label-title">${escapeHtml(l.title)}</span>`;
+    };
+    inp.addEventListener('input', () => { refreshOpen(); refreshLabel(); });
     const del = document.createElement('button');
     del.type = 'button'; del.className = 'remark-modal-conf-del'; del.textContent = '✕'; del.title = '移除';
     del.addEventListener('click', () => row.remove());
-    row.appendChild(inp); row.appendChild(open); row.appendChild(del);
+    inputLine.appendChild(inp); inputLine.appendChild(open); inputLine.appendChild(del);
+    row.appendChild(labelLine); row.appendChild(inputLine);
     list.appendChild(row);
-    refreshOpen();
+    refreshOpen(); refreshLabel();
     return inp;
   }
 
