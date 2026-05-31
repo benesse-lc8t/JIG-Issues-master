@@ -456,6 +456,18 @@
   .add-id-preview { font-size: 12px; color: #137333; font-weight: 600; }
   .add-id-warn { font-size: 12px; color: #D93025; font-weight: 600; min-height: 14px; }
   .add-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  /* 名前チップピッカー（擔當／戰略負責人 用） */
+  .np-wrap { position: relative; }
+  .np-wrap .author-trigger { width: 100%; }
+  .np-wrap .np-menu { left: 0; right: 0; }
+  /* 新增ボタンのローディング・スピナー（押下＝処理中を明示） */
+  .remark-modal-save.is-loading { position: relative; color: transparent !important; pointer-events: none; }
+  .remark-modal-save.is-loading::after {
+    content: ''; position: absolute; left: 50%; top: 50%; width: 15px; height: 15px;
+    margin: -8px 0 0 -8px; border: 2px solid rgba(255,255,255,0.45); border-top-color: #fff;
+    border-radius: 50%; animation: btnspin 0.7s linear infinite;
+  }
+  @keyframes btnspin { to { transform: rotate(360deg); } }
   .remark-modal {
     background: #fff; border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.22);
     width: min(680px, 94vw); max-height: 90vh; display: flex; flex-direction: column;
@@ -869,37 +881,49 @@
     </div>
     <div class="remark-modal-body">
       <div class="seg-toggle">
-        <button type="button" class="seg-btn active" id="addSegMission" data-kind="mission">Mission（既存 Issue 配下）</button>
-        <button type="button" class="seg-btn" id="addSegIssue" data-kind="issue">Issue（新規・上位）</button>
+        <button type="button" class="seg-btn active" id="addSegMission" data-kind="mission">Mission（既有 Issue 之下）</button>
+        <button type="button" class="seg-btn" id="addSegIssue" data-kind="issue">Issue（新增・上層）</button>
       </div>
 
-      <!-- Mission フォーム -->
+      <!-- Mission 表單 -->
       <div id="addFormMission">
         <div class="add-field">
           <label>親 Issue<span class="req">*</span></label>
           <select class="add-sel" id="addMParent"></select>
         </div>
         <div class="add-field" style="margin-top:12px;">
-          <label>採番される編號</label>
-          <div class="add-id-preview" id="addMIdPreview">親 Issue を選んでください</div>
+          <label>自動產生的編號</label>
+          <div class="add-id-preview" id="addMIdPreview">請先選擇親 Issue</div>
         </div>
         <div class="add-field" style="margin-top:12px;">
-          <label>Mission 名<span class="req">*</span></label>
+          <label>Mission 名稱<span class="req">*</span></label>
           <input type="text" class="add-inp" id="addMName" placeholder="例：BCL收集戰略-綁定理由&LP" maxlength="120">
         </div>
         <div class="add-row2" style="margin-top:12px;">
           <div class="add-field">
             <label>擔當</label>
-            <input type="text" class="add-inp" id="addMOwner" list="addNameList" placeholder="實務擔當">
+            <div class="np-wrap">
+              <button type="button" class="author-trigger np-trigger is-placeholder" id="addMOwnerTrigger" data-placeholder="選擇擔當"></button>
+              <div class="author-menu np-menu" id="addMOwnerMenu">
+                <input type="text" class="author-menu-search" id="addMOwnerSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
+                <div class="author-menu-chips" id="addMOwnerChips"></div>
+              </div>
+            </div>
           </div>
           <div class="add-field">
             <label>戰略負責人</label>
-            <input type="text" class="add-inp" id="addMLead" list="addNameList" placeholder="空なら親を継承">
+            <div class="np-wrap">
+              <button type="button" class="author-trigger np-trigger is-placeholder" id="addMLeadTrigger" data-placeholder="留空則繼承親 Issue"></button>
+              <div class="author-menu np-menu" id="addMLeadMenu">
+                <input type="text" class="author-menu-search" id="addMLeadSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
+                <div class="author-menu-chips" id="addMLeadChips"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Issue フォーム -->
+      <!-- Issue 表單 -->
       <div id="addFormIssue" style="display:none;">
         <div class="add-row2">
           <div class="add-field">
@@ -913,32 +937,37 @@
         </div>
         <div class="add-id-warn" id="addIIdWarn"></div>
         <div class="add-field" style="margin-top:8px;">
-          <label>Issue 名<span class="req">*</span></label>
+          <label>Issue 名稱<span class="req">*</span></label>
           <input type="text" class="add-inp" id="addIName" placeholder="例：BCL註冊用戶擴大" maxlength="120">
         </div>
         <div class="add-row2" style="margin-top:12px;">
           <div class="add-field">
             <label>組</label>
-            <input type="text" class="add-inp" id="addIGroup" placeholder="例：經營戰略組">
+            <select class="add-sel" id="addIGroup"><option value="">— 先選擇處 —</option></select>
           </div>
           <div class="add-field">
             <label>戰略負責人</label>
-            <input type="text" class="add-inp" id="addILead" list="addNameList" placeholder="負責人">
+            <div class="np-wrap">
+              <button type="button" class="author-trigger np-trigger is-placeholder" id="addILeadTrigger" data-placeholder="選擇負責人"></button>
+              <div class="author-menu np-menu" id="addILeadMenu">
+                <input type="text" class="author-menu-search" id="addILeadSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
+                <div class="author-menu-chips" id="addILeadChips"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- 共通：狀態 + Confluence URL -->
+      <!-- 共用：狀態 + Confluence URL -->
       <div class="add-field" style="margin-top:14px;">
         <label>狀態</label>
         <div class="remark-modal-status" id="addStatus"></div>
       </div>
       <div class="add-field" style="margin-top:12px;">
-        <label>Confluence URL（任意・1件）</label>
-        <input type="text" class="add-inp" id="addConf" placeholder="https://… 詳細・成果物はこちらへ">
+        <label>Confluence URL（選填・1 筆）</label>
+        <input type="text" class="add-inp" id="addConf" placeholder="https://… 詳細與產出放這裡">
       </div>
-      <datalist id="addNameList"></datalist>
-      <div class="remark-modal-hint">詳細・成果物は Confluence へ。ここは最小項目だけ。</div>
+      <div class="remark-modal-hint">詳細與產出請放 Confluence，這裡只填最小項目。</div>
     </div>
     <div class="remark-modal-footer">
       <button class="remark-modal-cancel" id="addModalCancelBtn">取消</button>
@@ -1310,9 +1339,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.26.4';
+const APP_VERSION = '0.27.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '追加の入力規則対応を完全化：入力規則違反は setValue ではなく flush で発火するため、各セル書込み直後に flush して try 内で捕捉。弾かれた列はクリアしてスキップし、行作成とレスポンス成功（warnings 付き）を保証。※Apps Script の再公開が必要（codeVersion=addrow4 で確認）。';
+const APP_NOTE  = '新增モーダルの UI/UX 改善：全表記を繁體中文に統一、擔當／戰略負責人を名前チップピッカー化（處ベース色）、Issue の「組」を「處」連動プルダウンに、新增ボタンに処理中スピナーを追加。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2112,14 +2141,14 @@ function _nextMissionIdClient(parentId) {
 function _refreshAddMIdPreview() {
   const parent = document.getElementById('addMParent').value;
   document.getElementById('addMIdPreview').textContent =
-    parent ? _nextMissionIdClient(parent) : '親 Issue を選んでください';
+    parent ? _nextMissionIdClient(parent) : '請先選擇親 Issue';
 }
 function _checkIssueIdDup() {
   const id = document.getElementById('addIId').value.trim();
   const warn = document.getElementById('addIIdWarn');
   if (!id) { warn.textContent = ''; return; }
   const dup = (issueData || []).some(r => String(r['編號'] || '').trim() === id);
-  warn.textContent = dup ? '⚠ この編號は既に存在します' : '';
+  warn.textContent = dup ? '⚠ 此編號已存在' : '';
 }
 function _setAddKind(kind) {
   _addKind = kind;
@@ -2127,6 +2156,110 @@ function _setAddKind(kind) {
   document.getElementById('addSegIssue').classList.toggle('active', kind === 'issue');
   document.getElementById('addFormMission').style.display = kind === 'mission' ? '' : 'none';
   document.getElementById('addFormIssue').style.display = kind === 'issue' ? '' : 'none';
+}
+// ----- 汎用 名前チップピッカー（擔當／戰略負責人。記入者チップと同配色・處ベース）-----
+window._namePick = window._namePick || {};
+function _namePickerChipData() {
+  const names = (typeof collectAuthorNames === 'function') ? collectAuthorNames() : [];
+  const deptMap = (typeof buildAuthorDeptMap === 'function') ? buildAuthorDeptMap() : {};
+  const pm = window.personMap || {};
+  const DEPT_ORDER = Object.keys(DEPT_COLOR_MAP);
+  const deptRank = d => { const i = DEPT_ORDER.indexOf((d || '').trim()); return i < 0 ? 99 : i; };
+  const ord = n => (pm[n] && pm[n].order != null) ? pm[n].order : Infinity;
+  names.sort((a, b) => {
+    const da = deptRank(deptMap[a]), db = deptRank(deptMap[b]);
+    if (da !== db) return da - db;
+    const oa = ord(a), ob = ord(b);
+    if (oa !== ob) return oa - ob;
+    return a.localeCompare(b, 'zh-Hant');
+  });
+  return names.map(n => { const c = deptChipColor(deptMap[n] || ''); return { name: n, bg: c.bg, fg: c.fg }; });
+}
+function _refreshNamePickerTrigger(prefix) {
+  const trg = document.getElementById(prefix + 'Trigger');
+  if (!trg) return;
+  const sel = window._namePick[prefix] || '';
+  if (sel) {
+    const d = _namePickerChipData().find(x => x.name === sel) || { bg: '#F1F3F4', fg: '#5F6368' };
+    trg.textContent = sel;
+    trg.classList.remove('is-placeholder'); trg.classList.add('has-sel');
+    trg.style.setProperty('--sel-bg', d.bg); trg.style.setProperty('--sel-fg', d.fg);
+  } else {
+    trg.textContent = trg.dataset.placeholder || '請選擇';
+    trg.classList.add('is-placeholder'); trg.classList.remove('has-sel');
+    trg.style.removeProperty('--sel-bg'); trg.style.removeProperty('--sel-fg');
+  }
+}
+function renderNamePickerChips(prefix, filter) {
+  const wrap = document.getElementById(prefix + 'Chips');
+  if (!wrap) return;
+  const q = (filter || '').trim().toLowerCase();
+  const all = _namePickerChipData();
+  const list = q ? all.filter(d => d.name.toLowerCase().includes(q)) : all;
+  const sel = window._namePick[prefix] || '';
+  if (!list.length) { wrap.innerHTML = '<div class="author-menu-empty">查無符合的姓名</div>'; return; }
+  wrap.innerHTML = list.map(d => {
+    const active = d.name === sel ? ' active' : '';
+    return `<button type="button" class="author-chip${active}" data-name="${escapeAttr(d.name)}" style="--chip-bg:${d.bg};--chip-fg:${d.fg}">${escapeHtml(d.name)}</button>`;
+  }).join('');
+  wrap.querySelectorAll('.author-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const cur = window._namePick[prefix] || '';
+      window._namePick[prefix] = (cur === chip.dataset.name) ? '' : chip.dataset.name; // 再クリックで解除（任意項目）
+      _refreshNamePickerTrigger(prefix);
+      _closeNamePickers();
+    });
+  });
+}
+function _closeNamePickers() {
+  document.querySelectorAll('.np-menu.open').forEach(m => m.classList.remove('open'));
+  document.querySelectorAll('.np-trigger.open').forEach(t => t.classList.remove('open'));
+}
+function setupNamePicker(prefix) {
+  const trg = document.getElementById(prefix + 'Trigger');
+  const menu = document.getElementById(prefix + 'Menu');
+  const search = document.getElementById(prefix + 'Search');
+  if (!trg || !menu || trg._wired) return;
+  trg._wired = true;
+  trg.addEventListener('click', e => {
+    e.stopPropagation();
+    const isOpen = menu.classList.contains('open');
+    _closeNamePickers();
+    if (!isOpen) {
+      menu.classList.add('open'); trg.classList.add('open');
+      if (search) search.value = '';
+      renderNamePickerChips(prefix, '');
+      if (search) requestAnimationFrame(() => search.focus());
+    }
+  });
+  if (search) search.addEventListener('input', () => renderNamePickerChips(prefix, search.value));
+}
+function resetNamePicker(prefix, val) {
+  window._namePick[prefix] = val || '';
+  setupNamePicker(prefix);
+  _refreshNamePickerTrigger(prefix);
+}
+// ----- Issue 表單：處 に紐づく「組」の候補（既存 Issue ＋ 人員マスタから収集）-----
+function _groupsForDept(dept) {
+  dept = (dept || '').trim();
+  const set = new Set();
+  if (dept) {
+    (issueData || []).forEach(r => {
+      if ((r['處'] || '').trim() === dept) { const g = (r['組'] || '').trim(); if (g) set.add(g); }
+    });
+    const pm = window.personMap || {};
+    Object.values(pm).forEach(p => { if ((p.dept || '').trim() === dept && p.group) set.add(String(p.group).trim()); });
+  }
+  return [...set].sort((a, b) => a.localeCompare(b, 'zh-Hant'));
+}
+function _populateAddIGroups(dept) {
+  const sel = document.getElementById('addIGroup');
+  if (!sel) return;
+  const prev = sel.value;
+  const groups = _groupsForDept(dept);
+  sel.innerHTML = ['<option value="">' + (dept ? '— 選擇組 —' : '— 先選擇處 —') + '</option>']
+    .concat(groups.map(g => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`)).join('');
+  if (prev && groups.includes(prev)) sel.value = prev;
 }
 function openAddModal(kind) {
   // 親 Issue セレクト
@@ -2138,25 +2271,27 @@ function openAddModal(kind) {
     const nm  = String(r['Issue'] || '').trim();
     return `<option value="${escapeAttr(num)}">${escapeHtml(num)}　${escapeHtml(nm)}</option>`;
   }).join('');
-  // 處セレクト（色マップの 7 部門）
+  // 處セレクト（色マップの 7 部門）＋ 組セレクト（處に連動・初期は空）
   document.getElementById('addIDept').innerHTML = '<option value="">—</option>' +
     Object.keys(DEPT_COLOR_MAP).map(d => `<option value="${escapeAttr(d)}">${escapeHtml(d)}</option>`).join('');
-  // 名前 datalist（人員マスタ→無ければ擔當/負責人収集）
-  const names = (typeof collectAuthorNames === 'function') ? collectAuthorNames() : [];
-  document.getElementById('addNameList').innerHTML = names.map(n => `<option value="${escapeAttr(n)}">`).join('');
-  // 入力リセット
-  ['addMName','addMOwner','addMLead','addIId','addIName','addIGroup','addILead','addConf']
-    .forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+  _populateAddIGroups('');
+  // テキスト入力リセット
+  ['addMName','addIId','addIName','addConf'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
   document.getElementById('addIIdWarn').textContent = '';
+  // 名前ピッカー初期化（擔當・戰略負責人）
+  resetNamePicker('addMOwner', '');
+  resetNamePicker('addMLead', '');
+  resetNamePicker('addILead', '');
   _buildAddStatusBtns();
   _setAddKind(kind || 'mission');
   _refreshAddMIdPreview();
   const sb = document.getElementById('addModalSaveBtn');
-  sb.disabled = false; sb.classList.remove('saving'); sb.textContent = '新增';
+  sb.disabled = false; sb.classList.remove('is-loading', 'saving'); sb.textContent = '新增';
   document.getElementById('addModalOverlay').classList.add('open');
   document.body.classList.add('modal-open');
 }
 function closeAddModal() {
+  _closeNamePickers();
   document.getElementById('addModalOverlay').classList.remove('open');
   document.body.classList.remove('modal-open');
 }
@@ -2169,34 +2304,34 @@ async function _submitAdd() {
   if (_addKind === 'mission') {
     const parent = document.getElementById('addMParent').value;
     const name = document.getElementById('addMName').value.trim();
-    if (!parent) { toast('親 Issue を選んでください', 'error'); return; }
-    if (!name)   { toast('Mission 名を入力してください', 'error'); return; }
+    if (!parent) { toast('請選擇親 Issue', 'error'); return; }
+    if (!name)   { toast('請輸入 Mission 名稱', 'error'); return; }
     payload = {
       token: WRITE_TOKEN, action: 'addMission',
       '親編號': parent, 'Mission': name,
-      '擔當': document.getElementById('addMOwner').value.trim(),
-      '戰略負責人': document.getElementById('addMLead').value.trim(),
+      '擔當': window._namePick['addMOwner'] || '',
+      '戰略負責人': window._namePick['addMLead'] || '',
       '狀態': status, 'Confluence URL': conf
     };
   } else {
     const id = document.getElementById('addIId').value.trim();
     const name = document.getElementById('addIName').value.trim();
-    if (!id)   { toast('編號を入力してください', 'error'); return; }
-    if (!name) { toast('Issue 名を入力してください', 'error'); return; }
+    if (!id)   { toast('請輸入編號', 'error'); return; }
+    if (!name) { toast('請輸入 Issue 名稱', 'error'); return; }
     if ((issueData || []).some(r => String(r['編號'] || '').trim() === id)) {
-      toast('この編號は既に存在します', 'error'); return;
+      toast('此編號已存在', 'error'); return;
     }
     payload = {
       token: WRITE_TOKEN, action: 'addIssue',
       '編號': id, 'Issue': name,
       '處': document.getElementById('addIDept').value,
-      '組': document.getElementById('addIGroup').value.trim(),
-      '戰略負責人': document.getElementById('addILead').value.trim(),
+      '組': document.getElementById('addIGroup').value,
+      '戰略負責人': window._namePick['addILead'] || '',
       '狀態': status, 'Confluence URL': conf
     };
   }
-  if (!SHEET_WRITE_URL) { toast('編集機能 未配置：管理者に Web App URL の設定を依頼してください', 'error'); return; }
-  sb.disabled = true; sb.classList.add('saving'); sb.textContent = '新增中…';
+  if (!SHEET_WRITE_URL) { toast('編輯功能未設定：請管理員設定 Web App URL', 'error'); return; }
+  sb.disabled = true; sb.classList.add('is-loading'); sb.textContent = '新增中…';
   try {
     const res = await fetch(SHEET_WRITE_URL, {
       method: 'POST',
@@ -2208,13 +2343,13 @@ async function _submitAdd() {
     console.info('[addEntry] response', { status: res.status, data, payload });
     if (!data.ok) {
       toast(`新增失敗：${data.error || 'unknown'}`, 'error');
-      sb.disabled = false; sb.classList.remove('saving'); sb.textContent = '新增';
+      sb.disabled = false; sb.classList.remove('is-loading'); sb.textContent = '新增';
       return;
     }
     const newId = data['編號'] || data.mission || '';
     const warns = Array.isArray(data.warnings) ? data.warnings : [];
     if (warns.length) {
-      toast(`已新增：${newId}（一部項目はシートの入力規則によりスキップ：${warns.join('・')}。シート側で設定してください）`, 'error');
+      toast(`已新增：${newId}（部分欄位因試算表資料驗證被略過：${warns.join('・')}，請於試算表設定）`, 'error');
     } else {
       toast(`已新增：${newId}`, 'success');
     }
@@ -2222,7 +2357,7 @@ async function _submitAdd() {
     await loadFromSheet(); // 継承列の都合で再読込して確実に反映
   } catch (e) {
     toast(`網路錯誤：${e.message}`, 'error');
-    sb.disabled = false; sb.classList.remove('saving'); sb.textContent = '新增';
+    sb.disabled = false; sb.classList.remove('is-loading'); sb.textContent = '新增';
   }
 }
 document.addEventListener('DOMContentLoaded', () => {
@@ -2231,13 +2366,17 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('addSegMission')?.addEventListener('click', () => _setAddKind('mission'));
   document.getElementById('addSegIssue')?.addEventListener('click', () => _setAddKind('issue'));
   document.getElementById('addMParent')?.addEventListener('change', _refreshAddMIdPreview);
+  document.getElementById('addIDept')?.addEventListener('change', e => _populateAddIGroups(e.target.value));
   document.getElementById('addIId')?.addEventListener('input', _checkIssueIdDup);
+  ['addMOwner', 'addMLead', 'addILead'].forEach(setupNamePicker);
   document.getElementById('addModalSaveBtn')?.addEventListener('click', _submitAdd);
   document.getElementById('addModalCancelBtn')?.addEventListener('click', closeAddModal);
   document.getElementById('addModalCloseBtn')?.addEventListener('click', closeAddModal);
   document.getElementById('addModalOverlay')?.addEventListener('mousedown', e => {
     if (e.target === document.getElementById('addModalOverlay')) closeAddModal();
   });
+  // ピッカー外クリックで閉じる（np-wrap の外をクリックしたとき）
+  document.addEventListener('click', e => { if (!e.target.closest('.np-wrap')) _closeNamePickers(); });
   document.addEventListener('keydown', e => {
     const open = document.getElementById('addModalOverlay')?.classList.contains('open');
     if (!open) return;
