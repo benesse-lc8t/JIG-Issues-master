@@ -466,6 +466,14 @@
   .np-trigger .np-tag { font-size: 11px; font-weight: 600; padding: 1px 6px 1px 8px; border-radius: 10px; white-space: nowrap; line-height: 1.7; display: inline-flex; align-items: center; }
   .np-trigger .np-x { margin-left: 4px; cursor: pointer; font-weight: 700; opacity: 0.55; font-size: 13px; line-height: 1; }
   .np-trigger .np-x:hover { opacity: 1; }
+  /* 一覧の人物セル：處カラーの小チップ */
+  .person-chip { display: inline-block; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 9px; margin: 1px 3px 1px 0; white-space: nowrap; line-height: 1.55; }
+  /* 行の編集（✎）ボタン：ホバーで表示 */
+  .row-edit-btn { margin-left: 6px; border: none; background: transparent; cursor: pointer; color: #9AA0A6; font-size: 12px; opacity: 0; transition: opacity .12s, color .12s; padding: 0 2px; vertical-align: middle; }
+  tr:hover .row-edit-btn { opacity: 0.65; }
+  .row-edit-btn:hover { opacity: 1; color: var(--g-blue); }
+  /* 編集時の編號（変更不可）入力 */
+  .add-inp.readonly-id { background: #F1F3F4; color: #5F6368; cursor: not-allowed; }
   /* 新增ボタン：処理中は左→右に満ちる進行バー（テキストは上に残す） */
   .remark-modal-save.is-progress { position: relative; overflow: hidden; pointer-events: none; }
   .remark-modal-save.is-progress > span { position: relative; z-index: 1; }
@@ -881,12 +889,12 @@
   <div class="remark-modal" id="addModal" style="width:min(560px,94vw);">
     <div class="remark-modal-header">
       <div class="remark-modal-meta">
-        <div class="remark-modal-meta-row"><span class="remark-modal-meta-name">＋ 新增</span></div>
+        <div class="remark-modal-meta-row"><span class="remark-modal-meta-name" id="addModalTitle">＋ 新增</span></div>
       </div>
       <button class="remark-modal-close" id="addModalCloseBtn" title="取消（Esc）" aria-label="關閉">×</button>
     </div>
     <div class="remark-modal-body">
-      <div class="seg-toggle">
+      <div class="seg-toggle" id="addSegWrap">
         <button type="button" class="seg-btn active" id="addSegMission" data-kind="mission">Mission（既有 Issue 之下）</button>
         <button type="button" class="seg-btn" id="addSegIssue" data-kind="issue">Issue（新增・上層）</button>
       </div>
@@ -1345,9 +1353,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.27.4';
+const APP_VERSION = '0.28.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '新增ボタンの処理中表示をスピナー→「左→右に満ちる進行バー」に変更（編集モーダルの伸びるバーと同思想）。Apps Script 変更なし。';
+const APP_NOTE  = '既存 Issue／Mission をダッシュボードから編集可能に（Tab A 各行の ✎）。追加モーダルを追加/編集兼用化し、名称・擔當/戰略負責人(チップ)・狀態/組/處・Confluence を編集（編號は変更不可）。一覧の擔當/戰略負責人を處カラーのチップ表示に。Apps Script に updateMission/updateIssue を追加（同一 URL 再公開が必要・codeVersion=edit1）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1804,6 +1812,38 @@ function deptChipColor(dept) {
   return DEPT_CHIP_COLORS[deptColorClass(dept)] || DEPT_CHIP_COLORS['dept-c-grey'];
 }
 
+// 人名 → 處（部門）マップ。一覧の人物チップ配色用。renderAll で再構築してキャッシュ。
+// データ実体の表記（短縮名など）に追従するよう、行の出現から最頻出の處を集計し、人員マスタで補完。
+let _personDeptMap = null;
+function buildPersonDeptMap() {
+  const tally = {};
+  (issueData || []).forEach(r => {
+    const dept = (r['處'] || '').trim();
+    if (!dept) return;
+    [...splitPersons(r['擔當']), ...splitPersons(r['戰略負責人'])].forEach(n => {
+      (tally[n] = tally[n] || {})[dept] = (tally[n][dept] || 0) + 1;
+    });
+  });
+  const map = {};
+  Object.keys(tally).forEach(n => {
+    const e = Object.entries(tally[n]).sort((a, b) => b[1] - a[1])[0];
+    map[n] = e ? e[0] : '';
+  });
+  const pm = window.personMap || {};
+  Object.keys(pm).forEach(n => { if (!map[n]) map[n] = pm[n].dept || ''; });
+  return map;
+}
+// 「美齡/勝朋」等を 處カラーのチップ列に。空なら空文字。
+function personChipsHtml(value) {
+  const names = splitPersons(value);
+  if (!names.length) return '';
+  const map = _personDeptMap || (_personDeptMap = buildPersonDeptMap());
+  return names.map(n => {
+    const c = deptChipColor(map[n] || '');
+    return `<span class="person-chip" style="background:${c.bg};color:${c.fg}">${escapeHtml(n)}</span>`;
+  }).join('');
+}
+
 // ===== 人員マスタ（名簿の一次ソース）=====
 // window.personMap = { 姓名: { dept, group, order } }
 window.personMap = window.personMap || {};
@@ -1876,7 +1916,7 @@ function renderRow(r, opts) {
 
   let h = `<tr${trAttrs}>`;
   h += `<td class="num num-cell"><span class="${toggleCls}"${toggleAttr}>${toggleSym}</span>${numHtml}</td>`; // 1 編號
-  h += `<td class="lbl">${escapeHtml(r['Issue'])}</td>`;                                   // 2 Issue / Mission
+  h += `<td class="lbl">${escapeHtml(r['Issue'])}<button type="button" class="row-edit-btn" title="編輯" onclick="event.stopPropagation();openEditEntryModal('${isMission ? 'mission' : 'issue'}','${escapeAttr(num)}')">✎</button></td>`; // 2 Issue / Mission（✎で編集）
   if (isMission) {
     // Mission 行では 處・組 列を空欄に（親 Issue の情報を二重表示しない）
     h += '<td></td><td></td>';                                                              // 3 處 / 4 組（空）
@@ -1884,8 +1924,8 @@ function renderRow(r, opts) {
     h += `<td class="dept ${deptColorClass(dept)}">${escapeHtml(dept)}</td>`;              // 3 處（部門色分け）
     h += `<td class="dept">${escapeHtml(grp)}</td>`;                                       // 4 組
   }
-  h += `<td class="dept">${escapeHtml(owner)}</td>`;                                       // 5 擔當
-  h += `<td class="dept">${escapeHtml(r['戰略負責人'])}</td>`;                             // 6 戰略負責人
+  h += `<td class="dept">${personChipsHtml(owner)}</td>`;                                   // 5 擔當
+  h += `<td class="dept">${personChipsHtml(r['戰略負責人'])}</td>`;                         // 6 戰略負責人
   h += confluenceCell(r['管理頁面'], r['Confluence URL'], num);                            // 7 Confluence（アイコンのみ・複数はモーダル）
   h += `<td class="pc mtg-col">${escapeHtml(r['確認會議'])}</td>`;                          // 8 確認會議
   h += `<td class="pc mtg-col">${escapeHtml(r['會議時間'])}</td>`;                          // 9 會議時間
@@ -2108,18 +2148,22 @@ async function saveMissionEdit(missionId, fields) {
 
 // ===== 新增 Issue / Mission モーダル（事務局用・最小フォーム）=====
 let _addKind = 'mission';
+let _addMode = 'add';   // 'add' | 'edit'
+let _editKind = 'mission';
+let _editId = null;
 
 function _addStatusValue() {
   const a = document.querySelector('#addStatus .modal-st-btn.active');
   return a ? (a.dataset.v || '') : '';
 }
-function _buildAddStatusBtns() {
+function _buildAddStatusBtns(current) {
+  current = current || '';
   const el = document.getElementById('addStatus');
   el.innerHTML = '';
   ['', '未開始', '策劃中', '需確認', '進行中', '結案'].forEach(v => {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'modal-st-btn' + (v === '' ? ' active' : '');
+    b.className = 'modal-st-btn' + (v === current ? ' active' : '');
     b.dataset.v = v;
     b.textContent = v || '（未設定）';
     b.addEventListener('click', () => {
@@ -2315,8 +2359,8 @@ function _populateAddIGroups(dept) {
     .concat(groups.map(g => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`)).join('');
   if (prev && groups.includes(prev)) sel.value = prev;
 }
-function openAddModal(kind) {
-  // 親 Issue セレクト
+// 追加／編集で共通の選択肢を用意（親Issue・處・組の base）
+function _prepareAddSelectsAndPickers() {
   const psel = document.getElementById('addMParent');
   const issues = _issueListForAdd().slice()
     .sort((a, b) => String(a['編號'] || '').localeCompare(String(b['編號'] || ''), 'zh-Hant'));
@@ -2325,22 +2369,64 @@ function openAddModal(kind) {
     const nm  = String(r['Issue'] || '').trim();
     return `<option value="${escapeAttr(num)}">${escapeHtml(num)}　${escapeHtml(nm)}</option>`;
   }).join('');
-  // 處セレクト（色マップの 7 部門）＋ 組セレクト（處に連動・初期は空）
+  psel.disabled = false;
   document.getElementById('addIDept').innerHTML = '<option value="">—</option>' +
     Object.keys(DEPT_COLOR_MAP).map(d => `<option value="${escapeAttr(d)}">${escapeHtml(d)}</option>`).join('');
   _populateAddIGroups('');
-  // テキスト入力リセット
-  ['addMName','addIId','addIName','addConf'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+  const iid = document.getElementById('addIId');
+  iid.readOnly = false; iid.classList.remove('readonly-id');
   document.getElementById('addIIdWarn').textContent = '';
+}
+function openAddModal(kind) {
+  _prepareAddSelectsAndPickers();
+  _addMode = 'add'; _editId = null;
+  document.getElementById('addModalTitle').textContent = '＋ 新增';
+  document.getElementById('addSegWrap').style.display = '';
+  // 入力リセット
+  ['addMName','addIId','addIName','addConf'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+  document.getElementById('addMParent').value = '';
+  document.getElementById('addIDept').value = ''; _populateAddIGroups('');
   // 名前ピッカー初期化（擔當=全員／戰略負責人=4名限定、いずれも複数選択可）
   resetNamePicker('addMOwner', '', true);
   resetNamePicker('addMLead', '', true, STRATEGIC_LEADS);
   resetNamePicker('addILead', '', true, STRATEGIC_LEADS);
-  _buildAddStatusBtns();
+  _buildAddStatusBtns('');
   _setAddKind(kind || 'mission');
   _refreshAddMIdPreview();
   const sb = document.getElementById('addModalSaveBtn');
   sb.disabled = false; sb.classList.remove('is-progress', 'is-loading', 'saving'); sb.textContent = '新增';
+  document.getElementById('addModalOverlay').classList.add('open');
+  document.body.classList.add('modal-open');
+}
+// 既存 Issue／Mission を編集（編號は変更不可・該当行を事前入力）
+function openEditEntryModal(kind, id) {
+  const row = (issueData || []).find(r => (r['編號'] || '').trim() === id);
+  if (!row) { toast('找不到資料：' + id, 'error'); return; }
+  _prepareAddSelectsAndPickers();
+  _addMode = 'edit'; _editKind = kind; _editId = id;
+  document.getElementById('addModalTitle').textContent = '✎ 編輯：' + id;
+  document.getElementById('addSegWrap').style.display = 'none'; // 種別は固定
+  _setAddKind(kind);
+  _buildAddStatusBtns((row['狀態'] || '').trim());
+  document.getElementById('addConf').value = (row['Confluence URL自身'] || row['Confluence URL'] || '').trim();
+  if (kind === 'mission') {
+    const psel = document.getElementById('addMParent');
+    psel.value = (row['親編號'] || '').trim(); psel.disabled = true;          // 親は変更不可
+    document.getElementById('addMIdPreview').textContent = id;               // 実際の編號を表示
+    document.getElementById('addMName').value = (row['Issue'] || '').trim(); // Mission 名は 'Issue' キーに格納
+    resetNamePicker('addMOwner', row['擔當'] || '', true);
+    resetNamePicker('addMLead', row['戰略負責人'] || '', true, STRATEGIC_LEADS);
+  } else {
+    const iid = document.getElementById('addIId');
+    iid.value = id; iid.readOnly = true; iid.classList.add('readonly-id');   // 編號は変更不可
+    document.getElementById('addIDept').value = (row['處'] || '').trim();
+    _populateAddIGroups((row['處'] || '').trim());
+    document.getElementById('addIGroup').value = (row['組'] || '').trim();
+    document.getElementById('addIName').value = (row['Issue'] || '').trim();
+    resetNamePicker('addILead', row['戰略負責人'] || '', true, STRATEGIC_LEADS);
+  }
+  const sb = document.getElementById('addModalSaveBtn');
+  sb.disabled = false; sb.classList.remove('is-progress', 'is-loading', 'saving'); sb.textContent = '儲存';
   document.getElementById('addModalOverlay').classList.add('open');
   document.body.classList.add('modal-open');
 }
@@ -2352,40 +2438,52 @@ function closeAddModal() {
 async function _submitAdd() {
   const sb = document.getElementById('addModalSaveBtn');
   if (sb.disabled) return;
+  const isEdit = (_addMode === 'edit');
+  const kind = isEdit ? _editKind : _addKind;
   const status = _addStatusValue();
   const conf = document.getElementById('addConf').value.trim();
+  const label = isEdit ? '儲存' : '新增';
   let payload;
-  if (_addKind === 'mission') {
-    const parent = document.getElementById('addMParent').value;
+  if (kind === 'mission') {
     const name = document.getElementById('addMName').value.trim();
-    if (!parent) { toast('請選擇親 Issue', 'error'); return; }
-    if (!name)   { toast('請輸入 Mission 名稱', 'error'); return; }
-    payload = {
-      token: WRITE_TOKEN, action: 'addMission',
-      '親編號': parent, 'Mission': name,
-      '擔當': namePickValue('addMOwner'),
-      '戰略負責人': namePickValue('addMLead'),
-      '狀態': status, 'Confluence URL': conf
-    };
-  } else {
-    const id = document.getElementById('addIId').value.trim();
-    const name = document.getElementById('addIName').value.trim();
-    if (!id)   { toast('請輸入編號', 'error'); return; }
-    if (!name) { toast('請輸入 Issue 名稱', 'error'); return; }
-    if ((issueData || []).some(r => String(r['編號'] || '').trim() === id)) {
-      toast('此編號已存在', 'error'); return;
+    if (!name) { toast('請輸入 Mission 名稱', 'error'); return; }
+    if (isEdit) {
+      payload = {
+        token: WRITE_TOKEN, action: 'updateMission', '編號': _editId,
+        'Mission': name, '擔當': namePickValue('addMOwner'), '戰略負責人': namePickValue('addMLead'),
+        '狀態': status, 'Confluence URL': conf
+      };
+    } else {
+      const parent = document.getElementById('addMParent').value;
+      if (!parent) { toast('請選擇親 Issue', 'error'); return; }
+      payload = {
+        token: WRITE_TOKEN, action: 'addMission', '親編號': parent, 'Mission': name,
+        '擔當': namePickValue('addMOwner'), '戰略負責人': namePickValue('addMLead'),
+        '狀態': status, 'Confluence URL': conf
+      };
     }
-    payload = {
-      token: WRITE_TOKEN, action: 'addIssue',
-      '編號': id, 'Issue': name,
-      '處': document.getElementById('addIDept').value,
-      '組': document.getElementById('addIGroup').value,
-      '戰略負責人': namePickValue('addILead'),
-      '狀態': status, 'Confluence URL': conf
-    };
+  } else {
+    const name = document.getElementById('addIName').value.trim();
+    if (!name) { toast('請輸入 Issue 名稱', 'error'); return; }
+    if (isEdit) {
+      payload = {
+        token: WRITE_TOKEN, action: 'updateIssue', '編號': _editId,
+        'Issue': name, '處': document.getElementById('addIDept').value, '組': document.getElementById('addIGroup').value,
+        '戰略負責人': namePickValue('addILead'), '狀態': status, 'Confluence URL': conf
+      };
+    } else {
+      const id = document.getElementById('addIId').value.trim();
+      if (!id) { toast('請輸入編號', 'error'); return; }
+      if ((issueData || []).some(r => String(r['編號'] || '').trim() === id)) { toast('此編號已存在', 'error'); return; }
+      payload = {
+        token: WRITE_TOKEN, action: 'addIssue', '編號': id, 'Issue': name,
+        '處': document.getElementById('addIDept').value, '組': document.getElementById('addIGroup').value,
+        '戰略負責人': namePickValue('addILead'), '狀態': status, 'Confluence URL': conf
+      };
+    }
   }
   if (!SHEET_WRITE_URL) { toast('編輯功能未設定：請管理員設定 Web App URL', 'error'); return; }
-  sb.disabled = true; sb.classList.add('is-progress'); sb.innerHTML = '<span>新增中…</span>';
+  sb.disabled = true; sb.classList.add('is-progress'); sb.innerHTML = `<span>${label}中…</span>`;
   try {
     const res = await fetch(SHEET_WRITE_URL, {
       method: 'POST',
@@ -2396,22 +2494,22 @@ async function _submitAdd() {
     let data; try { data = JSON.parse(text); } catch (_) { data = { ok: false, error: 'bad_response', raw: text }; }
     console.info('[addEntry] response', { status: res.status, data, payload });
     if (!data.ok) {
-      toast(`新增失敗：${data.error || 'unknown'}`, 'error');
-      sb.disabled = false; sb.classList.remove('is-progress'); sb.textContent = '新增';
+      toast(`${label}失敗：${data.error || 'unknown'}`, 'error');
+      sb.disabled = false; sb.classList.remove('is-progress'); sb.textContent = label;
       return;
     }
-    const newId = data['編號'] || data.mission || '';
+    const newId = data['編號'] || data.mission || _editId || '';
     const warns = Array.isArray(data.warnings) ? data.warnings : [];
     if (warns.length) {
-      toast(`已新增：${newId}（部分欄位因試算表資料驗證被略過：${warns.join('・')}，請於試算表設定）`, 'error');
+      toast(`已${label}：${newId}（部分欄位因試算表資料驗證被略過：${warns.join('・')}，請於試算表設定）`, 'error');
     } else {
-      toast(`已新增：${newId}`, 'success');
+      toast(`已${label}：${newId}`, 'success');
     }
     closeAddModal();
     await loadFromSheet(); // 継承列の都合で再読込して確実に反映
   } catch (e) {
     toast(`網路錯誤：${e.message}`, 'error');
-    sb.disabled = false; sb.classList.remove('is-progress'); sb.textContent = '新增';
+    sb.disabled = false; sb.classList.remove('is-progress'); sb.textContent = label;
   }
 }
 document.addEventListener('DOMContentLoaded', () => {
@@ -3359,7 +3457,7 @@ function simpleRow(r, opts) {
     h += opts.extraCellAfterDept;
   }
   if (opts.showOwner !== false) {
-    h += `<td>${escapeHtml(owner)}</td>`;
+    h += `<td>${personChipsHtml(owner)}</td>`;
   }
   if (opts.showRemark !== false) {
     // 一覧性優先で 1 行省略表示。Mission 行はクリックで Mission進度タブの該当へジャンプ
@@ -3425,7 +3523,7 @@ function missionEditRow(r, opts) {
   // 處 / 組 / 擔當（継承情報・末尾）
   h += `<td class="dept ${deptColorClass(dept)}">${escapeHtml(dept)}</td>`;
   h += `<td class="dept">${escapeHtml(grp)}</td>`;
-  h += `<td class="dept">${escapeHtml(owner)}</td>`;
+  h += `<td class="dept">${personChipsHtml(owner)}</td>`;
   h += '</tr>';
   return h;
 }
@@ -3891,6 +3989,7 @@ function renderTabF() {
 }
 
 function renderAll() {
+  _personDeptMap = buildPersonDeptMap(); // 人物チップ配色キャッシュを更新
   renderTableA();
   renderTableB();
   renderTableC();

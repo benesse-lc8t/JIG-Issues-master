@@ -36,7 +36,7 @@
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 // 再公開が反映されたか確認するための目印。doGet が返す。変更のたびに上げる。
-const CODE_VERSION = 'gs-2026-05-31-addrow4';
+const CODE_VERSION = 'gs-2026-05-31-edit1';
 
 const STATUS_VALUES = ['未開始', '策劃中', '需確認', '進行中', '結案'];
 const STATUS_COLORS = {
@@ -129,12 +129,15 @@ function doPost(e) {
       return _writeJson({ ok: false, error: 'forbidden' });
     }
 
-    // 追加アクション（行を append）。action 無しは従来どおりの更新（既存行）。
+    // 追加／編集アクション。action 無しは従来どおりの更新（狀態/進度ログ等）。
     const action = String(data.action || '').trim();
-    if (action === 'addMission' || action === 'addIssue') {
+    if (action === 'addMission' || action === 'addIssue' || action === 'updateMission' || action === 'updateIssue') {
       const ssA = _getSpreadsheet();
       if (!ssA) return _writeJson({ ok: false, error: 'no_spreadsheet', hint: 'Set SHEET_ID in the script.' });
-      return action === 'addMission' ? _handleAddMission(ssA, data) : _handleAddIssue(ssA, data);
+      if (action === 'addMission')    return _handleAddMission(ssA, data);
+      if (action === 'addIssue')      return _handleAddIssue(ssA, data);
+      if (action === 'updateMission') return _handleUpdate(ssA, data, MISSION_SHEET_FOR_WRITE);
+      return _handleUpdate(ssA, data, ISSUE_SHEET_FOR_WRITE);
     }
 
     const missionId = String(data.mission || '').trim();
@@ -395,6 +398,57 @@ function _handleAddMission(ss, data) {
   SpreadsheetApp.flush();
   console.log('  → addMission ok:', newId, 'row', r.row);
   return _writeJson({ ok: true, action: 'addMission', mission: newId, '編號': newId, row: r.row, parent: parent, warnings: r.rejected });
+}
+
+// 既存行（編號で特定）の指定フィールドを更新。数式列は触らず、入力規則違反はスキップ。
+function _updateRowByHeaders(sheet, rowIdx, valueMap) {
+  const lastCol = sheet.getLastColumn();
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => String(h).trim());
+  const colOf = name => headers.indexOf(name);
+  const changed = [], skipped = [], rejected = [];
+  Object.keys(valueMap).forEach(name => {
+    const ci = colOf(name);
+    if (ci < 0) return;
+    const cell = sheet.getRange(rowIdx, ci + 1);
+    if (cell.getFormula()) { skipped.push(name); return; } // 数式列は上書きしない
+    try {
+      cell.setValue(valueMap[name]);
+      SpreadsheetApp.flush(); // 入力規則違反はここで発火 → catch
+      changed.push(name);
+    } catch (e) {
+      rejected.push(name); // 既存値はそのまま（クリアしない）
+      console.log('  _updateRow rejected on', name, ':', String(e && e.message || e));
+    }
+  });
+  return { changed: changed, skipped: skipped, rejected: rejected };
+}
+
+// updateMission / updateIssue 共通。編號で行を特定し、許可フィールドのみ反映。
+// 編號・親編號・進度ログは対象外（編號は不変、進度は専用ログ経路）。
+function _handleUpdate(ss, data, sheetName) {
+  const id = String(data['編號'] || data.mission || '').trim();
+  if (!id) return _writeJson({ ok: false, error: 'id_required' });
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return _writeJson({ ok: false, error: 'sheet_not_found', sheetName: sheetName });
+  const last = sheet.getLastRow();
+  if (last < 2) return _writeJson({ ok: false, error: 'no_data_rows' });
+  const ids = sheet.getRange(2, 1, last - 1, 1).getValues();
+  let rowIdx = -1;
+  for (let i = 0; i < ids.length; i++) { if (String(ids[i][0]).trim() === id) { rowIdx = i + 2; break; } }
+  if (rowIdx < 0) return _writeJson({ ok: false, error: 'not_found', id: id });
+
+  const status = String(data['狀態'] || '').trim();
+  if (status && !ALLOWED_STATUS.has(status)) return _writeJson({ ok: false, error: 'invalid_status', value: status });
+
+  const vmap = {};
+  ['Issue', 'Mission', '擔當', '戰略負責人', '處', '組', '狀態', 'Confluence URL'].forEach(k => {
+    if (Object.prototype.hasOwnProperty.call(data, k)) vmap[k] = String(data[k]);
+  });
+  vmap['更新日'] = new Date();
+  const r = _updateRowByHeaders(sheet, rowIdx, vmap);
+  SpreadsheetApp.flush();
+  console.log('  → ' + (data.action || 'update') + ' ok:', id, 'row', rowIdx, 'changed', r.changed.join(','));
+  return _writeJson({ ok: true, action: data.action, '編號': id, mission: id, row: rowIdx, changed: r.changed, warnings: r.rejected });
 }
 
 function _handleAddIssue(ss, data) {

@@ -5,6 +5,16 @@
 
 ---
 
+## v0.28.0 — 2026-05-31
+
+**既存 Issue／Mission をダッシュボードから編集・一覧の人物をチップ表示**
+
+- **行の ✎ で編集**：Tab A の各行（Issue／Mission）に ✎ ボタン（ホバーで表示）。追加モーダルを**追加／編集 兼用**にし、該当行を事前入力して開く。種別トグルは編集時は隠す。
+- **編集できる項目**：名称（Issue名／Mission名）・**擔當／戰略負責人（チップピッカー：複数選択・×削除・戰略負責人は4名限定）**・狀態・Issue の 處／組（連動）・Confluence URL。**編號は変更不可**（表示のみ・グレー）。Mission の親 Issue も固定。
+- **一覧の `擔當`／`戰略負責人` を處カラーのチップ表示**に（`personChipsHtml`／`buildPersonDeptMap`、renderAll でキャッシュ更新）。短縮名でも行の出現から處を推定して配色。Tab A／Tab C／Tab D・E に適用。
+- Apps Script：`doPost` に **`updateMission`／`updateIssue`** を追加（編號で行特定 → 許可フィールドのみ反映、数式列は触らず・入力規則違反はスキップして warnings）。`_updateRowByHeaders`／`_handleUpdate`。進度ログ・編號・親編號は対象外。`codeVersion=gs-2026-05-31-edit1`。
+- **要再公開**：`setup-sheet.gs` 変更のため Apps Script を同一 URL で再デプロイ。`codeVersion` が `edit1` であることを確認。
+
 ## v0.27.4 — 2026-05-31
 
 **新增ボタンの処理中表示を進行バーに**
