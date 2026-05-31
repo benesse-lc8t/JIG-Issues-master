@@ -342,7 +342,9 @@
   .simple-table td.conf-icon a { display: inline-block; opacity: 0.85; transition: opacity 0.15s; margin: 0 2px; }
   .simple-table td.conf-icon a:hover { opacity: 1; }
   .simple-table td.conf-icon img { width: 14px; height: 14px; vertical-align: middle; }
-  .simple-table td.conf-icon .conf-add-hint { color: var(--g-blue); font-weight: 700; opacity: 0.55; }
+  .simple-table td.conf-icon .conf-add-hint { color: var(--g-blue); font-weight: 700; opacity: 0.55; margin-right: 2px; }
+  .simple-table td.conf-icon a.conf-inherited { opacity: 0.4; filter: grayscale(0.6); }
+  .simple-table td.conf-icon a.conf-inherited:hover { opacity: 0.75; filter: none; }
   /* Confluence URL 貼り付け編集 UI */
   .simple-table td.conf-editing { padding: 4px; text-align: left; white-space: normal; }
   .conf-edit { display: flex; flex-direction: column; gap: 4px; min-width: 220px; }
@@ -797,9 +799,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.13.0';
+const APP_VERSION = '0.13.1';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'Mission進度タブ：Confluence URL を貼り付け編集（複数 URL・＋ボタン）対応、favicon を URL ドメインから自動導出、ヘッダー中央ぞろえ、Mission進度 列を既定で最大化。※保存有効化には Apps Script の再デプロイが必要。';
+const APP_NOTE  = 'Confluence URL の親 Issue 継承と Mission 自身の編集が衝突する問題を修正。Tab C は Mission 自身の URL のみ編集し、継承分は薄い参照リンクで併記。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1064,15 +1066,21 @@ function confluenceCell(pageName, url) {
   return `<td class="conf">${inner}</td>`;
 }
 
-// Tab C 専用：Confluence URL セル（複数 URL を favicon リンクで表示。クリックで貼り付け編集）
-function confEditCell(rawUrls, missionId, isMission) {
-  const urls = parseConfUrls(rawUrls);
+// Tab C 専用：Confluence URL セル（Mission 自身の複数 URL を favicon リンクで表示。クリックで貼り付け編集）
+// inheritedUrl：自身が未設定で親 Issue から継承している URL（薄く参照表示。編集対象ではない）
+function confEditCell(ownRaw, inheritedUrl, missionId, isMission) {
+  const urls = parseConfUrls(ownRaw);
   let icons = urls.map(u =>
     `<a href="${escapeAttr(u)}" target="_blank" rel="noopener" title="${escapeAttr(u)}"><img src="${escapeAttr(faviconFor(u))}" alt="" onerror="this.src='${CONF_FAVICON}'"></a>`
   ).join('');
-  if (!icons) icons = '<span class="conf-add-hint">＋</span>';
-  if (!isMission) return `<td class="conf-icon">${icons}</td>`;
-  return `<td class="conf-icon cell-editable" data-edit="conf" data-mission="${escapeAttr(missionId)}" title="點擊貼上 Confluence 連結">${icons}</td>`;
+  // 継承リンク（自身が空のとき）は薄い参照アイコンとして併記
+  let inheritedHtml = '';
+  if (!icons && inheritedUrl) {
+    inheritedHtml = `<a class="conf-inherited" href="${escapeAttr(inheritedUrl)}" target="_blank" rel="noopener" title="繼承自上層 Issue 的頁面（非 Mission 自身）：${escapeAttr(inheritedUrl)}"><img src="${escapeAttr(faviconFor(inheritedUrl))}" alt="" onerror="this.src='${CONF_FAVICON}'"></a>`;
+  }
+  if (!isMission) return `<td class="conf-icon">${icons || inheritedHtml}</td>`;
+  const body = icons || `<span class="conf-add-hint">＋</span>` + inheritedHtml;
+  return `<td class="conf-icon cell-editable" data-edit="conf" data-mission="${escapeAttr(missionId)}" title="點擊貼上 Confluence 連結">${body}</td>`;
 }
 
 // Issue + Task 階層を組み立てる：Issue配下に親編號が一致するTaskを纏める
@@ -1376,7 +1384,17 @@ function applyLocalEdit(missionId, changes) {
   if (changes['狀態']    !== undefined) row['狀態']        = changes['狀態'];
   if (changes['備註']    !== undefined) row['Mission進度'] = changes['備註'];
   if (changes['更新日']  !== undefined) row['更新日']     = changes['更新日'];
-  if (changes['Confluence URL'] !== undefined) row['Confluence URL'] = changes['Confluence URL'];
+  if (changes['Confluence URL'] !== undefined) {
+    const own = changes['Confluence URL'];
+    row['Confluence URL自身'] = own;
+    // 実効 URL を再計算：自身が空なら親 Issue から継承
+    let eff = own;
+    if (!String(own).trim()) {
+      const p = issueData.find(x => !isMissionDatum(x) && (x['編號']||'').trim() === (row['親編號']||'').trim());
+      eff = (p && p['Confluence URL']) || '';
+    }
+    row['Confluence URL'] = eff;
+  }
 }
 
 // セル保存後の見た目フィードバック
@@ -1517,7 +1535,8 @@ function startDateEdit(td, missionId) {
 // Confluence URL の貼り付け編集（複数 URL・＋ボタンで追加）
 function startConfEdit(td, missionId) {
   const row = issueData.find(r => (r['編號']||'').trim() === missionId);
-  const currentRaw = row ? (row['Confluence URL'] || '') : '';
+  // 編集対象は Mission 自身の URL（親からの継承分は含めない）
+  const currentRaw = row ? (row['Confluence URL自身'] || '') : '';
   const urls = parseConfUrls(currentRaw);
   if (urls.length === 0) urls.push('');
 
@@ -1732,8 +1751,11 @@ function missionEditRow(r, opts) {
   }
   // 更新（點擊編輯）
   h += freshnessCell(r['更新日'], isMission ? { editable: true, missionId: num } : null);
-  // 🔗 Confluence（複数 URL 対応・貼り付け編集可）
-  h += confEditCell(r['Confluence URL'], num, isMission);
+  // 🔗 Confluence（複数 URL 対応・貼り付け編集可）。編集対象は Mission 自身の URL。
+  // 自身が未設定で親 Issue から継承している URL は、薄い参照リンクとして併記する。
+  const ownConf = r['Confluence URL自身'] || '';
+  const inheritedConf = (parseConfUrls(ownConf).length === 0 && (r['Confluence URL']||'').trim()) ? (r['Confluence URL']||'').trim() : '';
+  h += confEditCell(ownConf, inheritedConf, num, isMission);
   // 處 / 組 / 擔當（継承情報・末尾）
   h += `<td class="dept ${deptColorClass(dept)}">${escapeHtml(dept)}</td>`;
   h += `<td class="dept">${escapeHtml(grp)}</td>`;
@@ -2324,6 +2346,9 @@ async function loadMissionsAndMerge(issues) {
           '會議時間':   (parentRow && parentRow['會議時間']) || '',
           '種別':       'Mission',
           '親編號':     parent,
+          // Mission 自身の URL（継承しない生値）。Tab C の編集対象はこちら。
+          'Confluence URL自身': get('Confluence URL'),
+          // 表示用の実効 URL（自身が空なら親 Issue から継承）。A/B/D/E の読み取り表示はこちら。
           'Confluence URL': get('Confluence URL') || (parentRow && parentRow['Confluence URL']) || '',
           '狀態':        get('狀態'),
           'Mission進度': get('Mission進度'),
