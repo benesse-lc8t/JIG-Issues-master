@@ -580,6 +580,37 @@
   .digest-window .dw-body { padding: 6px 18px 14px; overflow-y: auto; font-size: 14px; line-height: 1.75; color: #202124; white-space: pre-wrap; word-break: break-word; }
   .digest-window .dw-foot { padding: 8px 18px; border-top: 1px solid #F1F3F4; font-size: 10px; color: #9AA0A6; flex-shrink: 0; }
 
+  /* 汎用：アイコン集約＋件数バッジ（Tab A の .conf / 他タブの .conf-icon 共通） */
+  .conf-multi { position: relative; display: inline-block; line-height: 0; }
+  .conf-multi.conf-multi-btn { cursor: pointer; }
+  .conf-multi .conf-badge {
+    position: absolute; top: -5px; right: -7px; min-width: 13px; height: 13px; padding: 0 3px;
+    box-sizing: border-box; background: var(--g-blue); color: #fff; border-radius: 7px;
+    font-size: 8px; font-weight: 700; line-height: 13px; text-align: center; box-shadow: 0 0 0 1.5px #fff;
+  }
+
+  /* Confluence リンク一覧モーダル */
+  .conf-links-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.32); z-index: 920;
+    align-items: center; justify-content: center;
+  }
+  .conf-links-overlay.open { display: flex; }
+  .conf-links-modal {
+    background: #fff; border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+    width: min(380px, 90vw); max-height: 70vh; display: flex; flex-direction: column; overflow: hidden;
+    animation: modalIn 0.14s ease-out;
+  }
+  .conf-links-head { padding: 12px 16px; border-bottom: 1px solid #E8EAED; display: flex; align-items: center; justify-content: space-between; }
+  .conf-links-title { font-size: 12px; font-weight: 700; color: #202124; }
+  .conf-links-close { width: 26px; height: 26px; border: none; background: none; cursor: pointer; border-radius: 50%; font-size: 17px; color: #5F6368; display: flex; align-items: center; justify-content: center; }
+  .conf-links-close:hover { background: #F1F3F4; }
+  .conf-links-list { padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+  .conf-link-row { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; text-decoration: none; color: #202124; transition: background 0.1s; }
+  .conf-link-row:hover { background: #E8F0FE; }
+  .conf-link-row img { width: 16px; height: 16px; flex-shrink: 0; }
+  .conf-link-row .conf-link-label { flex: 1; font-size: 12px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .conf-link-row .conf-link-open { flex-shrink: 0; color: var(--g-blue); font-size: 13px; font-weight: 700; }
+
   /* トースト通知 */
   .toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; pointer-events: none; }
   .toast { padding: 10px 16px; border-radius: 6px; font-size: 12px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: toast-in 0.2s ease-out; max-width: 320px; }
@@ -701,6 +732,17 @@
       <button class="remark-modal-save" id="remarkModalSaveBtn">儲存</button>
       <button class="remark-modal-edit" id="remarkModalEditBtn" title="切換到 Mission進度 頁面編輯">✎ 編輯</button>
     </div>
+  </div>
+</div>
+
+<!-- Confluence リンク一覧モーダル（複数リンクのセルをクリックしたとき） -->
+<div class="conf-links-overlay" id="confLinksOverlay" role="dialog" aria-modal="true">
+  <div class="conf-links-modal" id="confLinksModal">
+    <div class="conf-links-head">
+      <span class="conf-links-title">Confluence 連結</span>
+      <button class="conf-links-close" id="confLinksClose" aria-label="閉じる">×</button>
+    </div>
+    <div class="conf-links-list" id="confLinksList"></div>
   </div>
 </div>
 
@@ -1054,9 +1096,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.21.0';
+const APP_VERSION = '0.22.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'Mission進度 セルにホバーすると画面中央に大きく本文を表示する「ダイジェストテキストウィンドウ」を追加（約350ms滞留で表示・操作不可・クリックは従来どおり表示モーダル）。';
+const APP_NOTE  = 'Issue&Mission の Confluence 列をアイコンのみ表示に（テキスト撤去）。複数リンクはクリックで小さなリンク一覧モーダルを開く（単一は直接リンク）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1413,20 +1455,11 @@ function confLabel(url) {
 function confLabelLines(urls) {
   return urls.map(u => { const l = confLabel(u); return (l.space ? `[${l.space}] ` : '') + l.title; }).join('\n');
 }
-function confluenceCell(pageName, urlRaw) {
+function confluenceCell(pageName, urlRaw, id) {
+  // アイコンのみ表示（テキストなし）。単一→直接リンク、複数→クリックでリンク一覧モーダル
   const entries = parseConfEntries(urlRaw);
-  const name = (pageName || '').trim();
-  if (!entries.length) {
-    if (!name) return '<td class="conf"></td>';
-    return `<td class="conf"><span class="conf-text" title="${escapeAttr(name)}">${escapeHtml(name)}</span></td>`;
-  }
-  // 複数リンク：先頭にリンク＋ラベル、2 件以上は +N バッジ。tooltip に全件のラベル
-  const first = entries[0];
-  const label = confEntryLabel(first);
-  const icon  = `<img src="${escapeAttr(faviconFor(first.url))}" alt="Confluence" onerror="this.onerror=null;this.src='${CONF_FAVICON}'">`;
-  const badge = entries.length > 1 ? `<span class="conf-count">+${entries.length - 1}</span>` : '';
-  const tip   = confLabelLinesFromRaw(urlRaw);
-  return `<td class="conf"><a href="${escapeAttr(first.url)}" target="_blank" rel="noopener" title="${escapeAttr(tip)}">${icon}<span class="conf-text">${escapeHtml(label)}</span>${badge}</a></td>`;
+  if (!entries.length) return '<td class="conf"></td>';
+  return `<td class="conf">${confIconInner(entries, id)}</td>`;
 }
 
 // Tab C 専用：Confluence URL セル（Mission 自身の複数 URL のみを favicon リンクで表示。クリックで貼り付け編集）
@@ -1439,12 +1472,26 @@ function confIconHtml(urls) {
   return `<span class="conf-multi">${img}${badge}</span>`;
 }
 
+// アイコンのみ表示（テキストなし）。単一は直接リンク、複数はクリックでリンク一覧モーダル。
+// id は 編號（モーダルが issueData から実効 Confluence URL を引くため）。
+function confIconInner(entries, id) {
+  if (!entries.length) return '';
+  const first = entries[0];
+  const img = `<img src="${escapeAttr(faviconFor(first.url))}" alt="" onerror="this.onerror=null;this.src='${CONF_FAVICON}'">`;
+  if (entries.length === 1) {
+    return `<a href="${escapeAttr(first.url)}" target="_blank" rel="noopener" title="${escapeAttr(confEntryLabel(first))}">${img}</a>`;
+  }
+  const tip = entries.map(confEntryLabel).join('\n');
+  return `<span class="conf-multi conf-multi-btn" title="${escapeAttr(tip)}" onclick="openConfLinks('${escapeAttr(id)}')"><img src="${escapeAttr(faviconFor(first.url))}" alt="" onerror="this.onerror=null;this.src='${CONF_FAVICON}'"><span class="conf-badge">${entries.length}</span></span>`;
+}
+
 function confEditCell(ownRaw, missionId, isMission) {
   const urls = parseConfUrls(ownRaw);
   if (!isMission) {
-    // 他タブ：単一アイコン＋件数バッジ。先頭 URL へ直接リンク
-    if (!urls.length) return `<td class="conf-icon"></td>`;
-    return `<td class="conf-icon"><a href="${escapeAttr(urls[0])}" target="_blank" rel="noopener" title="${escapeAttr(confLabelLinesFromRaw(ownRaw))}">${confIconHtml(urls)}</a></td>`;
+    // 他タブ：アイコンのみ。単一→直接リンク、複数→クリックでリンク一覧モーダル
+    const entries = parseConfEntries(ownRaw);
+    if (!entries.length) return `<td class="conf-icon"></td>`;
+    return `<td class="conf-icon">${confIconInner(entries, missionId)}</td>`;
   }
   const body = urls.length ? confIconHtml(urls) : `<span class="conf-add-hint">＋</span>`;
   const titleTxt = urls.length ? `${confLabelLinesFromRaw(ownRaw)}\n（點擊編輯・開啟）` : '點擊貼上 Confluence 連結';
@@ -1536,7 +1583,7 @@ function renderRow(r, opts) {
   }
   h += `<td class="dept">${escapeHtml(owner)}</td>`;                                       // 5 擔當
   h += `<td class="dept">${escapeHtml(r['戰略負責人'])}</td>`;                             // 6 戰略負責人
-  h += confluenceCell(r['管理頁面'], r['Confluence URL']);                                  // 7 Confluence
+  h += confluenceCell(r['管理頁面'], r['Confluence URL'], num);                            // 7 Confluence（アイコンのみ・複数はモーダル）
   h += `<td class="pc mtg-col">${escapeHtml(r['確認會議'])}</td>`;                          // 8 確認會議
   h += `<td class="pc mtg-col">${escapeHtml(r['會議時間'])}</td>`;                          // 9 會議時間
   h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;                          // 10 狀態
@@ -2197,6 +2244,38 @@ function startRemarkEdit(td, missionId) {
   // クリックで表示モーダルを開く際はプレビューを消す。スクロールでも消す
   document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.memo-jump[data-mid]')) hide(); });
   window.addEventListener('scroll', hide, true);
+})();
+
+// ===== Confluence リンク一覧モーダル（複数リンクのセルをクリック）=====
+(function () {
+  const overlay = () => document.getElementById('confLinksOverlay');
+  function close() { overlay().classList.remove('open'); }
+  // id（編號）から実効 Confluence URL を引き、リンク一覧を表示
+  window.openConfLinks = function (id) {
+    const row = issueData.find(r => (r['編號'] || '').trim() === String(id).trim());
+    const raw = row ? (row['Confluence URL'] || '') : '';
+    const entries = parseConfEntries(raw);
+    const list = document.getElementById('confLinksList');
+    list.innerHTML = entries.map(e => {
+      const label = confEntryLabel(e);
+      return `<a class="conf-link-row" href="${escapeAttr(e.url)}" target="_blank" rel="noopener">` +
+             `<img src="${escapeAttr(faviconFor(e.url))}" alt="" onerror="this.onerror=null;this.src='${CONF_FAVICON}'">` +
+             `<span class="conf-link-label" title="${escapeAttr(label)}">${escapeHtml(label)}</span>` +
+             `<span class="conf-link-open">↗</span></a>`;
+    }).join('');
+    overlay().classList.add('open');
+  };
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('confLinksClose').addEventListener('click', close);
+    overlay().addEventListener('mousedown', e => { if (e.target === overlay()) close(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && overlay().classList.contains('open')) { e.preventDefault(); close(); }
+    });
+    // リンクを開いたら閉じる
+    document.getElementById('confLinksList').addEventListener('click', e => {
+      if (e.target.closest('.conf-link-row')) close();
+    });
+  });
 })();
 
 function startDateEdit(td, missionId) {
