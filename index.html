@@ -463,7 +463,9 @@
   /* 名前ピッカーのトリガ：選択（単数/複数）をタグで表示 */
   .np-trigger.has-sel { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; background: #fff !important; border-color: #DADCE0 !important; padding-top: 5px; padding-bottom: 5px; }
   .np-trigger .np-ph { color: #BCC0C6; font-weight: 500; }
-  .np-trigger .np-tag { font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 10px; white-space: nowrap; line-height: 1.7; }
+  .np-trigger .np-tag { font-size: 11px; font-weight: 600; padding: 1px 6px 1px 8px; border-radius: 10px; white-space: nowrap; line-height: 1.7; display: inline-flex; align-items: center; }
+  .np-trigger .np-x { margin-left: 4px; cursor: pointer; font-weight: 700; opacity: 0.55; font-size: 13px; line-height: 1; }
+  .np-trigger .np-x:hover { opacity: 1; }
   /* 新增ボタンのローディング・スピナー（押下＝処理中を明示） */
   .remark-modal-save.is-loading { position: relative; color: transparent !important; pointer-events: none; }
   .remark-modal-save.is-loading::after {
@@ -917,7 +919,7 @@
           <div class="add-field">
             <label>戰略負責人</label>
             <div class="np-wrap">
-              <button type="button" class="author-trigger np-trigger is-placeholder" id="addMLeadTrigger" data-placeholder="留空則繼承親 Issue"></button>
+              <button type="button" class="author-trigger np-trigger is-placeholder" id="addMLeadTrigger" data-placeholder="留空繼承（可複選）"></button>
               <div class="author-menu np-menu" id="addMLeadMenu">
                 <input type="text" class="author-menu-search" id="addMLeadSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
                 <div class="author-menu-chips" id="addMLeadChips"></div>
@@ -952,7 +954,7 @@
           <div class="add-field">
             <label>戰略負責人</label>
             <div class="np-wrap">
-              <button type="button" class="author-trigger np-trigger is-placeholder" id="addILeadTrigger" data-placeholder="選擇負責人"></button>
+              <button type="button" class="author-trigger np-trigger is-placeholder" id="addILeadTrigger" data-placeholder="選擇負責人（可複選）"></button>
               <div class="author-menu np-menu" id="addILeadMenu">
                 <input type="text" class="author-menu-search" id="addILeadSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
                 <div class="author-menu-chips" id="addILeadChips"></div>
@@ -1343,9 +1345,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.27.1';
+const APP_VERSION = '0.27.2';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '擔當の複数選択に対応：名前チップピッカーを複数選択モード化し、擔當を「/」区切りで複数名保存（データ層は従来から複数対応・splitPersons）。戰略負責人は単一のまま。Apps Script 変更なし。';
+const APP_NOTE  = '戰略負責人も複数選択に対応（擔當と同様 / 区切り保存）。トリガーの選択タグに「×」を追加し、個別削除できるように。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2198,8 +2200,23 @@ function _refreshNamePickerTrigger(prefix) {
   trg.classList.remove('is-placeholder'); trg.classList.add('has-sel');
   trg.innerHTML = sel.map(n => {
     const c = _namePickColor(n, data);
-    return `<span class="np-tag" style="background:${c.bg};color:${c.fg}">${escapeHtml(n)}</span>`;
+    return `<span class="np-tag" style="background:${c.bg};color:${c.fg}">${escapeHtml(n)}<span class="np-x" role="button" title="移除" data-name="${escapeAttr(n)}">×</span></span>`;
   }).join('');
+  // タグの「×」で個別削除（トリガのメニュー開閉は発火させない）
+  trg.querySelectorAll('.np-x').forEach(x => {
+    x.addEventListener('click', ev => {
+      ev.stopPropagation();
+      const arr = window._namePickSel[prefix] || [];
+      const i = arr.indexOf(x.dataset.name);
+      if (i >= 0) arr.splice(i, 1);
+      _refreshNamePickerTrigger(prefix);
+      const menu = document.getElementById(prefix + 'Menu');
+      if (menu && menu.classList.contains('open')) {
+        const s = document.getElementById(prefix + 'Search');
+        renderNamePickerChips(prefix, s ? s.value : '');
+      }
+    });
+  });
 }
 function renderNamePickerChips(prefix, filter) {
   const wrap = document.getElementById(prefix + 'Chips');
@@ -2304,10 +2321,10 @@ function openAddModal(kind) {
   // テキスト入力リセット
   ['addMName','addIId','addIName','addConf'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
   document.getElementById('addIIdWarn').textContent = '';
-  // 名前ピッカー初期化（擔當は複数選択可・戰略負責人は単一）
+  // 名前ピッカー初期化（擔當・戰略負責人とも複数選択可）
   resetNamePicker('addMOwner', '', true);
-  resetNamePicker('addMLead', '', false);
-  resetNamePicker('addILead', '', false);
+  resetNamePicker('addMLead', '', true);
+  resetNamePicker('addILead', '', true);
   _buildAddStatusBtns();
   _setAddKind(kind || 'mission');
   _refreshAddMIdPreview();
