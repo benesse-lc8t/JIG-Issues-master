@@ -1186,7 +1186,7 @@
 <!-- ===== D：詩雅（Mission 専用） ===== -->
 <div class="panel" id="panel-D">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    詩雅 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Issue／Mission</b> 清單 · 上方為「需對應」，其下依<b>處</b>分組 · ✎ 可直接編輯
+    詩雅 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單（關聯 Issue 數見上方摘要）· 上方為「需對應」，其下依<b>處</b>分組 · ✎ 可直接編輯
   </div>
   <div class="ctrl-bar">
     <select id="filterDeptD"><option value="">處：全部</option></select>
@@ -1240,7 +1240,7 @@
 <!-- ===== E：育菱（Mission 専用） ===== -->
 <div class="panel" id="panel-E">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    育菱 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Issue／Mission</b> 清單 · 上方為「需對應」，其下依<b>處</b>分組 · ✎ 可直接編輯
+    育菱 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單（關聯 Issue 數見上方摘要）· 上方為「需對應」，其下依<b>處</b>分組 · ✎ 可直接編輯
   </div>
   <div class="ctrl-bar">
     <select id="filterDeptE"><option value="">處：全部</option></select>
@@ -1373,9 +1373,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.29.1';
+const APP_VERSION = '0.29.2';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '詩雅／育菱タブ：處グループ＋Issue 混在で分かりにくくなる「親Issue 省略表示」を廃止し、親Issue を毎行フル表示に。Apps Script 変更なし。';
+const APP_NOTE  = '詩雅／育菱タブ：本文は Mission のみ表示に戻す（Issue 混在をやめ紛れを解消）。關わる Issue 件数はサマリーに「關聯 Issue N」として残す。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -3869,7 +3869,7 @@ function renderPersonView(panelKey, personName) {
     if (!isOwner && !isStrategic) return;
     decorated.push({ row: r, isOwner, isStrategic, isMission: isMissionDatum(r) });
   });
-  const totalAll = decorated.length;
+  const totalMissions = decorated.filter(d => d.isMission).length;
 
   const filtered = decorated.filter(({ row: r, isOwner, isStrategic }) => {
     if (!showClosed && isClosedStatus(r['狀態'])) return false;
@@ -3883,14 +3883,16 @@ function renderPersonView(panelKey, personName) {
     return true;
   });
 
-  // サマリー集計
-  let cProg = 0, cNeed = 0, cStale = 0, cIssue = 0, cMission = 0;
-  filtered.forEach(({ row: r, isMission }) => {
+  // 本文は Mission のみ表示。Issue は件数だけサマリーに出す。
+  const missionsF = filtered.filter(d => d.isMission);
+  const issueCountF = filtered.length - missionsF.length; // 關わる Issue 数（フィルタ後）
+  // サマリー集計（表示対象＝Mission ベース）
+  let cProg = 0, cNeed = 0, cStale = 0;
+  missionsF.forEach(({ row: r }) => {
     const st = (r['狀態']||'').trim();
     if (st === '進行中') cProg++;
     if (st === '需確認') cNeed++;
     const d = stalenessDays(r); if (d != null && d > 7) cStale++;
-    if (isMission) cMission++; else cIssue++;
   });
 
   // 1 行の HTML（✎編集・狀態クリック編集つき）
@@ -3907,23 +3909,23 @@ function renderPersonView(panelKey, personName) {
   };
 
   let html = '';
-  html += `<tr class="sec-row summary-row"><th colspan="10">${escapeHtml(personName)}　合計 ${filtered.length} 筆（Issue ${cIssue}／Mission ${cMission}）`
+  html += `<tr class="sec-row summary-row"><th colspan="10">${escapeHtml(personName)}　Mission ${missionsF.length} 筆 · 關聯 Issue ${issueCountF}`
         + `<span class="sum-badge sum-prog">進行中 ${cProg}</span>`
         + `<span class="sum-badge sum-need">需確認 ${cNeed}</span>`
         + `<span class="sum-badge sum-stale">停滯&gt;7天 ${cStale}</span></th></tr>`;
 
-  if (!filtered.length) {
-    html += `<tr><td colspan="10" style="text-align:center; padding:30px; color:#999;">符合條件的項目沒有</td></tr>`;
+  if (!missionsF.length) {
+    html += `<tr><td colspan="10" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>`;
     tbody.innerHTML = html;
     const ce0 = document.getElementById(`filterCount${panelKey}`);
-    if (ce0) ce0.textContent = (fDept || fGroup || fRole || fStatus || fStale) ? `顯示 0 / ${totalAll} 筆` : `${totalAll} 筆`;
+    if (ce0) ce0.textContent = (fDept || fGroup || fRole || fStatus || fStale) ? `顯示 0 / ${totalMissions} 筆` : `${totalMissions} 筆`;
     return;
   }
 
-  // 要對應（需確認 もしくは 停滞>7日）を先頭に
-  const needAction = filtered.filter(({ row: r }) => (r['狀態']||'').trim() === '需確認' || ((stalenessDays(r) ?? -1) > 7));
+  // 要對應（需確認 もしくは 停滞>7日）を先頭に（Mission のみ）
+  const needAction = missionsF.filter(({ row: r }) => (r['狀態']||'').trim() === '需確認' || ((stalenessDays(r) ?? -1) > 7));
   const needSet = new Set(needAction.map(d => d.row));
-  const rest = filtered.filter(d => !needSet.has(d.row));
+  const rest = missionsF.filter(d => !needSet.has(d.row));
 
   if (needAction.length) {
     needAction.sort((a, b) => ((stalenessDays(b.row) ?? -1) - (stalenessDays(a.row) ?? -1)));
@@ -3951,8 +3953,8 @@ function renderPersonView(panelKey, personName) {
   const countEl = document.getElementById(`filterCount${panelKey}`);
   if (countEl) {
     countEl.textContent = (fDept || fGroup || fRole || fStatus || fStale)
-      ? `顯示 ${filtered.length} / ${totalAll} 筆`
-      : `${totalAll} 筆`;
+      ? `顯示 ${missionsF.length} / ${totalMissions} 筆`
+      : `${totalMissions} 筆`;
   }
 }
 
