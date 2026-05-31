@@ -105,6 +105,17 @@
   table { border-collapse: collapse; width: 100%; font-size: 12px; }
   th, td { border: 1px solid var(--border); padding: 6px 8px; vertical-align: middle; line-height: 1.4; }
   th { font-weight: 700; font-size: 11px; color: #202124; background: #E8EAED; white-space: nowrap; letter-spacing: 0.02em; }
+
+  /* 列幅のドラッグ調整（DASHBOARD 以外の各タブ） */
+  table.resizable th { position: relative; }
+  table.resizable th .col-resizer {
+    position: absolute; top: 0; right: -3px; width: 7px; height: 100%;
+    cursor: col-resize; user-select: none; z-index: 5; touch-action: none;
+  }
+  table.resizable th .col-resizer:hover,
+  table.resizable th .col-resizer.dragging { background: rgba(66,133,244,0.45); }
+  table.resizable.col-resizing { cursor: col-resize; user-select: none; }
+  table.resizable.col-resizing td, table.resizable.col-resizing th { user-select: none; }
   .sec { background: var(--sec-bg); font-size: 12px; font-weight: 500; color: #5F6368; text-align: left; padding: 7px 10px; border-top: 1px solid var(--border); letter-spacing: 0.02em; }
 
   /* Group cells */
@@ -466,7 +477,7 @@
     <button type="button" class="ctrl-clear" id="clearFilterA">清除</button>
   <span class="ctrl-count" id="filterCountA"></span>
 </div>
-<table id="tableA" class="hide-mtg">
+<table id="tableA" class="hide-mtg resizable">
 <thead>
   <tr>
     <th style="width:74px;">編號</th>
@@ -516,7 +527,7 @@
     <button type="button" class="ctrl-clear" id="clearFilterB">清除</button>
     <span class="ctrl-count" id="filterCountB"></span>
   </div>
-  <table class="simple-table">
+  <table class="simple-table resizable">
     <thead>
       <tr>
         <th style="width:160px;">親 Issue</th>
@@ -565,7 +576,7 @@
     <button type="button" class="ctrl-clear" id="clearFilterC">清除</button>
     <span class="ctrl-count" id="filterCountC"></span>
   </div>
-  <table class="simple-table">
+  <table class="simple-table resizable">
     <thead>
       <tr>
         <th style="width:160px;">親 Issue</th>
@@ -619,7 +630,7 @@
     <button type="button" class="ctrl-clear" id="clearFilterD">清除</button>
     <span class="ctrl-count" id="filterCountD"></span>
   </div>
-  <table class="simple-table">
+  <table class="simple-table resizable">
     <thead>
       <tr>
         <th style="width:160px;">親 Issue</th>
@@ -673,7 +684,7 @@
     <button type="button" class="ctrl-clear" id="clearFilterE">清除</button>
     <span class="ctrl-count" id="filterCountE"></span>
   </div>
-  <table class="simple-table">
+  <table class="simple-table resizable">
     <thead>
       <tr>
         <th style="width:160px;">親 Issue</th>
@@ -774,9 +785,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.10.4';
+const APP_VERSION = '0.11.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '會議議程タブの備考列見出しを「Mission進度」に統一。冗長な説明文を削除。';
+const APP_NOTE  = 'DASHBOARD 以外の全タブで列幅をドラッグ調整できる機能を追加（各列見出しの右端をドラッグ）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2218,6 +2229,52 @@ async function loadFromSheet() {
   return false;
 }
 
+// ===== 列幅ドラッグ調整（DASHBOARD 以外の全タブ） =====
+// thead は静的 HTML（tbody のみ再描画）なので、起動時に 1 回ハンドルを付ければ十分。
+function attachColumnResizers(table) {
+  if (!table) return;
+  table.querySelectorAll('thead th').forEach(th => {
+    if (th.querySelector('.col-resizer')) return;
+    const grip = document.createElement('span');
+    grip.className = 'col-resizer';
+    grip.title = 'ドラッグで列幅を調整';
+    th.appendChild(grip);
+    const startResize = (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const isTouch = e.type === 'touchstart';
+      const startX = isTouch ? e.touches[0].pageX : e.pageX;
+      const startW = th.offsetWidth;
+      grip.classList.add('dragging');
+      table.classList.add('col-resizing');
+      const move = (ev) => {
+        if (isTouch) ev.preventDefault();
+        const x = isTouch ? ev.touches[0].pageX : ev.pageX;
+        const w = Math.max(28, startW + (x - startX));
+        th.style.width = w + 'px';
+        th.style.minWidth = w + 'px';
+        th.style.maxWidth = w + 'px';
+      };
+      const end = () => {
+        grip.classList.remove('dragging');
+        table.classList.remove('col-resizing');
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', end);
+        document.removeEventListener('touchmove', move);
+        document.removeEventListener('touchend', end);
+      };
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', end);
+      document.addEventListener('touchmove', move, { passive: false });
+      document.addEventListener('touchend', end);
+    };
+    grip.addEventListener('mousedown', startResize);
+    grip.addEventListener('touchstart', startResize, { passive: false });
+  });
+}
+function initColumnResizers() {
+  document.querySelectorAll('table.resizable').forEach(attachColumnResizers);
+}
+
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', async () => {
   // バージョンバッジを反映（デプロイ確認用）
@@ -2226,6 +2283,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     verEl.textContent = `v${APP_VERSION}`;
     verEl.title = `v${APP_VERSION} · build ${APP_BUILD}\n${APP_NOTE}`;
   }
+  // 各タブ（DASHBOARD 以外）のテーブルに列幅ドラッグ調整を付与
+  initColumnResizers();
   issueData = parseInitialTable();
   // 從內建 B/C/D 標籤擷取 編號→短縮 對照，作為雲端資料缺漏時的補值
   shortNameMap = harvestShortNames();
