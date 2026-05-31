@@ -978,7 +978,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.17.2';
+const APP_VERSION = '0.17.3';
 const APP_BUILD = '2026-05-31';
 const APP_NOTE  = 'モーダルに狀態・Mission進度・Confluence URLを統合。狀態/URLセルクリックでもモーダルが開く。親Issueラベル表示。';
 
@@ -1784,11 +1784,11 @@ function startStatusEdit(td, missionId) {
     _statusTd   = opts.statusTd   || null;
     _confTd     = opts.confTd     || null;
 
-    const row = (window.issueData || []).find(r => (r['編號']||'').trim() === _missionId);
+    const row = issueData.find(r => (r['編號']||'').trim() === _missionId);
 
     // 親 Issue 情報
     const parentNum  = row ? (row['親編號'] || '').trim() : '';
-    const parentRow  = parentNum ? (window.issueData || []).find(r => (r['編號']||'').trim() === parentNum && !isMissionDatum(r)) : null;
+    const parentRow  = parentNum ? issueData.find(r => (r['編號']||'').trim() === parentNum && !isMissionDatum(r)) : null;
     const parentName = parentRow ? (parentRow['Issue'] || '').trim() : '';
     $('remarkModalIssueNum').textContent  = parentNum;
     $('remarkModalIssueName').textContent = parentName;
