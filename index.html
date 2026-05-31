@@ -488,16 +488,15 @@
   .remark-modal-conf-list { display: flex; flex-direction: column; gap: 10px; }
   .remark-modal-conf-row { display: flex; flex-direction: column; gap: 3px; }
   .remark-modal-conf-inputline { display: flex; align-items: center; gap: 6px; }
-  .remark-modal-conf-label { display: flex; align-items: center; gap: 6px; padding-left: 2px; min-width: 0; }
-  .remark-modal-conf-label .conf-label-space {
-    flex-shrink: 0; background: #E8F0FE; color: #1A73E8; font-size: 9px; font-weight: 700;
-    padding: 1px 6px; border-radius: 6px;
+  /* リンク名入力（任意・手書きラベル）。空欄時は URL 自動抽出をプレースホルダ表示 */
+  .remark-modal-conf-name {
+    box-sizing: border-box; width: 100%; font: inherit; font-family: var(--font);
+    font-size: 12px; font-weight: 600; color: #202124;
+    border: 1.5px solid transparent; border-radius: 6px; padding: 3px 8px; outline: none; background: #F1F3F4;
+    transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
   }
-  .remark-modal-conf-label .conf-label-title {
-    font-size: 11px; font-weight: 600; color: #202124;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .remark-modal-conf-label .conf-label-empty { font-size: 10px; font-style: italic; color: #BDC1C6; }
+  .remark-modal-conf-name:focus { background: #fff; border-color: var(--g-blue); box-shadow: 0 0 0 2px rgba(26,115,232,0.16); }
+  .remark-modal-conf-name::placeholder { color: #9AA0A6; font-weight: 500; }
   .remark-modal-conf-inp {
     flex: 1; box-sizing: border-box; font: inherit; font-size: 11px; font-family: var(--font);
     border: 1.5px solid #DADCE0; border-radius: 6px; padding: 5px 8px; outline: none; color: #202124;
@@ -1008,9 +1007,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.18.1';
+const APP_VERSION = '0.19.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'Confluence URL からページ名（スペース/タイトル/アンカー）を自動抽出してラベル表示。モーダルの各 URL 上に表示、一覧 tooltip も読めるラベルに。';
+const APP_NOTE  = 'Confluence リンクに手書きの名前を付けられるように（モーダルの各 URL に名前入力）。保存形式は 名前|URL。空欄は URL 自動抽出にフォールバック。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1301,8 +1300,36 @@ function faviconFor(url) {
   catch (e) { return CONF_FAVICON; }
 }
 // Confluence URL セルの複数 URL は改行（または空白）区切りで保持する。
+// 1 セル内のリンク群を {label, url} の配列に解析。
+// 保存形式：1 行 1 リンク。`名前|URL`（名前あり）または `URL`（名前なし・後方互換）。
+function parseConfEntries(raw) {
+  return String(raw || '').split(/[\n\r]+/).map(s => s.trim()).filter(Boolean).map(line => {
+    const i = line.indexOf('|');
+    // `|` より後ろが http(s) で始まるときだけ「名前|URL」とみなす（URL 単体の誤判定を防ぐ）
+    if (i > 0) {
+      const maybeUrl = line.slice(i + 1).trim();
+      if (/^https?:\/\//i.test(maybeUrl)) return { label: line.slice(0, i).trim(), url: maybeUrl };
+    }
+    return { label: '', url: line };
+  });
+}
 function parseConfUrls(raw) {
-  return String(raw || '').split(/[\n\r]+/).map(s => s.trim()).filter(Boolean);
+  return parseConfEntries(raw).map(e => e.url).filter(Boolean);
+}
+function serializeConfEntries(entries) {
+  return entries
+    .filter(e => e.url && e.url.trim())
+    .map(e => (e.label && e.label.trim()) ? `${e.label.replace(/\|/g, ' ').trim()}|${e.url.trim()}` : e.url.trim())
+    .join('\n');
+}
+// 表示ラベル：手書き名 > URL 自動抽出
+function confEntryLabel(e) {
+  if (e.label && e.label.trim()) return e.label.trim();
+  const l = confLabel(e.url);
+  return (l.space ? `[${l.space}] ` : '') + l.title;
+}
+function confLabelLinesFromRaw(raw) {
+  return parseConfEntries(raw).map(confEntryLabel).join('\n');
 }
 function safeDecode(s) { try { return decodeURIComponent(s); } catch (_) { return s; } }
 // Confluence URL から「どのページか」を抽出（スペースキー / ページタイトル / アンカー編號）
@@ -1366,10 +1393,10 @@ function confEditCell(ownRaw, missionId, isMission) {
   if (!isMission) {
     // 他タブ：単一アイコン＋件数バッジ。先頭 URL へ直接リンク
     if (!urls.length) return `<td class="conf-icon"></td>`;
-    return `<td class="conf-icon"><a href="${escapeAttr(urls[0])}" target="_blank" rel="noopener" title="${escapeAttr(confLabelLines(urls))}">${confIconHtml(urls)}</a></td>`;
+    return `<td class="conf-icon"><a href="${escapeAttr(urls[0])}" target="_blank" rel="noopener" title="${escapeAttr(confLabelLinesFromRaw(ownRaw))}">${confIconHtml(urls)}</a></td>`;
   }
   const body = urls.length ? confIconHtml(urls) : `<span class="conf-add-hint">＋</span>`;
-  const titleTxt = urls.length ? `${confLabelLines(urls)}\n（點擊編輯・開啟）` : '點擊貼上 Confluence 連結';
+  const titleTxt = urls.length ? `${confLabelLinesFromRaw(ownRaw)}\n（點擊編輯・開啟）` : '點擊貼上 Confluence 連結';
   return `<td class="conf-icon cell-editable" data-edit="conf" data-mission="${escapeAttr(missionId)}" title="${escapeAttr(titleTxt)}">${body}</td>`;
 }
 
@@ -1801,8 +1828,15 @@ function startStatusEdit(td, missionId) {
     const active = $('remarkModalStatus').querySelector('.modal-st-btn.active');
     return active ? active.dataset.v : '';
   }
+  // 各行の「名前＋URL」を `名前|URL` 形式（改行区切り）にシリアライズ
   function confJoined() {
-    return getConfInputs().map(i => i.value.trim()).filter(Boolean).join('\n');
+    const rows = [...$('remarkModalConfList').querySelectorAll('.remark-modal-conf-row')];
+    const entries = rows.map(r => {
+      const url   = (r.querySelector('.remark-modal-conf-inp')  || {}).value || '';
+      const label = (r.querySelector('.remark-modal-conf-name') || {}).value || '';
+      return { label: label.trim(), url: url.trim() };
+    });
+    return serializeConfEntries(entries);
   }
 
   // ---- 狀態バッジ生成 ----
@@ -1823,20 +1857,22 @@ function startStatusEdit(td, missionId) {
     });
   }
 
-  // ---- Confluence URL 行を追加 ----
-  function addConfRow(val) {
+  // ---- Confluence URL 行を追加（名前＋URL）----
+  function addConfRow(entry) {
+    entry = entry || { label: '', url: '' };
     const list = $('remarkModalConfList');
     const row = document.createElement('div');
     row.className = 'remark-modal-conf-row';
-    // ラベル行：URL から抽出した「どのページか」を表示（入力に追従）
-    const labelLine = document.createElement('div');
-    labelLine.className = 'remark-modal-conf-label';
+    // 名前入力（任意。空なら保存時に URL 自動抽出ラベルへフォールバック）
+    const nameInp = document.createElement('input');
+    nameInp.type = 'text'; nameInp.className = 'remark-modal-conf-name';
+    nameInp.value = entry.label || '';
     // 入力行：URL 入力 ＋ ↗ 開く ＋ ✕ 削除
     const inputLine = document.createElement('div');
     inputLine.className = 'remark-modal-conf-inputline';
     const inp = document.createElement('input');
     inp.type = 'url'; inp.className = 'remark-modal-conf-inp';
-    inp.placeholder = '貼上 Confluence 連結…'; inp.value = val || '';
+    inp.placeholder = '貼上 Confluence 連結…'; inp.value = entry.url || '';
     // ↗ 開く：入力された URL を別タブで開く（http(s) のみ有効）
     const open = document.createElement('button');
     open.type = 'button'; open.className = 'remark-modal-conf-open'; open.textContent = '↗'; open.title = '在新分頁開啟';
@@ -1845,29 +1881,26 @@ function startStatusEdit(td, missionId) {
       const v = inp.value.trim();
       if (/^https?:\/\//i.test(v)) window.open(v, '_blank', 'noopener');
     });
-    const refreshLabel = () => {
+    // 名前未入力時は URL 自動抽出をプレースホルダ表示（何が入るか予告）
+    const refreshNamePlaceholder = () => {
       const v = inp.value.trim();
-      if (!v) { labelLine.innerHTML = '<span class="conf-label-empty">連結先未設定</span>'; return; }
-      const l = confLabel(v);
-      labelLine.innerHTML =
-        (l.space ? `<span class="conf-label-space">${escapeHtml(l.space)}</span>` : '') +
-        `<span class="conf-label-title">${escapeHtml(l.title)}</span>`;
+      nameInp.placeholder = v ? confEntryLabel({ label: '', url: v }) : '連結名稱（可留空＝自動）';
     };
-    inp.addEventListener('input', () => { refreshOpen(); refreshLabel(); });
+    inp.addEventListener('input', () => { refreshOpen(); refreshNamePlaceholder(); });
     const del = document.createElement('button');
     del.type = 'button'; del.className = 'remark-modal-conf-del'; del.textContent = '✕'; del.title = '移除';
     del.addEventListener('click', () => row.remove());
     inputLine.appendChild(inp); inputLine.appendChild(open); inputLine.appendChild(del);
-    row.appendChild(labelLine); row.appendChild(inputLine);
+    row.appendChild(nameInp); row.appendChild(inputLine);
     list.appendChild(row);
-    refreshOpen(); refreshLabel();
+    refreshOpen(); refreshNamePlaceholder();
     return inp;
   }
 
   function buildConfList(raw) {
     $('remarkModalConfList').innerHTML = '';
-    const urls = parseConfUrls(raw);
-    (urls.length ? urls : ['']).forEach(addConfRow);
+    const entries = parseConfEntries(raw);
+    (entries.length ? entries : [{ label: '', url: '' }]).forEach(addConfRow);
   }
 
   // ---- open / close ----
