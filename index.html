@@ -803,9 +803,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.15.1';
+const APP_VERSION = '0.15.2';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '更新セルに相対表現（◯天前）を 2 行目で復活。編集直後は応答に時刻が無くてもクライアント時刻で補完し時刻が消えないように。';
+const APP_NOTE  = 'Mission進度タブ：停滞アラートの黄/赤の地色を行全体ではなく「更新」列セルだけに限定。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2029,7 +2029,9 @@ function renderTableC() {
                    : days != null && days > 7  ? 'stalled-yellow'
                    : '';
     const parent = makeParentInfo(r, issueMap, prevParent);
-    html += missionEditRow(r, { parent, rowClass });
+    // 停滞アラートの地色は「更新」列セル（upd-warn/upd-stale）だけに出す。
+    // 行全体は着色しないため rowClass（stalled-*）は付与しない。
+    html += missionEditRow(r, { parent });
     prevParent = parent.num;
   });
   if (!html) html = `<tr><td colspan="10" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>`;
