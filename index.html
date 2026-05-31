@@ -342,7 +342,8 @@
   .simple-table td.conf-icon a { display: inline-block; opacity: 0.85; transition: opacity 0.15s; margin: 0 2px; }
   .simple-table td.conf-icon a:hover { opacity: 1; }
   .simple-table td.conf-icon img { width: 14px; height: 14px; vertical-align: middle; }
-  .simple-table th .conf-th-icon { width: 14px; height: 14px; vertical-align: middle; }
+  .simple-table th .conf-th-icon { display: inline-block; width: 14px; height: 14px; vertical-align: middle;
+    background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMDA1MkNDIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjY4NEZGIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0idXJsKCNnKSIvPjxwYXRoIGQ9Ik02IDIxLjVjNS02LjUgMTEuNS03LjUgMTgtMy4ybC0yLjYgNEMxNi44IDE5IDEyLjQgMTkuNiA5IDIzLjh6IiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTI2IDEwLjVjLTUgNi41LTExLjUgNy41LTE4IDMuMmwyLjYtNEMxNS4yIDEzIDE5LjYgMTIuNCAyMyA4LjJ6IiBmaWxsPSIjREVFQkZGIi8+PC9zdmc+') no-repeat center / contain; }
   .simple-table td.conf-icon .conf-add-hint { color: var(--g-blue); font-weight: 700; opacity: 0.55; margin-right: 2px; }
   /* Confluence URL 貼り付け編集 UI */
   .simple-table td.conf-editing { padding: 4px; text-align: left; white-space: normal; }
@@ -555,7 +556,7 @@
         <th style="min-width:120px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
-        <th style="width:34px;"><img class="conf-th-icon" src="https://benessetw.atlassian.net/favicon.ico" alt="Confluence" title="Confluence 頁面" onerror="this.outerHTML='🔗'"></th>
+        <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -598,7 +599,7 @@
         <th style="width:100%; min-width:240px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
-        <th style="width:44px;"><img class="conf-th-icon" src="https://benessetw.atlassian.net/favicon.ico" alt="Confluence" title="Confluence 頁面" onerror="this.outerHTML='🔗'"></th>
+        <th style="width:44px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
         <th style="width:70px;">處</th>
         <th style="width:80px;">組</th>
         <th style="width:70px;">擔當</th>
@@ -655,7 +656,7 @@
         <th style="min-width:140px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
-        <th style="width:34px;"><img class="conf-th-icon" src="https://benessetw.atlassian.net/favicon.ico" alt="Confluence" title="Confluence 頁面" onerror="this.outerHTML='🔗'"></th>
+        <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -709,7 +710,7 @@
         <th style="min-width:140px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
-        <th style="width:34px;"><img class="conf-th-icon" src="https://benessetw.atlassian.net/favicon.ico" alt="Confluence" title="Confluence 頁面" onerror="this.outerHTML='🔗'"></th>
+        <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -798,9 +799,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.13.2';
+const APP_VERSION = '0.13.3';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'リンク列のヘッダーを Confluence favicon に変更。Tab C セルから親 Issue 継承リンクを撤去し、Mission 自身の URL のみ表示（セル内参照の衝突を解消）。';
+const APP_NOTE  = 'Confluence アイコンを外部依存なしの内蔵 SVG（data-URI）に変更。ヘッダーに確実表示＆favicon 読み込み失敗時の onerror 無限ループ（画像点滅）を解消。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1040,7 +1041,9 @@ function freshnessCell(dateStr, editOpts) {
 
 // Confluence セル：管理頁面（ページ名）＋ favicon ＋ リンク
 // pageName は元 "管理頁面" 列の文字列。url が空ならテキストのみ。
-const CONF_FAVICON = 'https://benessetw.atlassian.net/favicon.ico';
+// Confluence ロゴ風アイコン（外部依存なしの data-URI SVG）。
+// 外部 favicon が読めない環境でも必ず表示でき、onerror フォールバックの無限ループも防ぐ。
+const CONF_FAVICON = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMDA1MkNDIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjY4NEZGIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0idXJsKCNnKSIvPjxwYXRoIGQ9Ik02IDIxLjVjNS02LjUgMTEuNS03LjUgMTgtMy4ybC0yLjYgNEMxNi44IDE5IDEyLjQgMTkuNiA5IDIzLjh6IiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTI2IDEwLjVjLTUgNi41LTExLjUgNy41LTE4IDMuMmwyLjYtNEMxNS4yIDEzIDE5LjYgMTIuNCAyMyA4LjJ6IiBmaWxsPSIjREVFQkZGIi8+PC9zdmc+';
 // URL のホスト名から favicon を導出（貼り付けた Confluence サイトに自動追従）。
 // 解析できない場合は既定の Confluence favicon にフォールバック。
 function faviconFor(url) {
@@ -1057,7 +1060,7 @@ function confluenceCell(pageName, url) {
   const name = (pageName || '').trim();
   const u = (url || '').trim();
   if (!name && !u) return '<td class="conf"></td>';
-  const iconHtml = `<img src="${escapeAttr(faviconFor(u))}" alt="Confluence" onerror="this.src='${CONF_FAVICON}'">`;
+  const iconHtml = `<img src="${escapeAttr(faviconFor(u))}" alt="Confluence" onerror="this.onerror=null;this.src='${CONF_FAVICON}'">`;
   const text = `<span class="conf-text" title="${escapeAttr(name)}">${escapeHtml(name || 'Confluence 頁面')}</span>`;
   const inner = u
     ? `<a href="${escapeAttr(u)}" target="_blank" rel="noopener" title="${escapeAttr(u)}">${iconHtml}${text}</a>`
@@ -1070,7 +1073,7 @@ function confluenceCell(pageName, url) {
 function confEditCell(ownRaw, missionId, isMission) {
   const urls = parseConfUrls(ownRaw);
   let icons = urls.map(u =>
-    `<a href="${escapeAttr(u)}" target="_blank" rel="noopener" title="${escapeAttr(u)}"><img src="${escapeAttr(faviconFor(u))}" alt="" onerror="this.src='${CONF_FAVICON}'"></a>`
+    `<a href="${escapeAttr(u)}" target="_blank" rel="noopener" title="${escapeAttr(u)}"><img src="${escapeAttr(faviconFor(u))}" alt="" onerror="this.onerror=null;this.src='${CONF_FAVICON}'"></a>`
   ).join('');
   if (!isMission) return `<td class="conf-icon">${icons}</td>`;
   const body = icons || `<span class="conf-add-hint">＋</span>`;
@@ -1700,7 +1703,7 @@ function simpleRow(r, opts) {
   if (opts.showConf) {
     const url = (r['Confluence URL']||'').trim();
     if (url) {
-      h += `<td class="conf-icon"><a href="${escapeAttr(url)}" target="_blank" rel="noopener" title="${escapeAttr(url)}"><img src="${escapeAttr(faviconFor(url))}" alt="" onerror="this.src='${CONF_FAVICON}'"></a></td>`;
+      h += `<td class="conf-icon"><a href="${escapeAttr(url)}" target="_blank" rel="noopener" title="${escapeAttr(url)}"><img src="${escapeAttr(faviconFor(url))}" alt="" onerror="this.onerror=null;this.src='${CONF_FAVICON}'"></a></td>`;
     } else {
       h += '<td class="conf-icon"></td>';
     }
@@ -2182,7 +2185,7 @@ function renderTabF() {
     const cls = m.days != null && m.days > 14 ? 'dl-stale' : m.days != null && m.days > 7 ? 'dl-warn' : '';
     const confUrl = (r['Confluence URL']||'').trim();
     const confHtml = confUrl
-      ? `<a href="${escapeAttr(confUrl)}" target="_blank" rel="noopener" title="${escapeAttr(confUrl)}"><img src="${escapeAttr(faviconFor(confUrl))}" alt="" onerror="this.src='${CONF_FAVICON}'"></a>`
+      ? `<a href="${escapeAttr(confUrl)}" target="_blank" rel="noopener" title="${escapeAttr(confUrl)}"><img src="${escapeAttr(faviconFor(confUrl))}" alt="" onerror="this.onerror=null;this.src='${CONF_FAVICON}'"></a>`
       : '';
     return `<div class="dash-list-row ${cls}">
       <div class="dl-id" title="${escapeAttr(id)}">${escapeHtml(id)}</div>

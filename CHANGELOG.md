@@ -5,6 +5,26 @@
 
 ---
 
+## v0.13.3 — 2026-05-31
+
+**Confluence アイコンを内蔵 SVG 化（ヘッダー確実表示・画像点滅の解消）**
+
+### 問題
+
+`benessetw.atlassian.net/favicon.ico` が読み込めない環境で、
+- ヘッダーは `onerror` フォールバックにより `🔗` 絵文字のままだった
+- セルは `faviconFor(url)` 失敗 → `onerror` で同じ壊れた favicon に差し替え → 再失敗 → … の**無限ループ**になり、画像が点滅していた
+
+### 修正
+
+- **`CONF_FAVICON` を外部依存なしの data-URI SVG（Confluence ロゴ風）に変更**。ネットワーク不要で必ず描画される
+- **ヘッダー**：`<img>`（外部 URL）→ `<span class="conf-th-icon">` ＋ CSS 背景（data-URI SVG）に変更。確実に Confluence アイコンを表示
+- **セル**：`faviconFor(url)`（貼り付けた URL の実 favicon）を試し、失敗時は内蔵 SVG にフォールバック。`onerror` に `this.onerror=null` を付与し、**フォールバックを一度きりに**して無限ループ（点滅）を防止
+
+> 注：セルは貼り付けた URL の実 favicon を優先表示し、読めない場合のみ内蔵 SVG にフォールバックします。実サイトの favicon を確実に出したい場合は、その Confluence サイトの URL を貼れば自動で反映されます。
+
+---
+
 ## v0.13.2 — 2026-05-31
 
 **リンク列ヘッダーを Confluence favicon に／Tab C セルの継承リンク参照を撤去**
