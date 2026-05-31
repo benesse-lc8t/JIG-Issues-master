@@ -313,7 +313,8 @@ function _appendByHeaders(sheet, valueMap) {
   SpreadsheetApp.flush();
 
   // (2) 残りの値は「数式由来／自動算出済み」の列を避けて書く
-  const skipped = [];
+  const skipped = [];   // 数式列（自動算出に任せた）
+  const rejected = [];  // データ入力規則などで弾かれた列
   Object.keys(valueMap).forEach(name => {
     if (name === '編號') return;
     const ci = colOf(name);
@@ -322,11 +323,18 @@ function _appendByHeaders(sheet, valueMap) {
     const hasFormula = !!cell.getFormula();                 // 数式アンカー
     const autoFilled = String(cell.getValue()).trim() !== ''; // 数式スピルで既に埋まった
     if (hasFormula || autoFilled) { skipped.push(name); return; }
-    cell.setValue(valueMap[name]);
+    try {
+      cell.setValue(valueMap[name]);
+    } catch (e) {
+      // データ入力規則（無効値を拒否）等で弾かれた → その列だけ諦めて行作成は続行
+      rejected.push(name);
+      console.log('  _appendByHeaders rejected on', name, ':', String(e && e.message || e));
+    }
   });
   SpreadsheetApp.flush();
-  if (skipped.length) console.log('  _appendByHeaders skipped formula/auto cols:', skipped.join(','));
-  return { row: targetRow, headers };
+  if (skipped.length)  console.log('  _appendByHeaders skipped formula/auto cols:', skipped.join(','));
+  if (rejected.length) console.log('  _appendByHeaders rejected (validation) cols:', rejected.join(','));
+  return { row: targetRow, headers: headers, skipped: skipped, rejected: rejected };
 }
 
 // 親編號配下の次の Mission 編號（親編號-M{n}）を採番する。
@@ -382,7 +390,7 @@ function _handleAddMission(ss, data) {
   const r = _appendByHeaders(sheet, vmap);
   SpreadsheetApp.flush();
   console.log('  → addMission ok:', newId, 'row', r.row);
-  return _writeJson({ ok: true, action: 'addMission', mission: newId, '編號': newId, row: r.row, parent: parent });
+  return _writeJson({ ok: true, action: 'addMission', mission: newId, '編號': newId, row: r.row, parent: parent, warnings: r.rejected });
 }
 
 function _handleAddIssue(ss, data) {
@@ -418,7 +426,7 @@ function _handleAddIssue(ss, data) {
   const r = _appendByHeaders(sheet, vmap);
   SpreadsheetApp.flush();
   console.log('  → addIssue ok:', id, 'row', r.row);
-  return _writeJson({ ok: true, action: 'addIssue', '編號': id, mission: id, row: r.row });
+  return _writeJson({ ok: true, action: 'addIssue', '編號': id, mission: id, row: r.row, warnings: r.rejected });
 }
 
 // 診断用：ブラウザで Web App URL を開くと、デプロイ済みコードが実際に見ている

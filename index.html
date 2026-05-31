@@ -1310,9 +1310,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.26.1';
+const APP_VERSION = '0.26.2';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '追加機能の重大バグ修正：append が数式列（親編號等の ARRAYFORMULA）を #REF! で壊し既存 Mission が消える問題を解消。数式列には書かず数式に算出させる方式に変更。※Apps Script の再公開が必要。';
+const APP_NOTE  = '追加機能を入力規則に強く：データ入力規則（無効値拒否）で弾かれた列はスキップして行作成は継続し、warnings で通知。Issue の 狀態 が規則違反でも Issue 自体は作成される。※Apps Script の再公開が必要。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2212,7 +2212,12 @@ async function _submitAdd() {
       return;
     }
     const newId = data['編號'] || data.mission || '';
-    toast(`已新增：${newId}`, 'success');
+    const warns = Array.isArray(data.warnings) ? data.warnings : [];
+    if (warns.length) {
+      toast(`已新增：${newId}（一部項目はシートの入力規則によりスキップ：${warns.join('・')}。シート側で設定してください）`, 'error');
+    } else {
+      toast(`已新增：${newId}`, 'success');
+    }
     closeAddModal();
     await loadFromSheet(); // 継承列の都合で再読込して確実に反映
   } catch (e) {
