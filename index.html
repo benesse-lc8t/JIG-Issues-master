@@ -479,7 +479,7 @@
     <th class="mtg-col" style="width:110px;">確認會議</th>
     <th class="mtg-col" style="width:70px;">會議時間</th>
     <th style="width:74px;">狀態</th>
-    <th style="min-width:140px;">備註</th>
+    <th style="min-width:140px;">Mission進度</th>
     <th style="width:56px;">更新</th>
   </tr>
 </thead>
@@ -777,9 +777,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.10.2';
-const APP_BUILD = '2026-05-30';
-const APP_NOTE  = '保存応答の検証強化：doPost が確実に動いたか確認するため、応答に mission フィールドが無ければ警告。';
+const APP_VERSION = '0.10.3';
+const APP_BUILD = '2026-05-31';
+const APP_NOTE  = 'Issue & Mission タブの備考列を「Mission進度」に改名。Mission 行の Mission進度 コメントが表示されるよう修正（従来は 事務局備註 のみ参照で空欄だった）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1090,7 +1090,7 @@ function renderRow(r, opts) {
   // 検索用テキスト（lowercase, 連結）
   const searchStr = [
     num, r['Issue'], dept, grp, owner, r['戰略負責人'],
-    r['管理頁面'], r['確認會議'], r['事務局備註']
+    r['管理頁面'], r['確認會議'], r['Mission進度'], r['事務局備註']
   ].map(v => (v||'').toString().toLowerCase()).join(' ');
 
   // Mission 行には親 Issue の處色を文字色として反映するため mc-* クラスを付与
@@ -1121,7 +1121,7 @@ function renderRow(r, opts) {
   h += `<td class="pc mtg-col">${escapeHtml(r['確認會議'])}</td>`;                          // 8 確認會議
   h += `<td class="pc mtg-col">${escapeHtml(r['會議時間'])}</td>`;                          // 9 會議時間
   h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;                          // 10 狀態
-  h += `<td class="memo">${escapeHtml(r['事務局備註'])}</td>`;                              // 11 備註
+  h += `<td class="memo">${escapeHtml(r['Mission進度'] || r['事務局備註'] || '')}</td>`;     // 11 Mission進度（Issue は 事務局備註 にフォールバック）
   h += freshnessCell(r['更新日']);                                                          // 12 更新
   h += '</tr>';
   return h;
