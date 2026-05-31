@@ -77,6 +77,12 @@
   .person-btn:hover { background: #F1F3F4; color: #5F6368; opacity: 1; }
   .person-btn.btn-shiya.active  { background: #FCE8E6; color: #B31412; opacity: 1; }
   .person-btn.btn-yuling.active { background: #F3E8FD; color: #7026A6; opacity: 1; }
+  /* 格納式トグル（管理者ページ内・ひっそり） */
+  .ssm-toggle { border: none; background: transparent; color: #DADCE0; cursor: pointer; font-size: 11px; line-height: 1; padding: 4px 6px; transition: transform 0.12s, color 0.12s; }
+  .ssm-toggle:hover { color: #9AA0A6; }
+  .ssm-toggle.open { transform: rotate(90deg); color: #9AA0A6; }
+  .ssm-box { display: none; gap: 4px; margin-top: 6px; padding-left: 4px; }
+  .ssm-box.open { display: flex; }
 
   /* Panel：active タブと連動した色アクセントを上端に持たせる */
   #panel-A.active { border-top: 3px solid #4285F4; }
@@ -1438,17 +1444,10 @@
       </div>
     </div>
 
-    <!-- 事務局檢視（限詩雅・育菱） -->
-    <div class="con-section">
-      <div class="section-title">
-        <span class="badge" style="background:#F1F3F4; color:#5F6368;">事務局</span>
-        個人檢視（詩雅・育菱）
-      </div>
-      <div class="desc" style="margin-bottom:10px;">僅供詩雅・育菱本人使用：自己相關的 Mission、個人備註與小沼留言。</div>
-      <div class="person-btns">
-        <button type="button" class="person-btn btn-shiya" onclick="show('D',event)" title="顯示詩雅的 Mission"><svg class="ico" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>詩雅</span></button>
-        <button type="button" class="person-btn btn-yuling" onclick="show('E',event)" title="顯示育菱的 Mission"><svg class="ico" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>育菱</span></button>
-      </div>
+    <button type="button" class="ssm-toggle" id="ssmToggle" title="展開" onclick="this.classList.toggle('open');document.getElementById('ssmBox').classList.toggle('open')">▶</button>
+    <div class="ssm-box" id="ssmBox">
+      <button type="button" class="person-btn btn-shiya" onclick="show('D',event)" title="詩雅"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>詩雅</span></button>
+      <button type="button" class="person-btn btn-yuling" onclick="show('E',event)" title="育菱"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>育菱</span></button>
     </div>
   </div>
 </div>
@@ -1456,9 +1455,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.30.9';
+const APP_VERSION = '0.31.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '詩雅／育菱の呼び出しを topbar から外し、管理者專用ページ内の「事務局：個人檢視」へ移設（社員に見えない場所に格納）。Apps Script 変更なし。';
+const APP_NOTE  = '詩雅／育菱の呼び出しを管理者專用ページ内の「▶」格納式トグルに（説明文・見出し無し・展開で小さく2つ）。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
