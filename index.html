@@ -1047,7 +1047,7 @@
     <div class="remark-modal-body">
       <div class="memo-mission-name" id="memoMissionName"></div>
       <div class="memo-field-label" style="margin-bottom:4px;">Mission 進度（歷來記錄）</div>
-      <div class="remark-modal-log" id="memoLog" style="max-height:180px; margin-bottom:14px;"></div>
+      <div class="remark-modal-log" id="memoLog" style="max-height:180px; overflow-y:auto; margin-bottom:14px; flex:0 0 auto;"></div>
       <label class="memo-field-label"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8.5 13.5h7M8.5 17h5"/></svg> 私的備註（只有你自己看得到）</label>
       <textarea class="remark-modal-ta" id="memoModalTa" rows="4" placeholder="寫給自己的備忘…"></textarea>
       <label class="memo-field-label" style="margin-top:12px;"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 來自小沼的留言</label>
@@ -1445,9 +1445,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.30.6';
+const APP_VERSION = '0.30.7';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '個人備註モーダル：進度ログが空に見える問題を修正（Mission進度→事務局備註のフォールバックを一覧と統一）。親Issue 名も表示。Apps Script 変更なし。';
+const APP_NOTE  = '個人備註モーダル：進度ログ枠が flex で高さ 0 に潰れて中身が見えない問題を修正（flex:0 0 auto で固定）。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
