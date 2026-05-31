@@ -227,7 +227,7 @@
   .row-hidden { display: none !important; }
 
   /* Confluence cell（管理頁面の位置に配置） */
-  .conf { white-space: nowrap; font-size: 11px; background: #F8FBFF; }
+  .conf { white-space: nowrap; font-size: 11px; background: #F8FBFF; text-align: center; }
   .conf a { color: var(--g-blue); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
   .conf a:hover { text-decoration: underline; color: var(--g-blue-fg); }
   .conf img { width: 14px; height: 14px; vertical-align: middle; flex-shrink: 0; }
@@ -354,7 +354,7 @@
   .simple-table td.conf-icon a { display: inline-block; opacity: 0.85; transition: opacity 0.15s; margin: 0 2px; }
   .simple-table td.conf-icon a:hover { opacity: 1; }
   .simple-table td.conf-icon img { width: 14px; height: 14px; vertical-align: middle; }
-  .simple-table th .conf-th-icon { display: inline-block; width: 14px; height: 14px; vertical-align: middle;
+  th .conf-th-icon { display: inline-block; width: 14px; height: 14px; vertical-align: middle;
     background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMDA1MkNDIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjY4NEZGIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0idXJsKCNnKSIvPjxwYXRoIGQ9Ik02IDIxLjVjNS02LjUgMTEuNS03LjUgMTgtMy4ybC0yLjYgNEMxNi44IDE5IDEyLjQgMTkuNiA5IDIzLjh6IiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTI2IDEwLjVjLTUgNi41LTExLjUgNy41LTE4IDMuMmwyLjYtNEMxNS4yIDEzIDE5LjYgMTIuNCAyMyA4LjJ6IiBmaWxsPSIjREVFQkZGIi8+PC9zdmc+') no-repeat center / contain; }
   .simple-table td.conf-icon .conf-add-hint { color: var(--g-blue); font-weight: 700; opacity: 0.55; margin-right: 2px; }
   /* 複数リンクは 1 アイコン＋件数バッジに集約 */
@@ -800,7 +800,7 @@
     <th style="width:74px;">組</th>
     <th style="width:60px;">擔當</th>
     <th style="width:60px;">戰略負責人</th>
-    <th style="width:160px;">Confluence</th>
+    <th style="width:54px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
     <th class="mtg-col" style="width:110px;">確認會議</th>
     <th class="mtg-col" style="width:70px;">會議時間</th>
     <th style="width:74px;">狀態</th>
@@ -1096,9 +1096,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.22.0';
+const APP_VERSION = '0.22.1';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'Issue&Mission の Confluence 列をアイコンのみ表示に（テキスト撤去）。複数リンクはクリックで小さなリンク一覧モーダルを開く（単一は直接リンク）。';
+const APP_NOTE  = 'Issue&Mission の Confluence 列ヘッダーをテキストから favicon に変更。列幅を詰めてアイコンを中央寄せ。';
 
 // ===== Tab switch =====
 function show(id, e) {

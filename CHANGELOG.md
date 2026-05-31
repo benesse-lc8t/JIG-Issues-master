@@ -5,6 +5,16 @@
 
 ---
 
+## v0.22.1 — 2026-05-31
+
+**Confluence 列ヘッダーを favicon に**
+
+- Issue & Mission タブの Confluence 列ヘッダーを「Confluence」テキストから favicon アイコンに変更（他タブと統一）
+- `conf-th-icon` の CSS スコープを `.simple-table th` から汎用 `th` に広げ、`#tableA`（Issue & Mission）にも適用
+- 列幅を 160px → 54px に詰め、`.conf` セルを中央寄せ（アイコンのみ表示に合わせて整形）
+
+---
+
 ## v0.22.0 — 2026-05-31
 
 **Issue & Mission の Confluence 列：アイコンのみ＋複数はリンク一覧モーダル**
