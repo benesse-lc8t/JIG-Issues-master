@@ -466,14 +466,14 @@
   .np-trigger .np-tag { font-size: 11px; font-weight: 600; padding: 1px 6px 1px 8px; border-radius: 10px; white-space: nowrap; line-height: 1.7; display: inline-flex; align-items: center; }
   .np-trigger .np-x { margin-left: 4px; cursor: pointer; font-weight: 700; opacity: 0.55; font-size: 13px; line-height: 1; }
   .np-trigger .np-x:hover { opacity: 1; }
-  /* 新增ボタンのローディング・スピナー（押下＝処理中を明示） */
-  .remark-modal-save.is-loading { position: relative; color: transparent !important; pointer-events: none; }
-  .remark-modal-save.is-loading::after {
-    content: ''; position: absolute; left: 50%; top: 50%; width: 15px; height: 15px;
-    margin: -8px 0 0 -8px; border: 2px solid rgba(255,255,255,0.45); border-top-color: #fff;
-    border-radius: 50%; animation: btnspin 0.7s linear infinite;
+  /* 新增ボタン：処理中は左→右に満ちる進行バー（テキストは上に残す） */
+  .remark-modal-save.is-progress { position: relative; overflow: hidden; pointer-events: none; }
+  .remark-modal-save.is-progress > span { position: relative; z-index: 1; }
+  .remark-modal-save.is-progress::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 0; z-index: 0;
+    background: rgba(255,255,255,0.30); animation: btnbar 6.5s linear forwards;
   }
-  @keyframes btnspin { to { transform: rotate(360deg); } }
+  @keyframes btnbar { from { width: 0; } to { width: 100%; } }
   .remark-modal {
     background: #fff; border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.22);
     width: min(680px, 94vw); max-height: 90vh; display: flex; flex-direction: column;
@@ -1345,9 +1345,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.27.3';
+const APP_VERSION = '0.27.4';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '戰略負責人の候補を 4 名（小沼和幸・王詩雅・張育菱・陳少琪）に限定（STRATEGIC_LEADS 定数で管理）。擔當は全員のまま。Apps Script 変更なし。';
+const APP_NOTE  = '新增ボタンの処理中表示をスピナー→「左→右に満ちる進行バー」に変更（編集モーダルの伸びるバーと同思想）。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2340,7 +2340,7 @@ function openAddModal(kind) {
   _setAddKind(kind || 'mission');
   _refreshAddMIdPreview();
   const sb = document.getElementById('addModalSaveBtn');
-  sb.disabled = false; sb.classList.remove('is-loading', 'saving'); sb.textContent = '新增';
+  sb.disabled = false; sb.classList.remove('is-progress', 'is-loading', 'saving'); sb.textContent = '新增';
   document.getElementById('addModalOverlay').classList.add('open');
   document.body.classList.add('modal-open');
 }
@@ -2385,7 +2385,7 @@ async function _submitAdd() {
     };
   }
   if (!SHEET_WRITE_URL) { toast('編輯功能未設定：請管理員設定 Web App URL', 'error'); return; }
-  sb.disabled = true; sb.classList.add('is-loading'); sb.textContent = '新增中…';
+  sb.disabled = true; sb.classList.add('is-progress'); sb.innerHTML = '<span>新增中…</span>';
   try {
     const res = await fetch(SHEET_WRITE_URL, {
       method: 'POST',
@@ -2397,7 +2397,7 @@ async function _submitAdd() {
     console.info('[addEntry] response', { status: res.status, data, payload });
     if (!data.ok) {
       toast(`新增失敗：${data.error || 'unknown'}`, 'error');
-      sb.disabled = false; sb.classList.remove('is-loading'); sb.textContent = '新增';
+      sb.disabled = false; sb.classList.remove('is-progress'); sb.textContent = '新增';
       return;
     }
     const newId = data['編號'] || data.mission || '';
@@ -2411,7 +2411,7 @@ async function _submitAdd() {
     await loadFromSheet(); // 継承列の都合で再読込して確実に反映
   } catch (e) {
     toast(`網路錯誤：${e.message}`, 'error');
-    sb.disabled = false; sb.classList.remove('is-loading'); sb.textContent = '新增';
+    sb.disabled = false; sb.classList.remove('is-progress'); sb.textContent = '新增';
   }
 }
 document.addEventListener('DOMContentLoaded', () => {
