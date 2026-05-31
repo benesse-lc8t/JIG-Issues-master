@@ -54,6 +54,10 @@
   code { font-family: var(--font); font-weight: 500; font-size: 0.92em; background: var(--g-grey-bg); color: #3C4043; padding: 1px 6px; border-radius: 4px; letter-spacing: 0.01em; }
   h1 { font-size: 18px; font-weight: 500; color: #202124; margin-bottom: 14px; letter-spacing: 0; }
   .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  /* トップのお知らせボード（読み取り専用・編集は管理者ページ）*/
+  .notice-board { flex: 1; min-width: 0; margin: 0 20px; max-width: 920px; align-self: center; display: flex; align-items: center; gap: 9px; background: #FFFBEA; border: 1px solid #F2E2A6; border-radius: 8px; padding: 7px 13px; color: #7A5B00; }
+  .notice-board .nb-ico { flex-shrink: 0; color: #C9A227; }
+  .notice-board .nb-text { font-size: 12px; line-height: 1.45; white-space: pre-wrap; max-height: 46px; overflow-y: auto; }
   .admin-btn { padding: 6px 12px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); border-radius: 4px; background: #fff; color: var(--g-grey); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
   .admin-btn:hover { background: var(--g-grey-bg); color: #202124; }
   .admin-btn.active { background: var(--g-blue-bg); color: var(--g-blue); border-color: var(--g-blue); }
@@ -1108,6 +1112,10 @@
     <img src="favicon.svg" alt="" width="32" height="32" style="vertical-align:middle; flex-shrink:0;">
     <span>TBBS-經營Issue管理系統<span class="ver" id="verBadge" title="">v?.?.?</span></span>
   </h1>
+  <div class="notice-board" id="noticeBoard" style="display:none;">
+    <svg class="ico nb-ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <span class="nb-text"></span>
+  </div>
   <div class="topbar-actions">
     <button id="adminBtn" class="admin-btn" onclick="show('Admin',event)" title="僅供管理者使用：資料來源設定">⚙ 管理者專用</button>
   </div>
@@ -1444,6 +1452,20 @@
       </div>
     </div>
 
+    <!-- 公告板（管理者編集）-->
+    <div class="con-section">
+      <div class="section-title">
+        <span class="badge" style="background:#FFF7E0; color:#B06000;">公告</span>
+        公告板（顯示於全員頂部）
+      </div>
+      <textarea id="announceInput" class="add-inp" rows="3" placeholder="輸入要顯示給全員的公告…（留空則不顯示）" style="resize:vertical;"></textarea>
+      <div class="con-row" style="margin-top:8px;">
+        <button class="btn btn-primary" id="announceSaveBtn" onclick="_saveAnnounce()">儲存公告</button>
+        <button class="btn" onclick="document.getElementById('announceInput').value='';_saveAnnounce()">清除</button>
+        <span class="stats" id="announceStatus"></span>
+      </div>
+    </div>
+
     <button type="button" class="ssm-toggle" id="ssmToggle" title="展開" onclick="this.classList.toggle('open');document.getElementById('ssmBox').classList.toggle('open')">▶</button>
     <div class="ssm-box" id="ssmBox">
       <button type="button" class="person-btn btn-shiya" onclick="show('D',event)" title="詩雅"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>詩雅</span></button>
@@ -1455,9 +1477,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.31.0';
+const APP_VERSION = '0.31.1';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '詩雅／育菱の呼び出しを管理者專用ページ内の「▶」格納式トグルに（説明文・見出し無し・展開で小さく2つ）。Apps Script 変更なし。';
+const APP_NOTE  = 'トップに公告ボードを新設（全員に読み取り表示・編集は管理者專用ページの公告板から）。新タブ「公告」＋ saveAnnounce。※Apps Script 再公開＋setupJIG が必要（codeVersion=announce1）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2011,6 +2033,58 @@ function memoKey(id, who) { return String(id || '').trim() + ' ' + String(who ||
 function _truthyFlag(v) { const s = String(v || '').trim().toLowerCase(); return !!s && s !== '0' && s !== 'false' && s !== 'no' && s !== '否'; }
 function getMemoObj(id, who) { return window.personalMemo[memoKey(id, who)] || { memo: '', msg: '', flag: false }; }
 function getMemo(id, who) { return getMemoObj(id, who).memo || ''; }
+
+// ===== 公告（お知らせボード）=====
+const ANNOUNCE_SHEET_NAME = '公告';
+window.announceText = window.announceText || '';
+async function loadAnnounce() {
+  window.announceText = '';
+  if (!SHEET_ID) return;
+  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1`;
+  const url = `${base}&sheet=${encodeURIComponent(ANNOUNCE_SHEET_NAME)}`;
+  try {
+    const res = await fetch(url + '&_=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return;
+    const csv = await res.text();
+    if (!csv || csv.trim().startsWith('<')) return; // タブ未作成
+    const wb = XLSX.read(csv, { type: 'string' });
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
+    if (rows.length < 1) return;
+    const mi = rows[0].map(h => String(h).trim()).indexOf('訊息');
+    if (mi < 0) return;
+    window.announceText = rows[1] ? String(rows[1][mi] ?? '').trim() : '';
+  } catch (e) { console.warn('[announce] 読込失敗', e); }
+}
+function renderAnnounceBoard() {
+  const el = document.getElementById('noticeBoard');
+  const t = (window.announceText || '').trim();
+  if (el) {
+    if (t) { el.style.display = 'flex'; el.querySelector('.nb-text').textContent = t; }
+    else { el.style.display = 'none'; }
+  }
+  const inp = document.getElementById('announceInput');
+  if (inp && document.activeElement !== inp) inp.value = window.announceText || '';
+}
+async function _saveAnnounce() {
+  const btn = document.getElementById('announceSaveBtn');
+  const msg = document.getElementById('announceInput').value;
+  if (!SHEET_WRITE_URL) { toast('編輯功能未設定：請管理員設定 Web App URL', 'error'); return; }
+  const old = btn.textContent; btn.disabled = true; btn.textContent = '儲存中…';
+  try {
+    const res = await fetch(SHEET_WRITE_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ token: WRITE_TOKEN, action: 'saveAnnounce', '訊息': msg }), redirect: 'follow'
+    });
+    const text = await res.text();
+    let data; try { data = JSON.parse(text); } catch (_) { data = { ok: false }; }
+    if (!data.ok) { toast(`公告儲存失敗：${data.error || 'unknown'}`, 'error'); btn.disabled = false; btn.textContent = old; return; }
+    window.announceText = msg.trim();
+    renderAnnounceBoard();
+    toast('已更新公告', 'success');
+    const st = document.getElementById('announceStatus'); if (st) st.textContent = '已更新 ' + (data['更新'] || '');
+    btn.disabled = false; btn.textContent = old;
+  } catch (e) { toast(`網路錯誤：${e.message}`, 'error'); btn.disabled = false; btn.textContent = old; }
+}
 async function loadPersonalMemos() {
   window.personalMemo = {};
   if (!SHEET_ID) return;
@@ -4335,6 +4409,7 @@ function renderTabF() {
 
 function renderAll() {
   _personDeptMap = buildPersonDeptMap(); // 人物チップ配色キャッシュを更新
+  renderAnnounceBoard();                 // お知らせボード
   renderTableA();
   renderTableB();
   renderTableC();
@@ -4582,6 +4657,7 @@ async function loadFromSheet() {
       await loadMissionLog();   // 追記ログを取得（モーダルのタイムライン用）
       await loadPersonMaster(); // 人員マスタ（記入者チップの名前・色）
       await loadPersonalMemos(); // 個人備註（詩雅/育菱の私的メモ）
+      await loadAnnounce();      // 公告（お知らせボード）
       renderAll();
       const ts = new Date().toLocaleString('zh-TW', { hour12:false });
       const issueCount = data.filter(r => {

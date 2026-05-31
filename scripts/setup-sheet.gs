@@ -36,7 +36,7 @@
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 // 再公開が反映されたか確認するための目印。doGet が返す。変更のたびに上げる。
-const CODE_VERSION = 'gs-2026-05-31-memo2';
+const CODE_VERSION = 'gs-2026-05-31-announce1';
 
 const STATUS_VALUES = ['未開始', '策劃中', '需確認', '進行中', '結案'];
 const STATUS_COLORS = {
@@ -72,6 +72,12 @@ const LOG_COL_WIDTHS  = { 1: 110, 2: 140, 3: 90, 4: 480 };
 const MEMO_SHEET_NAME = '個人備註';
 const MEMO_HEADERS     = ['編號', '姓名', '備註', '留言', '重要', '更新日'];
 const MEMO_COL_WIDTHS  = { 1: 110, 2: 90, 3: 340, 4: 340, 5: 60, 6: 140 };
+
+// ===== 公告（トップのお知らせボード）=====
+// 管理者が編集、全員に読み取り表示。1 件のみ（2 行目）。
+const ANNOUNCE_SHEET_NAME = '公告';
+const ANNOUNCE_HEADERS    = ['訊息', '更新日'];
+const ANNOUNCE_COL_WIDTHS = { 1: 600, 2: 140 };
 
 // ===== 人員マスタ（名簿の一次ソース）=====
 // 記入者チップの名前・色（處ベース）の出どころ。管理者がここに名簿を貼る。
@@ -138,13 +144,14 @@ function doPost(e) {
 
     // 追加／編集アクション。action 無しは従来どおりの更新（狀態/進度ログ等）。
     const action = String(data.action || '').trim();
-    if (action === 'addMission' || action === 'addIssue' || action === 'updateMission' || action === 'updateIssue' || action === 'saveMemo') {
+    if (action === 'addMission' || action === 'addIssue' || action === 'updateMission' || action === 'updateIssue' || action === 'saveMemo' || action === 'saveAnnounce') {
       const ssA = _getSpreadsheet();
       if (!ssA) return _writeJson({ ok: false, error: 'no_spreadsheet', hint: 'Set SHEET_ID in the script.' });
       if (action === 'addMission')    return _handleAddMission(ssA, data);
       if (action === 'addIssue')      return _handleAddIssue(ssA, data);
       if (action === 'updateMission') return _handleUpdate(ssA, data, MISSION_SHEET_FOR_WRITE);
       if (action === 'updateIssue')   return _handleUpdate(ssA, data, ISSUE_SHEET_FOR_WRITE);
+      if (action === 'saveAnnounce')  return _handleSaveAnnounce(ssA, data);
       return _handleSaveMemo(ssA, data);
     }
 
@@ -517,6 +524,27 @@ function _handleSaveMemo(ss, data) {
   return _writeJson({ ok: true, action: 'saveMemo', '編號': id, '姓名': who, mission: id, row: rowIdx, '更新': now });
 }
 
+// 公告（お知らせ）の保存。1 件のみ（2 行目を upsert）。
+function _handleSaveAnnounce(ss, data) {
+  const msg = String(data['訊息'] != null ? data['訊息'] : '');
+  let sheet = ss.getSheetByName(ANNOUNCE_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(ANNOUNCE_SHEET_NAME);
+    sheet.getRange(1, 1, 1, ANNOUNCE_HEADERS.length).setValues([ANNOUNCE_HEADERS]).setFontWeight('bold').setBackground('#F7F4EC');
+    sheet.setFrozenRows(1);
+    Object.keys(ANNOUNCE_COL_WIDTHS).forEach(k => sheet.setColumnWidth(Number(k), ANNOUNCE_COL_WIDTHS[k]));
+  }
+  const head = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => String(h).trim());
+  const ci = { msg: head.indexOf('訊息'), upd: head.indexOf('更新日') };
+  const tz = Session.getScriptTimeZone() || 'Asia/Taipei';
+  const now = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm');
+  if (ci.msg >= 0) sheet.getRange(2, ci.msg + 1).setValue(msg);
+  if (ci.upd >= 0) sheet.getRange(2, ci.upd + 1).setValue(now);
+  SpreadsheetApp.flush();
+  console.log('  → saveAnnounce ok, len', msg.length);
+  return _writeJson({ ok: true, action: 'saveAnnounce', '更新': now });
+}
+
 function _handleAddIssue(ss, data) {
   const id   = String(data['編號'] || '').trim();
   const name = String(data['Issue'] || '').trim();
@@ -580,6 +608,7 @@ function doGet() {
       personSheetExists: !!(ss && ss.getSheetByName(PERSON_SHEET_NAME)),
       memoSheetName:     MEMO_SHEET_NAME,
       memoSheetExists:   !!(ss && ss.getSheetByName(MEMO_SHEET_NAME)),
+      announceSheetExists: !!(ss && ss.getSheetByName(ANNOUNCE_SHEET_NAME)),
     });
   } catch (err) {
     return _writeJson({ ok: false, error: String(err.message) });
@@ -786,6 +815,17 @@ function setupJIG() {
         log.push('✓ 個人備註 に列「' + name + '」を追加');
       }
     });
+  }
+
+  // --- 6. 公告 タブ（お知らせボード）---
+  let announceSheet = ss.getSheetByName(ANNOUNCE_SHEET_NAME);
+  if (!announceSheet) {
+    announceSheet = ss.insertSheet(ANNOUNCE_SHEET_NAME);
+    announceSheet.getRange(1, 1, 1, ANNOUNCE_HEADERS.length).setValues([ANNOUNCE_HEADERS])
+      .setFontWeight('bold').setBackground('#F7F4EC');
+    Object.keys(ANNOUNCE_COL_WIDTHS).forEach(k => announceSheet.setColumnWidth(Number(k), ANNOUNCE_COL_WIDTHS[k]));
+    announceSheet.setFrozenRows(1);
+    log.push('✓ 「公告」タブを作成（訊息 / 更新日）。トップのお知らせボード');
   }
 
   const msg = log.length ? '✅ セットアップ完了\n\n' + log.join('\n')
