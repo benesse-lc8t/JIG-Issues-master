@@ -342,9 +342,8 @@
   .simple-table td.conf-icon a { display: inline-block; opacity: 0.85; transition: opacity 0.15s; margin: 0 2px; }
   .simple-table td.conf-icon a:hover { opacity: 1; }
   .simple-table td.conf-icon img { width: 14px; height: 14px; vertical-align: middle; }
+  .simple-table th .conf-th-icon { width: 14px; height: 14px; vertical-align: middle; }
   .simple-table td.conf-icon .conf-add-hint { color: var(--g-blue); font-weight: 700; opacity: 0.55; margin-right: 2px; }
-  .simple-table td.conf-icon a.conf-inherited { opacity: 0.4; filter: grayscale(0.6); }
-  .simple-table td.conf-icon a.conf-inherited:hover { opacity: 0.75; filter: none; }
   /* Confluence URL 貼り付け編集 UI */
   .simple-table td.conf-editing { padding: 4px; text-align: left; white-space: normal; }
   .conf-edit { display: flex; flex-direction: column; gap: 4px; min-width: 220px; }
@@ -556,7 +555,7 @@
         <th style="min-width:120px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
-        <th style="width:34px;">🔗</th>
+        <th style="width:34px;"><img class="conf-th-icon" src="https://benessetw.atlassian.net/favicon.ico" alt="Confluence" title="Confluence 頁面" onerror="this.outerHTML='🔗'"></th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -599,7 +598,7 @@
         <th style="width:100%; min-width:240px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
-        <th style="width:44px;">🔗</th>
+        <th style="width:44px;"><img class="conf-th-icon" src="https://benessetw.atlassian.net/favicon.ico" alt="Confluence" title="Confluence 頁面" onerror="this.outerHTML='🔗'"></th>
         <th style="width:70px;">處</th>
         <th style="width:80px;">組</th>
         <th style="width:70px;">擔當</th>
@@ -656,7 +655,7 @@
         <th style="min-width:140px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
-        <th style="width:34px;">🔗</th>
+        <th style="width:34px;"><img class="conf-th-icon" src="https://benessetw.atlassian.net/favicon.ico" alt="Confluence" title="Confluence 頁面" onerror="this.outerHTML='🔗'"></th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -710,7 +709,7 @@
         <th style="min-width:140px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
-        <th style="width:34px;">🔗</th>
+        <th style="width:34px;"><img class="conf-th-icon" src="https://benessetw.atlassian.net/favicon.ico" alt="Confluence" title="Confluence 頁面" onerror="this.outerHTML='🔗'"></th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -799,9 +798,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.13.1';
+const APP_VERSION = '0.13.2';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'Confluence URL の親 Issue 継承と Mission 自身の編集が衝突する問題を修正。Tab C は Mission 自身の URL のみ編集し、継承分は薄い参照リンクで併記。';
+const APP_NOTE  = 'リンク列のヘッダーを Confluence favicon に変更。Tab C セルから親 Issue 継承リンクを撤去し、Mission 自身の URL のみ表示（セル内参照の衝突を解消）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1066,20 +1065,15 @@ function confluenceCell(pageName, url) {
   return `<td class="conf">${inner}</td>`;
 }
 
-// Tab C 専用：Confluence URL セル（Mission 自身の複数 URL を favicon リンクで表示。クリックで貼り付け編集）
-// inheritedUrl：自身が未設定で親 Issue から継承している URL（薄く参照表示。編集対象ではない）
-function confEditCell(ownRaw, inheritedUrl, missionId, isMission) {
+// Tab C 専用：Confluence URL セル（Mission 自身の複数 URL のみを favicon リンクで表示。クリックで貼り付け編集）
+// 親 Issue からの継承リンクはここには出さない（セル内で参照が衝突するため）。継承表示は A/B/D/E タブが担う。
+function confEditCell(ownRaw, missionId, isMission) {
   const urls = parseConfUrls(ownRaw);
   let icons = urls.map(u =>
     `<a href="${escapeAttr(u)}" target="_blank" rel="noopener" title="${escapeAttr(u)}"><img src="${escapeAttr(faviconFor(u))}" alt="" onerror="this.src='${CONF_FAVICON}'"></a>`
   ).join('');
-  // 継承リンク（自身が空のとき）は薄い参照アイコンとして併記
-  let inheritedHtml = '';
-  if (!icons && inheritedUrl) {
-    inheritedHtml = `<a class="conf-inherited" href="${escapeAttr(inheritedUrl)}" target="_blank" rel="noopener" title="繼承自上層 Issue 的頁面（非 Mission 自身）：${escapeAttr(inheritedUrl)}"><img src="${escapeAttr(faviconFor(inheritedUrl))}" alt="" onerror="this.src='${CONF_FAVICON}'"></a>`;
-  }
-  if (!isMission) return `<td class="conf-icon">${icons || inheritedHtml}</td>`;
-  const body = icons || `<span class="conf-add-hint">＋</span>` + inheritedHtml;
+  if (!isMission) return `<td class="conf-icon">${icons}</td>`;
+  const body = icons || `<span class="conf-add-hint">＋</span>`;
   return `<td class="conf-icon cell-editable" data-edit="conf" data-mission="${escapeAttr(missionId)}" title="點擊貼上 Confluence 連結">${body}</td>`;
 }
 
@@ -1751,11 +1745,8 @@ function missionEditRow(r, opts) {
   }
   // 更新（點擊編輯）
   h += freshnessCell(r['更新日'], isMission ? { editable: true, missionId: num } : null);
-  // 🔗 Confluence（複数 URL 対応・貼り付け編集可）。編集対象は Mission 自身の URL。
-  // 自身が未設定で親 Issue から継承している URL は、薄い参照リンクとして併記する。
-  const ownConf = r['Confluence URL自身'] || '';
-  const inheritedConf = (parseConfUrls(ownConf).length === 0 && (r['Confluence URL']||'').trim()) ? (r['Confluence URL']||'').trim() : '';
-  h += confEditCell(ownConf, inheritedConf, num, isMission);
+  // 🔗 Confluence（複数 URL 対応・貼り付け編集可）。編集・表示対象は Mission 自身の URL のみ。
+  h += confEditCell(r['Confluence URL自身'] || '', num, isMission);
   // 處 / 組 / 擔當（継承情報・末尾）
   h += `<td class="dept ${deptColorClass(dept)}">${escapeHtml(dept)}</td>`;
   h += `<td class="dept">${escapeHtml(grp)}</td>`;
