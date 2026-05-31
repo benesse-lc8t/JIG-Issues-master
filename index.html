@@ -376,7 +376,17 @@
   .simple-table td.cell-editable:hover { background: #E8F0FE !important; outline: 1px solid var(--g-blue); outline-offset: -1px; }
   .simple-table td.cell-editable::after { content: '✎'; position: absolute; top: 1px; right: 2px; font-size: 8px; color: transparent; }
   .simple-table td.cell-editable:hover::after { color: var(--g-blue); }
-  .simple-table td.cell-saving { background: #E8F0FE !important; outline: 1px solid var(--g-blue); pointer-events: none; }
+  .simple-table td.cell-saving { background: #E8F0FE !important; outline: 1px solid var(--g-blue); pointer-events: none; position: relative; }
+  /* 保存中：セル下端を流れる不確定プログレスバー（砂時計の代替） */
+  .simple-table td.cell-saving::before {
+    content: ''; position: absolute; left: 0; bottom: 0; height: 2.5px; width: 35%;
+    background: var(--g-blue); border-radius: 2px; z-index: 2;
+    animation: cellSaveBar 0.9s ease-in-out infinite;
+  }
+  @keyframes cellSaveBar { 0% { left: -35%; } 100% { left: 100%; } }
+  /* ミニスピナー（データ読込ステータス用） */
+  .mini-spin { display: inline-block; width: 9px; height: 9px; border: 1.5px solid #C5CDD6; border-top-color: var(--g-blue); border-radius: 50%; animation: miniSpin 0.7s linear infinite; vertical-align: -1px; }
+  @keyframes miniSpin { to { transform: rotate(360deg); } }
   .simple-table td.cell-saved  { background: #E6F4EA !important; transition: background 0.3s; }
   .simple-table select.inline-edit, .simple-table textarea.inline-edit, .simple-table input.inline-edit {
     width: 100%; box-sizing: border-box; font: inherit; font-family: var(--font);
@@ -810,9 +820,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.16.0';
+const APP_VERSION = '0.16.1';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '一覧性と詳細の役割分担：Mission進度タブ以外は Mission進度を1行省略＋クリックで該当へジャンプ、更新は漢字相対表記のみ。Mission進度タブは全文＋日時表示。';
+const APP_NOTE  = '保存を楽観的更新に：入力値を即座に表示しバックグラウンド保存（体感の遅さを解消）。砂時計を「伸びるプログレスバー」に置換。読込ステータスもスピナー化。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -915,9 +925,11 @@ function missionSheetCsvUrls() {
 function sheetEditUrl() {
   return SHEET_ID ? `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit` : '';
 }
-function setCloudStatus(text) {
+function setCloudStatus(text, loading) {
   const el = document.getElementById('cloudStatus');
-  if (el) el.textContent = text;
+  if (!el) return;
+  if (loading) el.innerHTML = '<span class="mini-spin"></span> ' + escapeHtml(text);
+  else el.textContent = text;
 }
 function fillShortNames(data) {
   data.forEach(r => {
@@ -1511,14 +1523,18 @@ function startStatusEdit(td, missionId) {
     committed = true;
     const v = select.value;
     if (v === current) { td.innerHTML = statusBadge(current, true); return; }
+    // 楽観的更新：選んだ値を即座に表示しつつ、保存はバックグラウンドで進める（バー表示）
+    td.innerHTML = statusBadge(v, true);
+    td.dataset.current = v;
     td.classList.add('cell-saving');
-    td.innerHTML = '⏳';
     const result = await saveMissionEdit(missionId, { '狀態': v });
     td.classList.remove('cell-saving');
-    if (!result) { td.innerHTML = statusBadge(current, true); return; }
+    if (!result) { // 失敗 → 元に戻す
+      td.dataset.current = current;
+      td.innerHTML = statusBadge(current, true);
+      return;
+    }
     applyLocalEdit(missionId, result.changes || { '狀態': v });
-    td.dataset.current = v;
-    td.innerHTML = statusBadge(v, true);
     flashSaved(td);
     toast(`已儲存：${missionId} → ${v || '（空）'}`, 'success');
     // 更新日 cell も再描画したいので軽く Tab C 再描画
@@ -1544,13 +1560,13 @@ function startRemarkEdit(td, missionId) {
     committed = true;
     const v = ta.value;
     if (v === current) { td.textContent = current; return; }
+    // 楽観的更新：入力値を即座に表示し、保存はバックグラウンドで進める（バー表示）
+    td.textContent = v;
     td.classList.add('cell-saving');
-    td.textContent = '⏳';
     const result = await saveMissionEdit(missionId, { '備註': v });
     td.classList.remove('cell-saving');
-    if (!result) { td.textContent = current; return; }
+    if (!result) { td.textContent = current; return; } // 失敗 → 元に戻す
     applyLocalEdit(missionId, result.changes || { '備註': v });
-    td.textContent = v;
     flashSaved(td);
     toast(`已儲存：${missionId} Mission進度`, 'success');
     setTimeout(() => renderTableC(), 300);
@@ -1579,8 +1595,9 @@ function startDateEdit(td, missionId) {
     committed = true;
     const v = input.value; // YYYY-MM-DD
     if (v === currentRaw) { td.textContent = currentLabel; return; }
+    // 楽観的更新：保存はバックグラウンド（バー表示）
+    td.textContent = v;
     td.classList.add('cell-saving');
-    td.textContent = '⏳';
     const result = await saveMissionEdit(missionId, { '更新日': v });
     td.classList.remove('cell-saving');
     if (!result) { td.textContent = currentLabel; return; }
@@ -2439,7 +2456,7 @@ async function loadFromSheet() {
     setCloudStatus('ℹ️ 尚未設定雲端來源（請於原始碼填入 SHEET_ID），目前顯示內建資料');
     return false;
   }
-  setCloudStatus('⏳ 載入中…');
+  setCloudStatus('載入中…', true);
   let lastErr = null;
   for (const url of urls) {
     try {
