@@ -376,14 +376,14 @@
   .simple-table td.cell-editable:hover { background: #E8F0FE !important; outline: 1px solid var(--g-blue); outline-offset: -1px; }
   .simple-table td.cell-editable::after { content: '✎'; position: absolute; top: 1px; right: 2px; font-size: 8px; color: transparent; }
   .simple-table td.cell-editable:hover::after { color: var(--g-blue); }
-  .simple-table td.cell-saving { background: #E8F0FE !important; outline: 1px solid var(--g-blue); pointer-events: none; position: relative; }
-  /* 保存中：セル下端を流れる不確定プログレスバー（砂時計の代替） */
+  .simple-table td.cell-saving { outline: 1px solid var(--g-blue); pointer-events: none; position: relative; }
+  /* 保存中：セルが左から右へ色で満たされていく塗りつぶし効果（1 回のみ・繰り返さない） */
   .simple-table td.cell-saving::before {
-    content: ''; position: absolute; left: 0; bottom: 0; height: 2.5px; width: 35%;
-    background: var(--g-blue); border-radius: 2px; z-index: 2;
-    animation: cellSaveBar 0.9s ease-in-out infinite;
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+    background: rgba(26,115,232,0.20); z-index: 1; pointer-events: none;
+    animation: cellFill 1.8s ease-out forwards;
   }
-  @keyframes cellSaveBar { 0% { left: -35%; } 100% { left: 100%; } }
+  @keyframes cellFill { from { width: 0; } to { width: 100%; } }
   /* ミニスピナー（データ読込ステータス用） */
   .mini-spin { display: inline-block; width: 9px; height: 9px; border: 1.5px solid #C5CDD6; border-top-color: var(--g-blue); border-radius: 50%; animation: miniSpin 0.7s linear infinite; vertical-align: -1px; }
   @keyframes miniSpin { to { transform: rotate(360deg); } }
@@ -820,9 +820,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.16.1';
+const APP_VERSION = '0.16.2';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '保存を楽観的更新に：入力値を即座に表示しバックグラウンド保存（体感の遅さを解消）。砂時計を「伸びるプログレスバー」に置換。読込ステータスもスピナー化。';
+const APP_NOTE  = '保存中の表示を、セルが左から色で満たされる塗りつぶし効果（1回のみ・繰り返さない）に変更。';
 
 // ===== Tab switch =====
 function show(id, e) {
