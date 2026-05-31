@@ -785,9 +785,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.11.0';
+const APP_VERSION = '0.11.1';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'DASHBOARD 以外の全タブで列幅をドラッグ調整できる機能を追加（各列見出しの右端をドラッグ）。';
+const APP_NOTE  = '調整した列幅を localStorage に保存し、再訪時に復元。各タブに「↔ 重置欄寬」リセットボタンを追加。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2229,10 +2229,58 @@ async function loadFromSheet() {
   return false;
 }
 
-// ===== 列幅ドラッグ調整（DASHBOARD 以外の全タブ） =====
+// ===== 列幅ドラッグ調整（DASHBOARD 以外の全タブ）＋ localStorage 保存・リセット =====
 // thead は静的 HTML（tbody のみ再描画）なので、起動時に 1 回ハンドルを付ければ十分。
+const COLW_KEY_PREFIX = 'jig:colw:';
+// テーブルごとの保存キー（親パネル id を利用。無ければ table id にフォールバック）
+function colWidthKey(table) {
+  const panel = table.closest('.panel');
+  const id = (panel && panel.id) || table.id || 'tbl';
+  return COLW_KEY_PREFIX + id;
+}
+function applyThWidth(th, w) {
+  th.style.width = w + 'px';
+  th.style.minWidth = w + 'px';
+  th.style.maxWidth = w + 'px';
+}
+function loadColWidths(table) {
+  let map = {};
+  try { map = JSON.parse(localStorage.getItem(colWidthKey(table)) || '{}') || {}; }
+  catch (e) { map = {}; }
+  const ths = table.querySelectorAll('thead th');
+  ths.forEach((th, i) => { if (map[i] != null) applyThWidth(th, map[i]); });
+}
+function saveColWidths(table) {
+  const map = {};
+  table.querySelectorAll('thead th').forEach((th, i) => {
+    if (th.style.width) map[i] = parseInt(th.style.width, 10);
+  });
+  try { localStorage.setItem(colWidthKey(table), JSON.stringify(map)); } catch (e) {}
+}
+function resetColWidths(table) {
+  try { localStorage.removeItem(colWidthKey(table)); } catch (e) {}
+  table.querySelectorAll('thead th').forEach(th => {
+    th.style.width = ''; th.style.minWidth = ''; th.style.maxWidth = '';
+  });
+}
+// 各テーブルの親パネル ctrl-bar に「重置欄寬」ボタンを 1 回だけ挿入
+function injectResetButton(table) {
+  const panel = table.closest('.panel');
+  if (!panel) return;
+  const bar = panel.querySelector('.ctrl-bar');
+  if (!bar || bar.querySelector('.colw-reset')) return;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'ctrl-clear colw-reset';
+  btn.textContent = '↔ 重置欄寬';
+  btn.title = '此分頁的欄寬恢復預設';
+  btn.addEventListener('click', () => resetColWidths(table));
+  bar.appendChild(btn);
+}
 function attachColumnResizers(table) {
   if (!table) return;
+  loadColWidths(table);     // 保存済みの列幅を復元
+  injectResetButton(table); // リセットボタンを設置
   table.querySelectorAll('thead th').forEach(th => {
     if (th.querySelector('.col-resizer')) return;
     const grip = document.createElement('span');
@@ -2250,9 +2298,7 @@ function attachColumnResizers(table) {
         if (isTouch) ev.preventDefault();
         const x = isTouch ? ev.touches[0].pageX : ev.pageX;
         const w = Math.max(28, startW + (x - startX));
-        th.style.width = w + 'px';
-        th.style.minWidth = w + 'px';
-        th.style.maxWidth = w + 'px';
+        applyThWidth(th, w);
       };
       const end = () => {
         grip.classList.remove('dragging');
@@ -2261,6 +2307,7 @@ function attachColumnResizers(table) {
         document.removeEventListener('mouseup', end);
         document.removeEventListener('touchmove', move);
         document.removeEventListener('touchend', end);
+        saveColWidths(table);   // ドラッグ完了時に保存
       };
       document.addEventListener('mousemove', move);
       document.addEventListener('mouseup', end);
