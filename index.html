@@ -370,6 +370,8 @@
 
   /* Tab C：ヘッダー行テキストを中央ぞろえ／Mission進度 列を既定で最大化 */
   #panel-C .simple-table thead th { text-align: center; }
+  /* Tab C の Mission進度セルは 1 行省略（モーダルで全文編集するので一覧性優先） */
+  #panel-C td.memo.memo-clip { max-width: none; }
 
   /* 編集可能セル（Mission進度タブ） */
   .simple-table td.cell-editable { cursor: pointer; position: relative; }
@@ -978,7 +980,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.17.3';
+const APP_VERSION = '0.17.4';
 const APP_BUILD = '2026-05-31';
 const APP_NOTE  = 'モーダルに狀態・Mission進度・Confluence URLを統合。狀態/URLセルクリックでもモーダルが開く。親Issueラベル表示。';
 
@@ -2176,11 +2178,11 @@ function missionEditRow(r, opts) {
   // 編號 / Mission
   h += `<td class="num">${escapeHtml(num)}</td>`;
   h += `<td class="lbl">${escapeHtml(r['Issue']||'')}</td>`;
-  // Mission進度（雙擊編輯）
+  // Mission進度（雙擊でモーダル編集。1 行省略表示で一覧性優先）
   if (isMission) {
-    h += `<td class="memo cell-editable" data-edit="remark" data-mission="${escapeAttr(num)}" title="雙擊開啟編輯器">${escapeHtml(remark)}</td>`;
+    h += `<td class="memo memo-clip cell-editable" data-edit="remark" data-mission="${escapeAttr(num)}" title="${escapeAttr(remark || '雙擊開啟編輯器')}">${escapeHtml(remark)}</td>`;
   } else {
-    h += `<td class="memo">${escapeHtml(remark)}</td>`;
+    h += `<td class="memo memo-clip" title="${escapeAttr(remark)}">${escapeHtml(remark)}</td>`;
   }
   // 狀態（點擊變更）
   if (isMission) {
