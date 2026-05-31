@@ -36,7 +36,7 @@
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 // 再公開が反映されたか確認するための目印。doGet が返す。変更のたびに上げる。
-const CODE_VERSION = 'gs-2026-05-31-addrow3';
+const CODE_VERSION = 'gs-2026-05-31-addrow4';
 
 const STATUS_VALUES = ['未開始', '策劃中', '需確認', '進行中', '結案'];
 const STATUS_COLORS = {
@@ -327,9 +327,11 @@ function _appendByHeaders(sheet, valueMap) {
     if (hasFormula || autoFilled) { skipped.push(name); return; }
     try {
       cell.setValue(valueMap[name]);
+      SpreadsheetApp.flush();   // 入力規則違反は flush で発火するため、ここで発火させ try 内で捕捉する
     } catch (e) {
-      // データ入力規則（無効値を拒否）等で弾かれた → その列だけ諦めて行作成は続行
+      // データ入力規則（無効値を拒否）等で弾かれた → その列をクリアして行作成は続行
       rejected.push(name);
+      try { cell.clearContent(); SpreadsheetApp.flush(); } catch (_) {}
       console.log('  _appendByHeaders rejected on', name, ':', String(e && e.message || e));
     }
   });

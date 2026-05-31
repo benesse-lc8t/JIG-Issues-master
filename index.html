@@ -1310,9 +1310,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.26.3';
+const APP_VERSION = '0.26.4';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'フリーズ修正：gviz のヘッダー誤検出（2行結合）で Issue主檔 が読めず全体が止まる問題を解消。gviz URL に headers=1 を付与＋ rowsToData にヘッダー行探索の防御を追加。Apps Script 変更なし（再公開不要）。';
+const APP_NOTE  = '追加の入力規則対応を完全化：入力規則違反は setValue ではなく flush で発火するため、各セル書込み直後に flush して try 内で捕捉。弾かれた列はクリアしてスキップし、行作成とレスポンス成功（warnings 付き）を保証。※Apps Script の再公開が必要（codeVersion=addrow4 で確認）。';
 
 // ===== Tab switch =====
 function show(id, e) {

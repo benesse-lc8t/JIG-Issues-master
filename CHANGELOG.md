@@ -5,6 +5,16 @@
 
 ---
 
+## v0.26.4 — 2026-05-31
+
+**追加の入力規則対応を完全化（行は作られるのに「失敗」表示になる不整合を解消）**
+
+v0.26.2 の try/catch は `setValue` を包んでいたが、**データ入力規則違反は `setValue` の瞬間でなく後続の `flush()`（ループ外）で発火**するため catch をすり抜け、`exception` で失敗応答になっていた（実際には行は作成済み）。`Confluence URL` 列に入力規則（ドロップダウン）があり、自由入力 URL が弾かれていたのが今回の引き金。
+
+- `_appendByHeaders`：各セルの `setValue` 直後に **`SpreadsheetApp.flush()` を try 内で実行**し、入力規則違反をその場で捕捉。弾かれた列は `clearContent` でクリアして `rejected` に記録し、行作成とレスポンス `ok:true`（warnings 付き）を保証。
+- `doGet` の `codeVersion` を **`gs-2026-05-31-addrow4`** に更新（再公開の反映確認用）。
+- **要再公開**：`setup-sheet.gs` 変更のため Apps Script を同一 URL で再デプロイ。反映確認は Web App URL を開いて `codeVersion` が `addrow4` であること。
+
 ## v0.26.3 — 2026-05-31
 
 **重大：ダッシュボード全体フリーズを修正（gviz ヘッダー誤検出）**
