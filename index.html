@@ -460,6 +460,10 @@
   .np-wrap { position: relative; }
   .np-wrap .author-trigger { width: 100%; }
   .np-wrap .np-menu { left: 0; right: 0; }
+  /* 名前ピッカーのトリガ：選択（単数/複数）をタグで表示 */
+  .np-trigger.has-sel { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; background: #fff !important; border-color: #DADCE0 !important; padding-top: 5px; padding-bottom: 5px; }
+  .np-trigger .np-ph { color: #BCC0C6; font-weight: 500; }
+  .np-trigger .np-tag { font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 10px; white-space: nowrap; line-height: 1.7; }
   /* 新增ボタンのローディング・スピナー（押下＝処理中を明示） */
   .remark-modal-save.is-loading { position: relative; color: transparent !important; pointer-events: none; }
   .remark-modal-save.is-loading::after {
@@ -903,7 +907,7 @@
           <div class="add-field">
             <label>擔當</label>
             <div class="np-wrap">
-              <button type="button" class="author-trigger np-trigger is-placeholder" id="addMOwnerTrigger" data-placeholder="選擇擔當"></button>
+              <button type="button" class="author-trigger np-trigger is-placeholder" id="addMOwnerTrigger" data-placeholder="選擇擔當（可複選）"></button>
               <div class="author-menu np-menu" id="addMOwnerMenu">
                 <input type="text" class="author-menu-search" id="addMOwnerSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
                 <div class="author-menu-chips" id="addMOwnerChips"></div>
@@ -1339,9 +1343,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.27.0';
+const APP_VERSION = '0.27.1';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '新增モーダルの UI/UX 改善：全表記を繁體中文に統一、擔當／戰略負責人を名前チップピッカー化（處ベース色）、Issue の「組」を「處」連動プルダウンに、新增ボタンに処理中スピナーを追加。Apps Script 変更なし。';
+const APP_NOTE  = '擔當の複数選択に対応：名前チップピッカーを複数選択モード化し、擔當を「/」区切りで複数名保存（データ層は従来から複数対応・splitPersons）。戰略負責人は単一のまま。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2158,7 +2162,9 @@ function _setAddKind(kind) {
   document.getElementById('addFormIssue').style.display = kind === 'issue' ? '' : 'none';
 }
 // ----- 汎用 名前チップピッカー（擔當／戰略負責人。記入者チップと同配色・處ベース）-----
-window._namePick = window._namePick || {};
+// 選択は配列で保持。multi=true で複数選択（擔當）、false で単一（戰略負責人）。
+window._namePickSel = window._namePickSel || {};   // prefix -> [name, ...]
+window._namePickMulti = window._namePickMulti || {}; // prefix -> bool
 function _namePickerChipData() {
   const names = (typeof collectAuthorNames === 'function') ? collectAuthorNames() : [];
   const deptMap = (typeof buildAuthorDeptMap === 'function') ? buildAuthorDeptMap() : {};
@@ -2175,20 +2181,25 @@ function _namePickerChipData() {
   });
   return names.map(n => { const c = deptChipColor(deptMap[n] || ''); return { name: n, bg: c.bg, fg: c.fg }; });
 }
+function _namePickColor(name, data) {
+  const d = (data || _namePickerChipData()).find(x => x.name === name);
+  return d ? { bg: d.bg, fg: d.fg } : { bg: '#F1F3F4', fg: '#5F6368' };
+}
 function _refreshNamePickerTrigger(prefix) {
   const trg = document.getElementById(prefix + 'Trigger');
   if (!trg) return;
-  const sel = window._namePick[prefix] || '';
-  if (sel) {
-    const d = _namePickerChipData().find(x => x.name === sel) || { bg: '#F1F3F4', fg: '#5F6368' };
-    trg.textContent = sel;
-    trg.classList.remove('is-placeholder'); trg.classList.add('has-sel');
-    trg.style.setProperty('--sel-bg', d.bg); trg.style.setProperty('--sel-fg', d.fg);
-  } else {
-    trg.textContent = trg.dataset.placeholder || '請選擇';
+  const sel = window._namePickSel[prefix] || [];
+  if (!sel.length) {
+    trg.innerHTML = `<span class="np-ph">${escapeHtml(trg.dataset.placeholder || '請選擇')}</span>`;
     trg.classList.add('is-placeholder'); trg.classList.remove('has-sel');
-    trg.style.removeProperty('--sel-bg'); trg.style.removeProperty('--sel-fg');
+    return;
   }
+  const data = _namePickerChipData();
+  trg.classList.remove('is-placeholder'); trg.classList.add('has-sel');
+  trg.innerHTML = sel.map(n => {
+    const c = _namePickColor(n, data);
+    return `<span class="np-tag" style="background:${c.bg};color:${c.fg}">${escapeHtml(n)}</span>`;
+  }).join('');
 }
 function renderNamePickerChips(prefix, filter) {
   const wrap = document.getElementById(prefix + 'Chips');
@@ -2196,18 +2207,27 @@ function renderNamePickerChips(prefix, filter) {
   const q = (filter || '').trim().toLowerCase();
   const all = _namePickerChipData();
   const list = q ? all.filter(d => d.name.toLowerCase().includes(q)) : all;
-  const sel = window._namePick[prefix] || '';
+  const sel = window._namePickSel[prefix] || [];
   if (!list.length) { wrap.innerHTML = '<div class="author-menu-empty">查無符合的姓名</div>'; return; }
   wrap.innerHTML = list.map(d => {
-    const active = d.name === sel ? ' active' : '';
+    const active = sel.includes(d.name) ? ' active' : '';
     return `<button type="button" class="author-chip${active}" data-name="${escapeAttr(d.name)}" style="--chip-bg:${d.bg};--chip-fg:${d.fg}">${escapeHtml(d.name)}</button>`;
   }).join('');
   wrap.querySelectorAll('.author-chip').forEach(chip => {
     chip.addEventListener('click', () => {
-      const cur = window._namePick[prefix] || '';
-      window._namePick[prefix] = (cur === chip.dataset.name) ? '' : chip.dataset.name; // 再クリックで解除（任意項目）
-      _refreshNamePickerTrigger(prefix);
-      _closeNamePickers();
+      const name = chip.dataset.name;
+      const arr = window._namePickSel[prefix] || (window._namePickSel[prefix] = []);
+      const i = arr.indexOf(name);
+      if (window._namePickMulti[prefix]) {
+        if (i >= 0) arr.splice(i, 1); else arr.push(name);
+        _refreshNamePickerTrigger(prefix);
+        const s = document.getElementById(prefix + 'Search');
+        renderNamePickerChips(prefix, s ? s.value : ''); // active 表示を更新（メニューは開いたまま）
+      } else {
+        window._namePickSel[prefix] = (i >= 0) ? [] : [name]; // 再クリックで解除
+        _refreshNamePickerTrigger(prefix);
+        _closeNamePickers();
+      }
     });
   });
 }
@@ -2234,11 +2254,17 @@ function setupNamePicker(prefix) {
   });
   if (search) search.addEventListener('input', () => renderNamePickerChips(prefix, search.value));
 }
-function resetNamePicker(prefix, val) {
-  window._namePick[prefix] = val || '';
+// val: 文字列（"/" 区切り可）または配列。multi: 複数選択を許可するか
+function resetNamePicker(prefix, val, multi) {
+  window._namePickMulti[prefix] = !!multi;
+  let arr = [];
+  if (Array.isArray(val)) arr = val.slice();
+  else if (val) arr = String(val).split(/[\/、,，;；]/).map(s => s.trim()).filter(Boolean);
+  window._namePickSel[prefix] = arr;
   setupNamePicker(prefix);
   _refreshNamePickerTrigger(prefix);
 }
+function namePickValue(prefix) { return (window._namePickSel[prefix] || []).join('/'); }
 // ----- Issue 表單：處 に紐づく「組」の候補（既存 Issue ＋ 人員マスタから収集）-----
 function _groupsForDept(dept) {
   dept = (dept || '').trim();
@@ -2278,10 +2304,10 @@ function openAddModal(kind) {
   // テキスト入力リセット
   ['addMName','addIId','addIName','addConf'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
   document.getElementById('addIIdWarn').textContent = '';
-  // 名前ピッカー初期化（擔當・戰略負責人）
-  resetNamePicker('addMOwner', '');
-  resetNamePicker('addMLead', '');
-  resetNamePicker('addILead', '');
+  // 名前ピッカー初期化（擔當は複数選択可・戰略負責人は単一）
+  resetNamePicker('addMOwner', '', true);
+  resetNamePicker('addMLead', '', false);
+  resetNamePicker('addILead', '', false);
   _buildAddStatusBtns();
   _setAddKind(kind || 'mission');
   _refreshAddMIdPreview();
@@ -2309,8 +2335,8 @@ async function _submitAdd() {
     payload = {
       token: WRITE_TOKEN, action: 'addMission',
       '親編號': parent, 'Mission': name,
-      '擔當': window._namePick['addMOwner'] || '',
-      '戰略負責人': window._namePick['addMLead'] || '',
+      '擔當': namePickValue('addMOwner'),
+      '戰略負責人': namePickValue('addMLead'),
       '狀態': status, 'Confluence URL': conf
     };
   } else {
@@ -2326,7 +2352,7 @@ async function _submitAdd() {
       '編號': id, 'Issue': name,
       '處': document.getElementById('addIDept').value,
       '組': document.getElementById('addIGroup').value,
-      '戰略負責人': window._namePick['addILead'] || '',
+      '戰略負責人': namePickValue('addILead'),
       '狀態': status, 'Confluence URL': conf
     };
   }
