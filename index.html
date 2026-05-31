@@ -338,6 +338,13 @@
   /* 列の折り返しを抑制（処・擔當・狀態・更新） */
   .simple-table td.dept, .simple-table td.num, .simple-table td.st, .simple-table td.upd { white-space: nowrap; }
   .simple-table td.memo { white-space: normal; }
+  /* Mission進度の 1 行省略表示（Mission進度タブ以外。一覧性優先）＋クリックでジャンプ */
+  td.memo.memo-clip { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: normal; }
+  td.memo.memo-jump { cursor: pointer; }
+  td.memo.memo-jump:hover { background: #E8F0FE; text-decoration: underline; color: var(--g-blue); }
+  /* ジャンプ先 Mission 行のフラッシュ強調 */
+  @keyframes rowFlash { 0% { background: #D2E3FC; } 100% { background: transparent; } }
+  tr.row-flash > td { animation: rowFlash 1.8s ease-out; }
   /* 詩雅 / 育菱パネルの角色バッジ */
   .simple-table .role-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 700; letter-spacing: 0.03em; margin-right: 3px; white-space: nowrap; }
   .simple-table .role-owner     { background: #FEF7E0; color: #B06000; border: 1px solid #F9AB00; } /* 擔當 = 橙 */
@@ -512,7 +519,7 @@
     <th class="mtg-col" style="width:70px;">會議時間</th>
     <th style="width:74px;">狀態</th>
     <th style="min-width:140px;">Mission進度</th>
-    <th style="width:104px;">更新</th>
+    <th style="width:64px;">更新</th>
   </tr>
 </thead>
 <tbody>
@@ -559,7 +566,7 @@
         <th style="width:76px;">擔當</th>
         <th style="min-width:120px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
-        <th style="width:104px;">更新</th>
+        <th style="width:64px;">更新</th>
         <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
       </tr>
     </thead>
@@ -659,7 +666,7 @@
         <th style="width:110px;">角色</th>
         <th style="min-width:140px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
-        <th style="width:104px;">更新</th>
+        <th style="width:64px;">更新</th>
         <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
       </tr>
     </thead>
@@ -713,7 +720,7 @@
         <th style="width:110px;">角色</th>
         <th style="min-width:140px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
-        <th style="width:104px;">更新</th>
+        <th style="width:64px;">更新</th>
         <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
       </tr>
     </thead>
@@ -803,9 +810,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.15.2';
+const APP_VERSION = '0.16.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'Mission進度タブ：停滞アラートの黄/赤の地色を行全体ではなく「更新」列セルだけに限定。';
+const APP_NOTE  = '一覧性と詳細の役割分担：Mission進度タブ以外は Mission進度を1行省略＋クリックで該当へジャンプ、更新は漢字相対表記のみ。Mission進度タブは全文＋日時表示。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -814,7 +821,38 @@ function show(id, e) {
   const admin = document.getElementById('adminBtn');
   if (admin) admin.classList.remove('active');
   document.getElementById('panel-' + id).classList.add('active');
-  if (e && e.target) e.target.classList.add('active');
+  if (e && e.target) {
+    e.target.classList.add('active');
+  } else {
+    // プログラム的に切替えた場合は該当タブのハイライトを onclick から特定して付ける
+    document.querySelectorAll('.tab, .person-btn').forEach(t => {
+      if ((t.getAttribute('onclick') || '').includes(`show('${id}'`)) t.classList.add('active');
+    });
+  }
+}
+
+// Mission進度タブ（Tab C）の該当 Mission 行へジャンプして強調表示
+function jumpToMission(missionId) {
+  const mid = String(missionId || '').trim();
+  if (!mid) return;
+  show('C');
+  const findRow = () => document.querySelector(`#panel-C tr[data-mid="${(window.CSS && CSS.escape) ? CSS.escape(mid) : mid}"]`);
+  requestAnimationFrame(() => {
+    let row = findRow();
+    if (!row) {
+      // フィルタで隠れている場合はクリアして再描画してから探す
+      ['filterDeptC','filterGroupC','filterOwnerC','filterStatusC','filterStaleC'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      if (typeof renderTableC === 'function') renderTableC();
+      row = findRow();
+    }
+    if (row) {
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.classList.add('row-flash');
+      setTimeout(() => row.classList.remove('row-flash'), 1800);
+    }
+  });
 }
 
 // ===== Data model & rendering for Tab A =====
@@ -1012,19 +1050,18 @@ function parseDateLoose(v) {
 
 function freshnessCell(dateStr, editOpts) {
   const v = (dateStr || '').toString().trim();
-  // 編集可能セルの場合、ISO 形式の raw 値を data-raw に詰める
+  // 表示モード：detailed（Mission進度タブ＝日時まで） / compact（その他＝漢字の相対表記のみ）
+  const detailed = !!(editOpts && (editOpts.auto || editOpts.detailed || editOpts.editable));
   let rawIso = '';
-  let display = '';   // セルに表示する実際の日時
-  let relTitle = '';  // ツールチップ用の相対表現（◯天前）
+  let detailHtml = '';  // detailed 表示：実日時＋相対
+  let relText = '';     // 相対表現（今天 / ◯天前）
+  let fullStamp = '';   // 実日時の素テキスト（compact 時のツールチップ用）
   let cls = 'upd-fresh';
   if (v) {
     const d = parseDateLoose(v);
     if (!d || isNaN(d.getTime())) {
       console.warn('[freshnessCell] 日付の解析に失敗:', JSON.stringify(v));
-      const editAttr = editOpts && editOpts.editable
-        ? ` cell-editable" data-edit="date" data-mission="${escapeAttr(editOpts.missionId)}" data-raw=""`
-        : '"';
-      return `<td class="upd${editAttr} title="解析できず：${escapeAttr(v)}">${escapeHtml(v)}</td>`;
+      return `<td class="upd" title="解析できず：${escapeAttr(v)}">${escapeHtml(v)}</td>`;
     }
     const pad = n => String(n).padStart(2,'0');
     // 停滞色は日単位で判定（時刻は無視）
@@ -1033,19 +1070,21 @@ function freshnessCell(dateStr, editOpts) {
     const days = Math.floor((today - d0) / 86400000);
     if (days > 14) cls = 'upd-stale';
     else if (days > 7) cls = 'upd-warn';
-    relTitle = days <= 0 ? '今天' : `${days} 天前`;
+    relText = days <= 0 ? '今天' : `${days} 天前`;
     rawIso = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-    // 実際の日時を表示（時刻を持つ値のみ HH:mm を併記）＋ 相対表現（◯天前）を 2 行目に小さく併記
     const hasTime = (d.getHours() || d.getMinutes() || d.getSeconds());
-    const timeHtml = hasTime ? ` <span class="upd-time">${pad(d.getHours())}:${pad(d.getMinutes())}</span>` : '';
-    display = `${rawIso}${timeHtml}<span class="upd-rel">${relTitle}</span>`;
+    const timeStr = hasTime ? `${pad(d.getHours())}:${pad(d.getMinutes())}` : '';
+    fullStamp = timeStr ? `${rawIso} ${timeStr}` : rawIso;
+    // detailed：実日時（時刻があれば HH:mm 併記）＋相対を 2 行目に小さく
+    const timeHtml = timeStr ? ` <span class="upd-time">${timeStr}</span>` : '';
+    detailHtml = `${rawIso}${timeHtml}<span class="upd-rel">${relText}</span>`;
   }
-  if (editOpts && editOpts.editable) {
-    return `<td class="upd ${cls} cell-editable" data-edit="date" data-mission="${escapeAttr(editOpts.missionId)}" data-raw="${escapeAttr(rawIso)}" title="點擊編輯日期（${escapeAttr(v||'未設定')}）">${display}</td>`;
+  if (detailed) {
+    const title = (editOpts && editOpts.auto) ? '編輯時自動記錄（無需手動輸入）' : (v || '');
+    return `<td class="upd ${cls}" title="${escapeAttr(title)}">${detailHtml}</td>`;
   }
-  // 自動記録モード：手入力不可。編集（狀態 / Mission進度 / 連結）時に自動でその日時が入る。
-  const title = (editOpts && editOpts.auto) ? '編輯時自動記錄（無需手動輸入）' : (v || '');
-  return `<td class="upd ${cls}" title="${escapeAttr(title)}">${display}</td>`;
+  // compact：漢字の相対表記のみ。実日時はツールチップで補助（一覧性優先）。
+  return `<td class="upd ${cls}" title="${escapeAttr(fullStamp)}">${escapeHtml(relText)}</td>`;
 }
 
 // Confluence セル：管理頁面（ページ名）＋ favicon ＋ リンク
@@ -1178,8 +1217,14 @@ function renderRow(r, opts) {
   h += `<td class="pc mtg-col">${escapeHtml(r['確認會議'])}</td>`;                          // 8 確認會議
   h += `<td class="pc mtg-col">${escapeHtml(r['會議時間'])}</td>`;                          // 9 會議時間
   h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;                          // 10 狀態
-  h += `<td class="memo">${escapeHtml(r['Mission進度'] || r['事務局備註'] || '')}</td>`;     // 11 Mission進度（Issue は 事務局備註 にフォールバック）
-  h += freshnessCell(r['更新日']);                                                          // 12 更新
+  // 11 Mission進度：一覧性優先で 1 行省略表示。Mission 行はクリックで Mission進度タブの該当へジャンプ
+  const memoText = r['Mission進度'] || r['事務局備註'] || '';
+  if (isMission && memoText) {
+    h += `<td class="memo memo-clip memo-jump" title="${escapeAttr(memoText)}（點擊跳至 Mission進度）" onclick="jumpToMission('${escapeAttr(num)}')">${escapeHtml(memoText)}</td>`;
+  } else {
+    h += `<td class="memo memo-clip" title="${escapeAttr(memoText)}">${escapeHtml(memoText)}</td>`;
+  }
+  h += freshnessCell(r['更新日']);                                                          // 12 更新（compact＝漢字相対表記のみ）
   h += '</tr>';
   return h;
 }
@@ -1709,10 +1754,11 @@ function simpleRow(r, opts) {
     h += `<td>${escapeHtml(owner)}</td>`;
   }
   if (opts.showRemark !== false) {
-    if (opts.editable && isMission) {
-      h += `<td class="memo cell-editable" data-edit="remark" data-mission="${escapeAttr(num)}" title="雙擊編輯">${escapeHtml(remark)}</td>`;
+    // 一覧性優先で 1 行省略表示。Mission 行はクリックで Mission進度タブの該当へジャンプ
+    if (isMission && remark) {
+      h += `<td class="memo memo-clip memo-jump" title="${escapeAttr(remark)}（點擊跳至 Mission進度）" onclick="jumpToMission('${escapeAttr(num)}')">${escapeHtml(remark)}</td>`;
     } else {
-      h += `<td class="memo">${escapeHtml(remark)}</td>`;
+      h += `<td class="memo memo-clip" title="${escapeAttr(remark)}">${escapeHtml(remark)}</td>`;
     }
   }
   if (opts.editable && isMission) {
@@ -1745,7 +1791,8 @@ function missionEditRow(r, opts) {
   const owner = (r['擔當']||'').trim();
   const remark = (r['Mission進度'] || r['事務局備註'] || '').trim();
   const cls = opts.rowClass || '';
-  let h = `<tr${cls ? ` class="${cls}"` : ''}>`;
+  // data-mid：他タブの Mission進度 セルからジャンプして来るためのアンカー
+  let h = `<tr data-mid="${escapeAttr(num)}"${cls ? ` class="${cls}"` : ''}>`;
   // 親 Issue（直前と同じ親なら空白）
   if (opts.parent && opts.parent.show) {
     h += `<td class="parent-cell" title="${escapeAttr((opts.parent.num + ' ' + opts.parent.name).trim())}"><span class="pc-num">${escapeHtml(opts.parent.num)}</span><span class="pc-name">${escapeHtml(opts.parent.name)}</span></td>`;
