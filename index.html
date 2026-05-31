@@ -570,7 +570,8 @@
   #remarkModal.read-only .remark-modal-hint { display: none; }
   #remarkModal.read-only .remark-modal-edit { display: inline-block; }
   #remarkModal.read-only .modal-st-btn { pointer-events: none; }
-  #remarkModal.read-only .author-chip { pointer-events: none; }
+  #remarkModal.read-only .author-chip,
+  #remarkModal.read-only .author-trigger { pointer-events: none; }
   #remarkModal.read-only .remark-modal-ta,
   #remarkModal.read-only .remark-modal-conf-inp,
   #remarkModal.read-only .remark-modal-conf-name { background: #F8F9FA; cursor: default; box-shadow: none; border-color: #E8EAED; }
@@ -579,20 +580,46 @@
   #remarkModal.read-only #remarkModalNewSec { display: none; }
 
   /* 今週の進度：記入者チップ選択 */
-  .remark-modal-author-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
-  .remark-modal-author-label { font-size: 11px; color: #5F6368; white-space: nowrap; padding-top: 6px; }
-  .remark-modal-author-chips {
-    flex: 1; display: flex; flex-wrap: wrap; gap: 5px;
-    max-height: 92px; overflow-y: auto; padding: 2px;
+  .remark-modal-author-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .remark-modal-author-label { font-size: 11px; color: #5F6368; white-space: nowrap; }
+  /* 記入者：ボタン → クリックで展開するドロップダウン（全社展開で人数が増えても省スペース） */
+  .remark-modal-author-dd { position: relative; flex: 1; min-width: 0; }
+  .author-trigger {
+    width: 100%; box-sizing: border-box; cursor: pointer; text-align: left;
+    font-family: var(--font-cjk); font-size: 13px; font-weight: 600;
+    padding: 7px 32px 7px 11px; border: 1px solid #DADCE0; border-radius: 8px;
+    background: #fff; color: #202124; position: relative; transition: border-color 0.12s, box-shadow 0.12s;
   }
+  .author-trigger:hover { border-color: #BDC1C6; }
+  .author-trigger.open { border-color: var(--g-blue); box-shadow: 0 0 0 2px rgba(26,115,232,0.16); }
+  .author-trigger::after {
+    content: '▾'; position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+    color: #9AA0A6; font-size: 11px;
+  }
+  .author-trigger.is-placeholder { color: #BCC0C6; font-weight: 500; }
+  /* トリガに選択中チップの組カラーを薄く反映 */
+  .author-trigger.has-sel { background: var(--sel-bg, #fff); border-color: var(--sel-fg, #DADCE0); }
+  .author-menu {
+    display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 20;
+    background: #fff; border: 1px solid #DADCE0; border-radius: 10px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.18); padding: 9px; max-height: 240px; overflow-y: auto;
+  }
+  .author-menu.open { display: block; }
+  .author-menu-search {
+    width: 100%; box-sizing: border-box; font-family: var(--font-cjk); font-size: 12px;
+    padding: 6px 9px; border: 1px solid #E0E0E0; border-radius: 6px; margin-bottom: 8px; outline: none;
+  }
+  .author-menu-search:focus { border-color: var(--g-blue); }
+  .author-menu-chips { display: flex; flex-wrap: wrap; gap: 5px; }
   .author-chip {
     font-family: var(--font-cjk); font-size: 12px; font-weight: 600; cursor: pointer;
     padding: 3px 11px; border-radius: 13px; border: 1.5px solid transparent;
     background: var(--chip-bg, #F1F3F4); color: var(--chip-fg, #5F6368);
-    transition: all 0.12s; opacity: 0.62; white-space: nowrap;
+    transition: all 0.12s; opacity: 0.7; white-space: nowrap;
   }
-  .author-chip:hover { opacity: 0.85; }
+  .author-chip:hover { opacity: 0.95; }
   .author-chip.active { opacity: 1; border-color: currentColor; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+  .author-menu-empty { font-size: 12px; color: #9AA0A6; padding: 6px 2px; }
   /* これまでの記録（タイムライン） */
   .remark-modal-log { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; padding-right: 4px; }
   .rm-log-entry { border-left: 3px solid #C7D6F5; padding: 5px 11px; background: #F8FAFD; border-radius: 0 8px 8px 0; }
@@ -765,7 +792,13 @@
         <div class="remark-modal-label">本週進度（新增記錄）</div>
         <div class="remark-modal-author-row">
           <span class="remark-modal-author-label">填寫者</span>
-          <div class="remark-modal-author-chips" id="remarkModalAuthor" role="listbox" aria-label="填寫者"></div>
+          <div class="remark-modal-author-dd" id="remarkModalAuthor">
+            <button type="button" class="author-trigger" id="authorTrigger" aria-haspopup="listbox" aria-expanded="false"></button>
+            <div class="author-menu" id="authorMenu" role="listbox" aria-label="填寫者">
+              <input type="text" class="author-menu-search" id="authorSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
+              <div class="author-menu-chips" id="authorMenuChips"></div>
+            </div>
+          </div>
         </div>
         <textarea class="remark-modal-ta" id="remarkModalNew" placeholder="進度說明" rows="3"></textarea>
       </div>
@@ -1150,9 +1183,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.24.2';
+const APP_VERSION = '0.24.3';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '編集モーダル UI 改善：記入者を組カラーのチップで選択（同組を隣接）、Confluence が多いと折りたたみ（ログを隠さない）、記入者・進度・ログのフォントを Noto Sans TC に統一。';
+const APP_NOTE  = '記入者を常時チップ表示から「ボタン→クリックで展開するドロップダウン（検索窓＋組カラーチップ）」に変更。全社展開で人数が増えても省スペース＆検索で選べる。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2301,9 +2334,22 @@ function startStatusEdit(td, missionId) {
     $('remarkModalConfAdd').addEventListener('click', () => { addConfRow('').focus(); });
     $('remarkModalConfToggle').addEventListener('click', toggleConfList);
     $('remarkModalOverlay').addEventListener('mousedown', e => { if (e.target === $('remarkModalOverlay')) closeModal(); });
+    // 記入者ドロップダウン
+    $('authorTrigger').addEventListener('click', e => {
+      e.stopPropagation();
+      authorMenuOpen() ? closeAuthorMenu() : openAuthorMenu();
+    });
+    $('authorSearch').addEventListener('input', e => renderAuthorMenuChips(e.target.value));
+    $('authorSearch').addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeAuthorMenu(); } });
+    // メニュー内クリックで閉じない／外側クリックで閉じる
+    $('authorMenu').addEventListener('mousedown', e => e.stopPropagation());
+    document.addEventListener('mousedown', () => { if (authorMenuOpen()) closeAuthorMenu(); });
     document.addEventListener('keydown', e => {
       if (!$('remarkModalOverlay').classList.contains('open')) return;
-      if (e.key === 'Escape') { e.preventDefault(); closeModal(); }
+      if (e.key === 'Escape') {
+        if (authorMenuOpen()) { e.preventDefault(); closeAuthorMenu(); return; }
+        e.preventDefault(); closeModal();
+      }
       if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !_readOnly) { e.preventDefault(); doSave(); }
     });
   });
@@ -2345,11 +2391,72 @@ function collectAuthorNames() {
   return [...set].sort((a, b) => a.localeCompare(b, 'zh-Hant'));
 }
 let _selectedAuthor = '';
+let _authorChipData = []; // [{name, code, bg, fg}]
 function selectedAuthorName() { return _selectedAuthor; }
-// 記入者を「組カラーのチップ」で表示・選択
+function chipColors(code) {
+  return code ? { bg: `var(--${code}-bg)`, fg: `var(--${code}-fg)` } : { bg: '#F1F3F4', fg: '#5F6368' };
+}
+// トリガ（ボタン）の表示を選択状態に合わせて更新
+function refreshAuthorTrigger() {
+  const trg = document.getElementById('authorTrigger');
+  if (!trg) return;
+  if (_selectedAuthor) {
+    const d = _authorChipData.find(x => x.name === _selectedAuthor);
+    const c = d ? chipColors(d.code) : chipColors('');
+    trg.textContent = _selectedAuthor;
+    trg.classList.remove('is-placeholder');
+    trg.classList.add('has-sel');
+    trg.style.setProperty('--sel-bg', c.bg);
+    trg.style.setProperty('--sel-fg', c.fg);
+  } else {
+    trg.textContent = '請選擇填寫者';
+    trg.classList.add('is-placeholder');
+    trg.classList.remove('has-sel');
+    trg.style.removeProperty('--sel-bg');
+    trg.style.removeProperty('--sel-fg');
+  }
+}
+// メニュー内のチップを（検索フィルタ付きで）描画
+function renderAuthorMenuChips(filter) {
+  const wrap = document.getElementById('authorMenuChips');
+  if (!wrap) return;
+  const q = (filter || '').trim().toLowerCase();
+  const list = q ? _authorChipData.filter(d => d.name.toLowerCase().includes(q)) : _authorChipData;
+  if (!list.length) { wrap.innerHTML = '<div class="author-menu-empty">查無符合的姓名</div>'; return; }
+  wrap.innerHTML = list.map(d => {
+    const active = d.name === _selectedAuthor ? ' active' : '';
+    return `<button type="button" class="author-chip${active}" data-name="${escapeAttr(d.name)}"
+      style="--chip-bg:${d.bg};--chip-fg:${d.fg}">${escapeHtml(d.name)}</button>`;
+  }).join('');
+  wrap.querySelectorAll('.author-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      _selectedAuthor = chip.dataset.name;
+      if (_selectedAuthor) localStorage.setItem('jig:lastAuthor', _selectedAuthor);
+      refreshAuthorTrigger();
+      closeAuthorMenu();
+    });
+  });
+}
+function openAuthorMenu() {
+  if (document.getElementById('remarkModal').classList.contains('read-only')) return;
+  document.getElementById('authorTrigger').classList.add('open');
+  document.getElementById('authorTrigger').setAttribute('aria-expanded', 'true');
+  document.getElementById('authorMenu').classList.add('open');
+  const s = document.getElementById('authorSearch');
+  s.value = '';
+  renderAuthorMenuChips('');
+  requestAnimationFrame(() => s.focus());
+}
+function closeAuthorMenu() {
+  document.getElementById('authorTrigger').classList.remove('open');
+  document.getElementById('authorTrigger').setAttribute('aria-expanded', 'false');
+  document.getElementById('authorMenu').classList.remove('open');
+}
+function authorMenuOpen() { return document.getElementById('authorMenu').classList.contains('open'); }
+// 記入者ドロップダウンを構築（ボタン→クリックでメニュー展開）
 function populateAuthorSelect(row) {
-  const box = document.getElementById('remarkModalAuthor');
-  if (!box) return;
+  const dd = document.getElementById('remarkModalAuthor');
+  if (!dd) return;
   const names = collectAuthorNames();
   const grpMap = buildAuthorGroupMap();
   const preferred = (row && splitPersons(row['擔當'])[0]) || localStorage.getItem('jig:lastAuthor') || '';
@@ -2361,22 +2468,13 @@ function populateAuthorSelect(row) {
     const ga = ORDER.indexOf(grpMap[a] || ''), gb = ORDER.indexOf(grpMap[b] || '');
     return ga !== gb ? ga - gb : a.localeCompare(b, 'zh-Hant');
   });
-  box.innerHTML = names.map(n => {
+  _authorChipData = names.map(n => {
     const code = grpMap[n] || '';
-    const bg = code ? `var(--${code}-bg)` : '#F1F3F4';
-    const fg = code ? `var(--${code}-fg)` : '#5F6368';
-    const active = n === _selectedAuthor ? ' active' : '';
-    return `<button type="button" class="author-chip${active}" data-name="${escapeAttr(n)}"
-      style="--chip-bg:${bg};--chip-fg:${fg}">${escapeHtml(n)}</button>`;
-  }).join('');
-  box.querySelectorAll('.author-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      if (document.getElementById('remarkModal').classList.contains('read-only')) return;
-      _selectedAuthor = chip.dataset.name;
-      box.querySelectorAll('.author-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-    });
+    const c = chipColors(code);
+    return { name: n, code, bg: c.bg, fg: c.fg };
   });
+  closeAuthorMenu();
+  refreshAuthorTrigger();
 }
 // タイムライン描画：window.missionLog[id] を新しい順に。無ければ現況テキストを移行表示
 function renderMissionLog(missionId, currentText) {
