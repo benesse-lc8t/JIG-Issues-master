@@ -399,6 +399,67 @@
   .simple-table input.inline-edit[type="date"] { font-size: 10px; }
   .simple-table select.inline-edit { font-size: 10px; }
 
+  /* Mission進度 モーダルエディタ */
+  .remark-modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.38); z-index: 900;
+    align-items: center; justify-content: center;
+  }
+  .remark-modal-overlay.open { display: flex; }
+  .remark-modal {
+    background: #fff; border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+    width: min(680px, 94vw); max-height: 88vh; display: flex; flex-direction: column;
+    animation: modalIn 0.16s ease-out;
+  }
+  @keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  .remark-modal-header {
+    padding: 16px 20px 12px; border-bottom: 1px solid #E8EAED;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .remark-modal-header-text { flex: 1; min-width: 0; }
+  .remark-modal-id {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    background: #E8EAED; color: #3C4043; font-size: 11px; font-weight: 700; margin-bottom: 4px;
+  }
+  .remark-modal-name {
+    font-size: 13px; font-weight: 600; color: #202124; line-height: 1.4;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .remark-modal-close {
+    flex-shrink: 0; width: 28px; height: 28px; border: none; background: none; cursor: pointer;
+    border-radius: 50%; font-size: 18px; color: #5F6368; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .remark-modal-close:hover { background: #F1F3F4; }
+  .remark-modal-body { padding: 16px 20px; flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 8px; }
+  .remark-modal-label { font-size: 11px; font-weight: 600; color: #5F6368; letter-spacing: 0.04em; }
+  .remark-modal-ta {
+    flex: 1; width: 100%; box-sizing: border-box; min-height: 200px; max-height: 52vh;
+    font: inherit; font-family: var(--font); font-size: 13px; line-height: 1.65;
+    border: 1.5px solid #DADCE0; border-radius: 8px; padding: 12px 14px;
+    resize: vertical; outline: none; color: #202124;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .remark-modal-ta:focus { border-color: var(--g-blue); box-shadow: 0 0 0 3px rgba(26,115,232,0.18); }
+  .remark-modal-hint { font-size: 10px; color: #9AA0A6; }
+  .remark-modal-footer {
+    padding: 12px 20px 16px; border-top: 1px solid #E8EAED;
+    display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+  }
+  .remark-modal-cancel {
+    padding: 7px 18px; border: 1.5px solid #DADCE0; border-radius: 6px;
+    background: #fff; color: #3C4043; font: inherit; font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: background 0.12s;
+  }
+  .remark-modal-cancel:hover { background: #F1F3F4; }
+  .remark-modal-save {
+    padding: 7px 22px; border: none; border-radius: 6px;
+    background: var(--g-blue); color: #fff; font: inherit; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: background 0.12s, opacity 0.12s;
+  }
+  .remark-modal-save:hover { background: #1558B0; }
+  .remark-modal-save:disabled { opacity: 0.55; cursor: default; }
+  .remark-modal-save.saving { background: #5F6368; }
+
   /* トースト通知 */
   .toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; pointer-events: none; }
   .toast { padding: 10px 16px; border-radius: 6px; font-size: 12px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: toast-in 0.2s ease-out; max-width: 320px; }
@@ -480,6 +541,29 @@
 </head>
 <body>
 <div class="toast-container" id="toastContainer"></div>
+
+<!-- Mission進度 モーダルエディタ -->
+<div class="remark-modal-overlay" id="remarkModalOverlay" role="dialog" aria-modal="true" aria-labelledby="remarkModalTitle">
+  <div class="remark-modal" id="remarkModal">
+    <div class="remark-modal-header">
+      <div class="remark-modal-header-text">
+        <div class="remark-modal-id" id="remarkModalId"></div>
+        <div class="remark-modal-name" id="remarkModalName"></div>
+      </div>
+      <button class="remark-modal-close" id="remarkModalCloseBtn" title="キャンセル（Esc）" aria-label="閉じる">×</button>
+    </div>
+    <div class="remark-modal-body">
+      <div class="remark-modal-label">Mission進度</div>
+      <textarea class="remark-modal-ta" id="remarkModalTa" placeholder="Mission の進捗・状況を入力…" rows="10"></textarea>
+      <div class="remark-modal-hint">Ctrl + Enter で保存　／　Esc でキャンセル</div>
+    </div>
+    <div class="remark-modal-footer">
+      <button class="remark-modal-cancel" id="remarkModalCancelBtn">キャンセル</button>
+      <button class="remark-modal-save" id="remarkModalSaveBtn">儲存</button>
+    </div>
+  </div>
+</div>
+
 <div class="topbar">
   <h1 style="display:flex; align-items:center; gap:10px;">
     <img src="favicon.svg" alt="" width="32" height="32" style="vertical-align:middle; flex-shrink:0;">
@@ -822,9 +906,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.16.4';
+const APP_VERSION = '0.17.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '保存中の表示：左→右に伸びるバーを維持しつつ、満ちながら色を濃い青→薄い青へ変化（1回のみ・約5秒）。';
+const APP_NOTE  = 'Mission進度のダブルクリック編集をモーダルエディタに変更。Ctrl+Enterで保存、Escでキャンセル。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1545,39 +1629,84 @@ function startStatusEdit(td, missionId) {
   select.addEventListener('blur', () => setTimeout(cancel, 100));
 }
 
-function startRemarkEdit(td, missionId) {
-  const current = td.textContent;
-  const ta = document.createElement('textarea');
-  ta.className = 'inline-edit';
-  ta.value = current;
-  ta.rows = 2;
-  td.innerHTML = '';
-  td.appendChild(ta);
-  ta.focus();
-  ta.select();
-  let committed = false;
-  const cancel = () => { if (!committed) td.textContent = current; };
-  const commit = async () => {
-    if (committed) return;
-    committed = true;
-    const v = ta.value;
-    if (v === current) { td.textContent = current; return; }
-    // 楽観的更新：入力値を即座に表示し、保存はバックグラウンドで進める（バー表示）
-    td.textContent = v;
-    td.classList.add('cell-saving');
-    const result = await saveMissionEdit(missionId, { '備註': v });
-    td.classList.remove('cell-saving');
-    if (!result) { td.textContent = current; return; } // 失敗 → 元に戻す
-    applyLocalEdit(missionId, result.changes || { '備註': v });
-    flashSaved(td);
-    toast(`已儲存：${missionId} Mission進度`, 'success');
-    setTimeout(() => renderTableC(), 300);
+// ===== Mission進度 モーダルエディタ =====
+(function () {
+  const overlay  = () => document.getElementById('remarkModalOverlay');
+  const modal    = () => document.getElementById('remarkModal');
+  const idEl     = () => document.getElementById('remarkModalId');
+  const nameEl   = () => document.getElementById('remarkModalName');
+  const ta       = () => document.getElementById('remarkModalTa');
+  const saveBtn  = () => document.getElementById('remarkModalSaveBtn');
+  const cancelBtn= () => document.getElementById('remarkModalCancelBtn');
+  const closeBtn = () => document.getElementById('remarkModalCloseBtn');
+
+  let _td = null, _missionId = null, _original = null;
+
+  function closeModal() {
+    overlay().classList.remove('open');
+    _td = _missionId = _original = null;
+  }
+
+  window.openRemarkModal = function openRemarkModal(td, missionId) {
+    _td = td;
+    _missionId = missionId;
+    _original  = td.textContent;
+    const row = (window.issueData || []).find(r => (r['編號']||'').trim() === missionId);
+    idEl().textContent   = missionId;
+    nameEl().textContent = row ? (row['Issue'] || '') : '';
+    ta().value = _original;
+    saveBtn().disabled = false;
+    saveBtn().classList.remove('saving');
+    saveBtn().textContent = '儲存';
+    overlay().classList.add('open');
+    // フォーカス & カーソルを末尾へ
+    requestAnimationFrame(() => {
+      const t = ta(); t.focus();
+      t.setSelectionRange(t.value.length, t.value.length);
+    });
   };
-  ta.addEventListener('blur', commit);
-  ta.addEventListener('keydown', ev => {
-    if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); ta.blur(); }
-    if (ev.key === 'Escape') { committed = true; cancel(); }
+
+  async function doSave() {
+    const v = ta().value;
+    saveBtn().disabled = true;
+    saveBtn().classList.add('saving');
+    saveBtn().textContent = '儲存中…';
+    // モーダルを閉じ、楽観的更新（セルに即時反映＋バー表示）
+    const snapTd = _td, snapId = _missionId, snapOrig = _original;
+    closeModal();
+    if (v === snapOrig) return; // 変更なし
+    snapTd.textContent = v;
+    snapTd.classList.add('cell-saving');
+    const result = await saveMissionEdit(snapId, { '備註': v });
+    snapTd.classList.remove('cell-saving');
+    if (!result) {
+      snapTd.textContent = snapOrig;
+      return;
+    }
+    applyLocalEdit(snapId, result.changes || { '備註': v });
+    flashSaved(snapTd);
+    toast(`已儲存：${snapId} Mission進度`, 'success');
+    setTimeout(() => renderTableC(), 300);
+  }
+
+  // ボタン操作
+  document.addEventListener('DOMContentLoaded', () => {
+    saveBtn().addEventListener('click', doSave);
+    cancelBtn().addEventListener('click', closeModal);
+    closeBtn().addEventListener('click', closeModal);
+    // オーバーレイ外クリックで閉じる
+    overlay().addEventListener('mousedown', e => { if (e.target === overlay()) closeModal(); });
+    // キーボードショートカット
+    document.addEventListener('keydown', e => {
+      if (!overlay().classList.contains('open')) return;
+      if (e.key === 'Escape') { e.preventDefault(); closeModal(); }
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); doSave(); }
+    });
   });
+})();
+
+function startRemarkEdit(td, missionId) {
+  openRemarkModal(td, missionId);
 }
 
 function startDateEdit(td, missionId) {
@@ -1823,7 +1952,7 @@ function missionEditRow(r, opts) {
   h += `<td class="lbl">${escapeHtml(r['Issue']||'')}</td>`;
   // Mission進度（雙擊編輯）
   if (isMission) {
-    h += `<td class="memo cell-editable" data-edit="remark" data-mission="${escapeAttr(num)}" title="雙擊編輯">${escapeHtml(remark)}</td>`;
+    h += `<td class="memo cell-editable" data-edit="remark" data-mission="${escapeAttr(num)}" title="雙擊開啟編輯器">${escapeHtml(remark)}</td>`;
   } else {
     h += `<td class="memo">${escapeHtml(remark)}</td>`;
   }
