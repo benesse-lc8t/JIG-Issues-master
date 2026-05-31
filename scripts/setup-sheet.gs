@@ -103,6 +103,9 @@ function doPost(e) {
       mission: data.mission, hasStatus: '狀態' in data, hasRemark: '備註' in data,
       hasDate: '更新日' in data, tokenMatch: data.token === WRITE_TOKEN
     }));
+    console.log('  data keys:', JSON.stringify(Object.keys(data)));
+    console.log('  備註 value:', JSON.stringify(data['備註']));
+    console.log('  hasOwnProperty 備註:', Object.prototype.hasOwnProperty.call(data, '備註'));
 
     if (!data || data.token !== WRITE_TOKEN) {
       console.log('  → forbidden (token mismatch)');
