@@ -36,7 +36,7 @@
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 // 再公開が反映されたか確認するための目印。doGet が返す。変更のたびに上げる。
-const CODE_VERSION = 'gs-2026-05-31-edit3';
+const CODE_VERSION = 'gs-2026-05-31-memo1';
 
 const STATUS_VALUES = ['未開始', '策劃中', '需確認', '進行中', '結案'];
 const STATUS_COLORS = {
@@ -65,6 +65,13 @@ const MISSION_COL_WIDTHS = { 1: 100, 2: 320, 3: 90, 4: 90, 5: 80, 6: 220, 7: 90,
 const LOG_SHEET_NAME = 'Mission進度ログ';
 const LOG_HEADERS     = ['編號', '日時', '擔當', '進度'];
 const LOG_COL_WIDTHS  = { 1: 110, 2: 140, 3: 90, 4: 480 };
+
+// ===== 個人備註（事務局メンバーの私的メモ）=====
+// 詩雅／育菱が自分の Mission に書く私的メモ。1人1ミッション1行（編號+姓名で upsert）。
+// UI 上は本人のタブにのみ表示（厳密非公開ではない＝§7 の制約は受容）。
+const MEMO_SHEET_NAME = '個人備註';
+const MEMO_HEADERS     = ['編號', '姓名', '備註', '更新日'];
+const MEMO_COL_WIDTHS  = { 1: 110, 2: 90, 3: 480, 4: 140 };
 
 // ===== 人員マスタ（名簿の一次ソース）=====
 // 記入者チップの名前・色（處ベース）の出どころ。管理者がここに名簿を貼る。
@@ -131,13 +138,14 @@ function doPost(e) {
 
     // 追加／編集アクション。action 無しは従来どおりの更新（狀態/進度ログ等）。
     const action = String(data.action || '').trim();
-    if (action === 'addMission' || action === 'addIssue' || action === 'updateMission' || action === 'updateIssue') {
+    if (action === 'addMission' || action === 'addIssue' || action === 'updateMission' || action === 'updateIssue' || action === 'saveMemo') {
       const ssA = _getSpreadsheet();
       if (!ssA) return _writeJson({ ok: false, error: 'no_spreadsheet', hint: 'Set SHEET_ID in the script.' });
       if (action === 'addMission')    return _handleAddMission(ssA, data);
       if (action === 'addIssue')      return _handleAddIssue(ssA, data);
       if (action === 'updateMission') return _handleUpdate(ssA, data, MISSION_SHEET_FOR_WRITE);
-      return _handleUpdate(ssA, data, ISSUE_SHEET_FOR_WRITE);
+      if (action === 'updateIssue')   return _handleUpdate(ssA, data, ISSUE_SHEET_FOR_WRITE);
+      return _handleSaveMemo(ssA, data);
     }
 
     const missionId = String(data.mission || '').trim();
@@ -455,6 +463,51 @@ function _handleUpdate(ss, data, sheetName) {
   return _writeJson({ ok: true, action: data.action, '編號': id, mission: id, row: rowIdx, changed: r.changed, warnings: r.rejected });
 }
 
+// 個人備註の保存（編號＋姓名で upsert。上書き可＝進度ログとは別）。
+function _handleSaveMemo(ss, data) {
+  const id  = String(data['編號'] || '').trim();
+  const who = String(data['姓名'] || '').trim();
+  if (!id || !who) return _writeJson({ ok: false, error: 'id_or_name_required' });
+  const memo = String(data['備註'] || '');
+
+  let sheet = ss.getSheetByName(MEMO_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(MEMO_SHEET_NAME);
+    sheet.getRange(1, 1, 1, MEMO_HEADERS.length).setValues([MEMO_HEADERS]).setFontWeight('bold').setBackground('#F7F4EC');
+    sheet.setFrozenRows(1);
+    Object.keys(MEMO_COL_WIDTHS).forEach(k => sheet.setColumnWidth(Number(k), MEMO_COL_WIDTHS[k]));
+  }
+  const lastCol = sheet.getLastColumn();
+  const head = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => String(h).trim());
+  const ci = { id: head.indexOf('編號'), who: head.indexOf('姓名'), memo: head.indexOf('備註'), upd: head.indexOf('更新日') };
+  if (ci.id < 0 || ci.who < 0) return _writeJson({ ok: false, error: 'memo_headers_invalid', headers: head });
+  const tz = Session.getScriptTimeZone() || 'Asia/Taipei';
+  const now = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm');
+
+  const last = sheet.getLastRow();
+  let rowIdx = -1;
+  if (last >= 2) {
+    const vals = sheet.getRange(2, 1, last - 1, lastCol).getValues();
+    for (let i = 0; i < vals.length; i++) {
+      if (String(vals[i][ci.id]).trim() === id && String(vals[i][ci.who]).trim() === who) { rowIdx = i + 2; break; }
+    }
+  }
+  if (rowIdx < 0) {
+    const row = new Array(lastCol).fill('');
+    row[ci.id] = id; row[ci.who] = who;
+    if (ci.memo >= 0) row[ci.memo] = memo;
+    if (ci.upd >= 0)  row[ci.upd]  = now;
+    sheet.appendRow(row);
+    rowIdx = sheet.getLastRow();
+  } else {
+    if (ci.memo >= 0) sheet.getRange(rowIdx, ci.memo + 1).setValue(memo);
+    if (ci.upd >= 0)  sheet.getRange(rowIdx, ci.upd + 1).setValue(now);
+  }
+  SpreadsheetApp.flush();
+  console.log('  → saveMemo ok:', id, who, 'row', rowIdx);
+  return _writeJson({ ok: true, action: 'saveMemo', '編號': id, '姓名': who, mission: id, row: rowIdx, '更新': now });
+}
+
 function _handleAddIssue(ss, data) {
   const id   = String(data['編號'] || '').trim();
   const name = String(data['Issue'] || '').trim();
@@ -516,6 +569,8 @@ function doGet() {
       logSheetExists: !!logSheet,  // false ならログタブ未作成（setupJIG 要実行）
       personSheetName:   PERSON_SHEET_NAME,
       personSheetExists: !!(ss && ss.getSheetByName(PERSON_SHEET_NAME)),
+      memoSheetName:     MEMO_SHEET_NAME,
+      memoSheetExists:   !!(ss && ss.getSheetByName(MEMO_SHEET_NAME)),
     });
   } catch (err) {
     return _writeJson({ ok: false, error: String(err.message) });
@@ -701,6 +756,17 @@ function setupJIG() {
     Object.keys(PERSON_COL_WIDTHS).forEach(k => personSheet.setColumnWidth(Number(k), PERSON_COL_WIDTHS[k]));
     personSheet.setFrozenRows(1);
     log.push('✓ 「人員」タブを作成（姓名 / 處 / 組 / 顯示順）。ここに名簿を貼ると記入者チップに色が付きます');
+  }
+
+  // --- 5. 個人備註 タブ（事務局の私的メモ）---
+  let memoSheet = ss.getSheetByName(MEMO_SHEET_NAME);
+  if (!memoSheet) {
+    memoSheet = ss.insertSheet(MEMO_SHEET_NAME);
+    memoSheet.getRange(1, 1, 1, MEMO_HEADERS.length).setValues([MEMO_HEADERS])
+      .setFontWeight('bold').setBackground('#F7F4EC');
+    Object.keys(MEMO_COL_WIDTHS).forEach(k => memoSheet.setColumnWidth(Number(k), MEMO_COL_WIDTHS[k]));
+    memoSheet.setFrozenRows(1);
+    log.push('✓ 「個人備註」タブを作成（編號 / 姓名 / 備註 / 更新日）。詩雅・育菱の私的メモ置き場');
   }
 
   const msg = log.length ? '✅ セットアップ完了\n\n' + log.join('\n')

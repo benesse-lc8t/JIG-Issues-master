@@ -366,6 +366,11 @@
   .sum-stale { background: #FCE8E6; color: #B31412; }
   .simple-table td.st-clickable { cursor: pointer; }
   .simple-table td.st-clickable:hover { filter: brightness(0.95); }
+  /* Tab D/E：私的備註セル */
+  .simple-table td.memo-personal { max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; font-size: 11px; color: #5F6368; }
+  .simple-table td.memo-personal.has-memo { color: #6D4C00; background: #FFFCF2; }
+  .simple-table td.memo-personal:hover { background: #FEF7E0; }
+  .memo-personal .memo-add { color: #C9A227; font-weight: 700; }
   .simple-table td.conf-icon { text-align: center; padding: 2px 4px; }
   .simple-table td.conf-icon a { display: inline-block; opacity: 0.85; transition: opacity 0.15s; margin: 0 2px; }
   .simple-table td.conf-icon a:hover { opacity: 1; }
@@ -1010,6 +1015,27 @@
   </div>
 </div>
 
+<!-- ===== 個人備註モーダル（詩雅／育菱の私的メモ） ===== -->
+<div class="remark-modal-overlay" id="memoModalOverlay" role="dialog" aria-modal="true">
+  <div class="remark-modal" id="memoModal" style="width:min(480px,94vw);">
+    <div class="remark-modal-header">
+      <div class="remark-modal-meta">
+        <div class="remark-modal-meta-row"><span class="remark-modal-meta-name">📝 個人備註</span></div>
+        <div class="remark-modal-meta-row" id="memoModalSub" style="font-size:11px;color:#5F6368;"></div>
+      </div>
+      <button class="remark-modal-close" id="memoModalClose" title="取消（Esc）" aria-label="關閉">×</button>
+    </div>
+    <div class="remark-modal-body">
+      <div class="remark-modal-hint" style="margin-bottom:6px;">只有你自己看得到（顯示於你的分頁）。Ctrl+Enter 儲存。</div>
+      <textarea class="remark-modal-ta" id="memoModalTa" rows="5" placeholder="寫給自己的備忘…"></textarea>
+    </div>
+    <div class="remark-modal-footer">
+      <button class="remark-modal-cancel" id="memoModalCancel">取消</button>
+      <button class="remark-modal-save" id="memoModalSave">儲存</button>
+    </div>
+  </div>
+</div>
+
 <!-- Confluence リンク一覧モーダル（複数リンクのセルをクリックしたとき） -->
 <div class="conf-links-overlay" id="confLinksOverlay" role="dialog" aria-modal="true">
   <div class="conf-links-modal" id="confLinksModal">
@@ -1186,7 +1212,7 @@
 <!-- ===== D：詩雅（Mission 専用） ===== -->
 <div class="panel" id="panel-D">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    詩雅 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單（關聯 Issue 數見上方摘要）· 上方為「需對應」，其下依<b>處</b>分組 · ✎ 可直接編輯
+    詩雅 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單（關聯 Issue 數見上方摘要）· 上方為「需對應」，其下依<b>處</b>分組 · ✎ 可直接編輯 · 最右「私的備註」為只給自己看的備忘
   </div>
   <div class="ctrl-bar">
     <select id="filterDeptD"><option value="">處：全部</option></select>
@@ -1231,6 +1257,7 @@
         <th style="width:80px;">狀態</th>
         <th style="width:64px;">更新</th>
         <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
+        <th style="width:130px;">私的備註</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -1240,7 +1267,7 @@
 <!-- ===== E：育菱（Mission 専用） ===== -->
 <div class="panel" id="panel-E">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    育菱 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單（關聯 Issue 數見上方摘要）· 上方為「需對應」，其下依<b>處</b>分組 · ✎ 可直接編輯
+    育菱 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單（關聯 Issue 數見上方摘要）· 上方為「需對應」，其下依<b>處</b>分組 · ✎ 可直接編輯 · 最右「私的備註」為只給自己看的備忘
   </div>
   <div class="ctrl-bar">
     <select id="filterDeptE"><option value="">處：全部</option></select>
@@ -1285,6 +1312,7 @@
         <th style="width:80px;">狀態</th>
         <th style="width:64px;">更新</th>
         <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
+        <th style="width:130px;">私的備註</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -1373,9 +1401,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.29.2';
+const APP_VERSION = '0.30.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '詩雅／育菱タブ：本文は Mission のみ表示に戻す（Issue 混在をやめ紛れを解消）。關わる Issue 件数はサマリーに「關聯 Issue N」として残す。Apps Script 変更なし。';
+const APP_NOTE  = '個人備註を追加：詩雅／育菱タブの各 Mission に「私的備註」列。本人のタブにのみ表示（編號＋姓名で upsert・端末をまたぐ）。新タブ「個人備註」＋ saveMemo。※Apps Script 再公開＋setupJIG が必要（codeVersion=memo1）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1902,6 +1930,99 @@ async function loadPersonMaster() {
     console.warn('[personMaster] 読込失敗', e);
   }
 }
+
+// ===== 個人備註（事務局の私的メモ）=====
+// window.personalMemo = { '編號 姓名': 備註 }
+const MEMO_SHEET_NAME = '個人備註';
+window.personalMemo = window.personalMemo || {};
+function memoKey(id, who) { return String(id || '').trim() + ' ' + String(who || '').trim(); }
+function getMemo(id, who) { return window.personalMemo[memoKey(id, who)] || ''; }
+async function loadPersonalMemos() {
+  window.personalMemo = {};
+  if (!SHEET_ID) return;
+  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1`;
+  const url = `${base}&sheet=${encodeURIComponent(MEMO_SHEET_NAME)}`;
+  try {
+    const res = await fetch(url + '&_=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return;
+    const csv = await res.text();
+    if (!csv || csv.trim().startsWith('<')) return; // タブ未作成
+    const wb = XLSX.read(csv, { type: 'string' });
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
+    if (rows.length < 2) return;
+    const H = rows[0].map(h => String(h).trim());
+    const ci = { id: H.indexOf('編號'), who: H.indexOf('姓名'), memo: H.indexOf('備註') };
+    if (ci.id < 0 || ci.who < 0) return; // 個人備註シートでなければ無視
+    const map = {};
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i]; if (!r) continue;
+      const id = String(r[ci.id] ?? '').trim(), who = String(r[ci.who] ?? '').trim();
+      if (!id || !who) continue;
+      map[memoKey(id, who)] = ci.memo >= 0 ? String(r[ci.memo] ?? '') : '';
+    }
+    window.personalMemo = map;
+  } catch (e) {
+    console.warn('[personalMemo] 読込失敗', e);
+  }
+}
+// 個人備註モーダル
+let _memoCtx = { id: '', who: '' };
+function openMemoModal(id, who) {
+  _memoCtx = { id: id, who: who };
+  document.getElementById('memoModalSub').textContent = `${id} · ${who}`;
+  document.getElementById('memoModalTa').value = getMemo(id, who);
+  const sb = document.getElementById('memoModalSave');
+  sb.disabled = false; sb.classList.remove('is-progress'); sb.textContent = '儲存';
+  document.getElementById('memoModalOverlay').classList.add('open');
+  document.body.classList.add('modal-open');
+  requestAnimationFrame(() => document.getElementById('memoModalTa').focus());
+}
+function closeMemoModal() {
+  document.getElementById('memoModalOverlay').classList.remove('open');
+  document.body.classList.remove('modal-open');
+}
+async function _saveMemo() {
+  const sb = document.getElementById('memoModalSave');
+  if (sb.disabled) return;
+  const memo = document.getElementById('memoModalTa').value;
+  if (!SHEET_WRITE_URL) { toast('編輯功能未設定：請管理員設定 Web App URL', 'error'); return; }
+  sb.disabled = true; sb.classList.add('is-progress'); sb.innerHTML = '<span>儲存中…</span>';
+  try {
+    const res = await fetch(SHEET_WRITE_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ token: WRITE_TOKEN, action: 'saveMemo', '編號': _memoCtx.id, '姓名': _memoCtx.who, '備註': memo }),
+      redirect: 'follow'
+    });
+    const text = await res.text();
+    let data; try { data = JSON.parse(text); } catch (_) { data = { ok: false, error: 'bad_response', raw: text }; }
+    console.info('[saveMemo] response', { status: res.status, data });
+    if (!data.ok) {
+      toast(`儲存失敗：${data.error || 'unknown'}`, 'error');
+      sb.disabled = false; sb.classList.remove('is-progress'); sb.textContent = '儲存';
+      return;
+    }
+    window.personalMemo[memoKey(_memoCtx.id, _memoCtx.who)] = memo; // ローカル即時反映
+    toast('已儲存個人備註', 'success');
+    closeMemoModal();
+    renderPersonView('D', '詩雅'); renderPersonView('E', '育菱');
+  } catch (e) {
+    toast(`網路錯誤：${e.message}`, 'error');
+    sb.disabled = false; sb.classList.remove('is-progress'); sb.textContent = '儲存';
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('memoModalSave')?.addEventListener('click', _saveMemo);
+  document.getElementById('memoModalCancel')?.addEventListener('click', closeMemoModal);
+  document.getElementById('memoModalClose')?.addEventListener('click', closeMemoModal);
+  document.getElementById('memoModalOverlay')?.addEventListener('mousedown', e => {
+    if (e.target === document.getElementById('memoModalOverlay')) closeMemoModal();
+  });
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('memoModalOverlay')?.classList.contains('open')) return;
+    if (e.key === 'Escape') closeMemoModal();
+    else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') _saveMemo();
+  });
+});
 
 // 1 行を 11 セル固定で生成する共通ヘルパー（v0.6.0：Confluence 列統合 + 管理頁面廃止 + 📄列廃止）
 function renderRow(r, opts) {
@@ -3502,6 +3623,7 @@ function simpleRow(r, opts) {
     // 複数リンク対応（1 アイコン＋件数バッジ・ラベル tooltip）。非編集セルとして描画
     h += confEditCell(r['Confluence URL'] || '', num, false);
   }
+  if (opts.memoCell) h += opts.memoCell; // 私的備註（Tab D/E）
   h += '</tr>';
   return h;
 }
@@ -3905,17 +4027,20 @@ function renderPersonView(panelKey, personName) {
     if (d.isStrategic) roleHtml += '<span class="role-badge role-strategic">負責人</span>';
     const typeTag = d.isMission ? '' : '<span class="role-badge role-issue">ISSUE</span> ';
     const extraCell = `<td>${typeTag}${roleHtml}</td>`;
-    return simpleRow(r, { showOwner: false, showRemark: true, parent, showGroup: true, showConf: true, extraCellAfterDept: extraCell, showEdit: true });
+    const num = (r['編號'] || '').trim();
+    const memo = getMemo(num, personName);
+    const memoCell = `<td class="memo-personal${memo ? ' has-memo' : ''}" title="${memo ? escapeAttr(memo) : '點擊新增個人備註'}" onclick="openMemoModal('${escapeAttr(num)}','${escapeAttr(personName)}')">${memo ? escapeHtml(memo) : '<span class="memo-add">＋ 備註</span>'}</td>`;
+    return simpleRow(r, { showOwner: false, showRemark: true, parent, showGroup: true, showConf: true, extraCellAfterDept: extraCell, showEdit: true, memoCell });
   };
 
   let html = '';
-  html += `<tr class="sec-row summary-row"><th colspan="10">${escapeHtml(personName)}　Mission ${missionsF.length} 筆 · 關聯 Issue ${issueCountF}`
+  html += `<tr class="sec-row summary-row"><th colspan="11">${escapeHtml(personName)}　Mission ${missionsF.length} 筆 · 關聯 Issue ${issueCountF}`
         + `<span class="sum-badge sum-prog">進行中 ${cProg}</span>`
         + `<span class="sum-badge sum-need">需確認 ${cNeed}</span>`
         + `<span class="sum-badge sum-stale">停滯&gt;7天 ${cStale}</span></th></tr>`;
 
   if (!missionsF.length) {
-    html += `<tr><td colspan="10" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>`;
+    html += `<tr><td colspan="11" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>`;
     tbody.innerHTML = html;
     const ce0 = document.getElementById(`filterCount${panelKey}`);
     if (ce0) ce0.textContent = (fDept || fGroup || fRole || fStatus || fStale) ? `顯示 0 / ${totalMissions} 筆` : `${totalMissions} 筆`;
@@ -3929,7 +4054,7 @@ function renderPersonView(panelKey, personName) {
 
   if (needAction.length) {
     needAction.sort((a, b) => ((stalenessDays(b.row) ?? -1) - (stalenessDays(a.row) ?? -1)));
-    html += `<tr class="sec-row need-row"><th colspan="10">⚠ 需對應（需確認・停滯&gt;7天） ${needAction.length} 筆</th></tr>`;
+    html += `<tr class="sec-row need-row"><th colspan="11">⚠ 需對應（需確認・停滯&gt;7天） ${needAction.length} 筆</th></tr>`;
     needAction.forEach(d => { html += rowHtml(d); });
   }
 
@@ -3944,7 +4069,7 @@ function renderPersonView(panelKey, personName) {
   deptKeys.forEach(dept => {
     const list = byDept[dept];
     list.sort((a, b) => (a.row['親編號'] || a.row['編號'] || '').localeCompare(b.row['親編號'] || b.row['編號'] || '', 'zh-Hant'));
-    html += `<tr class="sec-row"><th colspan="10">${escapeHtml(dept)} · ${list.length} 筆</th></tr>`;
+    html += `<tr class="sec-row"><th colspan="11">${escapeHtml(dept)} · ${list.length} 筆</th></tr>`;
     list.forEach(d => { html += rowHtml(d); });
   });
 
@@ -4304,6 +4429,7 @@ async function loadFromSheet() {
       issueData = data;
       await loadMissionLog();   // 追記ログを取得（モーダルのタイムライン用）
       await loadPersonMaster(); // 人員マスタ（記入者チップの名前・色）
+      await loadPersonalMemos(); // 個人備註（詩雅/育菱の私的メモ）
       renderAll();
       const ts = new Date().toLocaleString('zh-TW', { hour12:false });
       const issueCount = data.filter(r => {
