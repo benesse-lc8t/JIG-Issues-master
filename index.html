@@ -366,7 +366,10 @@
   .sum-stale { background: #FCE8E6; color: #B31412; }
   .simple-table td.st-clickable { cursor: pointer; }
   .simple-table td.st-clickable:hover { filter: brightness(0.95); }
-  /* Tab D/E：私的備註セル（★重要 ＋ 📝/💬 アイコン） */
+  /* インライン SVG アイコン */
+  .ico { vertical-align: -2px; }
+  .memo-personal .memo-open .ico { margin: 0 1px; }
+  /* Tab D/E：私的備註セル（重要 ＋ メモ/留言 アイコン） */
   .simple-table td.memo-personal { width: 62px; text-align: center; white-space: nowrap; font-size: 13px; }
   .simple-table td.memo-personal.flagged { background: #FFFDF0; }
   .memo-personal .flag-star { cursor: pointer; color: #DADCE0; margin-right: 3px; }
@@ -906,7 +909,7 @@
     <div class="remark-modal-footer">
       <button class="remark-modal-cancel" id="remarkModalCancelBtn">取消</button>
       <button class="remark-modal-save" id="remarkModalSaveBtn">儲存</button>
-      <button class="remark-modal-edit" id="remarkModalEditBtn" title="切換到 Mission進度 頁面編輯">✎ 編輯</button>
+      <button class="remark-modal-edit" id="remarkModalEditBtn" title="切換到 Mission進度 頁面編輯"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg> 編輯</button>
     </div>
   </div>
 </div>
@@ -1032,17 +1035,17 @@
   <div class="remark-modal" id="memoModal" style="width:min(480px,94vw);">
     <div class="remark-modal-header">
       <div class="remark-modal-meta">
-        <div class="remark-modal-meta-row"><span class="remark-modal-meta-name">📝 個人備註</span></div>
+        <div class="remark-modal-meta-row"><span class="remark-modal-meta-name"><svg class="ico" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8.5 13.5h7M8.5 17h5"/></svg> 個人備註</span></div>
         <div class="remark-modal-meta-row" id="memoModalSub" style="font-size:11px;color:#5F6368;"></div>
       </div>
       <button class="remark-modal-close" id="memoModalClose" title="取消（Esc）" aria-label="關閉">×</button>
     </div>
     <div class="remark-modal-body">
-      <label class="memo-field-label">📝 私的備註（只有你自己看得到）</label>
+      <label class="memo-field-label"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8.5 13.5h7M8.5 17h5"/></svg> 私的備註（只有你自己看得到）</label>
       <textarea class="remark-modal-ta" id="memoModalTa" rows="4" placeholder="寫給自己的備忘…"></textarea>
-      <label class="memo-field-label" style="margin-top:12px;">💬 來自小沼的留言</label>
+      <label class="memo-field-label" style="margin-top:12px;"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 來自小沼的留言</label>
       <textarea class="remark-modal-ta" id="memoModalMsg" rows="3" placeholder="小沼留給你的話…"></textarea>
-      <label class="ctrl-toggle" style="margin-top:12px; display:inline-flex; gap:5px;"><input type="checkbox" id="memoModalFlag"> ★ 標記為重要</label>
+      <label class="ctrl-toggle" style="margin-top:12px; display:inline-flex; gap:5px;"><input type="checkbox" id="memoModalFlag"> <svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg> 標記為重要</label>
       <div class="remark-modal-hint" style="margin-top:6px;">Ctrl+Enter 儲存。</div>
     </div>
     <div class="remark-modal-footer">
@@ -1052,12 +1055,12 @@
   </div>
 </div>
 
-<!-- ===== ⭐ 重要清單モーダル（フラグした Mission のチェック一覧） ===== -->
+<!-- ===== <svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg> 重要清單モーダル（フラグした Mission のチェック一覧） ===== -->
 <div class="remark-modal-overlay" id="importantModalOverlay" role="dialog" aria-modal="true">
   <div class="remark-modal" id="importantModal" style="width:min(520px,94vw);">
     <div class="remark-modal-header">
       <div class="remark-modal-meta">
-        <div class="remark-modal-meta-row"><span class="remark-modal-meta-name">⭐ 重要清單</span></div>
+        <div class="remark-modal-meta-row"><span class="remark-modal-meta-name"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg> 重要清單</span></div>
         <div class="remark-modal-meta-row" id="importantSub" style="font-size:11px;color:#5F6368;"></div>
       </div>
       <button class="remark-modal-close" id="importantClose" title="關閉（Esc）" aria-label="關閉">×</button>
@@ -1242,7 +1245,7 @@
 <!-- ===== D：詩雅（Mission 専用） ===== -->
 <div class="panel" id="panel-D">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    詩雅 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單（關聯 Issue 數見上方摘要）· 上方為「需對應」，其下依<b>處</b>分組 · ✎ 可直接編輯 · 最右「私的備註」為只給自己看的備忘
+    詩雅 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單（關聯 Issue 數見上方摘要）· 上方為「需對應」，其下依<b>處</b>分組 · <svg class="ico" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg> 可直接編輯 · 最右「私的備註」為只給自己看的備忘
   </div>
   <div class="ctrl-bar">
     <select id="filterDeptD"><option value="">處：全部</option></select>
@@ -1270,8 +1273,8 @@
     </select>
     <span class="ctrl-sep"></span>
     <label class="ctrl-toggle"><input type="checkbox" class="toggle-closed">顯示結案</label>
-    <label class="ctrl-toggle"><input type="checkbox" id="filterImportantD">只看 ★ 重要</label>
-    <button type="button" class="ctrl-clear" id="importantListD">⭐ 重要清單</button>
+    <label class="ctrl-toggle"><input type="checkbox" id="filterImportantD"><svg class="ico" viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg> 只看重要</label>
+    <button type="button" class="ctrl-clear" id="importantListD"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg> 重要清單</button>
     <span class="ctrl-sep"></span>
     <button type="button" class="ctrl-clear" id="clearFilterD">清除</button>
     <span class="ctrl-count" id="filterCountD"></span>
@@ -1289,7 +1292,7 @@
         <th style="width:80px;">狀態</th>
         <th style="width:64px;">更新</th>
         <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
-        <th style="width:62px;" title="★重要 / 私的備註 / 小沼留言">★ 備</th>
+        <th style="width:62px;" title="重要 / 私的備註 / 小沼留言"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg></th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -1299,7 +1302,7 @@
 <!-- ===== E：育菱（Mission 専用） ===== -->
 <div class="panel" id="panel-E">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    育菱 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單（關聯 Issue 數見上方摘要）· 上方為「需對應」，其下依<b>處</b>分組 · ✎ 可直接編輯 · 最右「私的備註」為只給自己看的備忘
+    育菱 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單（關聯 Issue 數見上方摘要）· 上方為「需對應」，其下依<b>處</b>分組 · <svg class="ico" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg> 可直接編輯 · 最右「私的備註」為只給自己看的備忘
   </div>
   <div class="ctrl-bar">
     <select id="filterDeptE"><option value="">處：全部</option></select>
@@ -1327,8 +1330,8 @@
     </select>
     <span class="ctrl-sep"></span>
     <label class="ctrl-toggle"><input type="checkbox" class="toggle-closed">顯示結案</label>
-    <label class="ctrl-toggle"><input type="checkbox" id="filterImportantE">只看 ★ 重要</label>
-    <button type="button" class="ctrl-clear" id="importantListE">⭐ 重要清單</button>
+    <label class="ctrl-toggle"><input type="checkbox" id="filterImportantE"><svg class="ico" viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg> 只看重要</label>
+    <button type="button" class="ctrl-clear" id="importantListE"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg> 重要清單</button>
     <span class="ctrl-sep"></span>
     <button type="button" class="ctrl-clear" id="clearFilterE">清除</button>
     <span class="ctrl-count" id="filterCountE"></span>
@@ -1346,7 +1349,7 @@
         <th style="width:80px;">狀態</th>
         <th style="width:64px;">更新</th>
         <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
-        <th style="width:62px;" title="★重要 / 私的備註 / 小沼留言">★ 備</th>
+        <th style="width:62px;" title="重要 / 私的備註 / 小沼留言"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg></th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -1435,9 +1438,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.30.2';
+const APP_VERSION = '0.30.3';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '個人備註を拡張：★重要フラグ（個人別・行トグル／「只看重要」フィルタ／⭐重要清單モーダル）と「小沼からの留言」（本人タブに表示）を追加。個人備註タブに 留言/重要 列。※Apps Script 再公開＋setupJIG（列追加）が必要（codeVersion=memo2）。';
+const APP_NOTE  = '絵文字アイコンを洗練されたインライン SVG（Feather 風・currentColor 追従）に置換：重要(星)/私的備註(doc)/留言(message)/編輯(pencil)/追加(plus)。svgIco ヘルパー追加。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1916,6 +1919,24 @@ function buildPersonDeptMap() {
   return map;
 }
 // 「美齡/勝朋」等を 處カラーのチップ列に。空なら空文字。
+// ===== インライン SVG アイコン（Feather 風・currentColor 追従）=====
+const _SVG = {
+  star: '<path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/>',
+  note: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  doc:  '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8.5 13.5h7M8.5 17h5"/>',
+  msg:  '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+};
+// name: star は塗り、それ以外は線。size 既定 14。
+function svgIco(name, size) {
+  const sz = size || 14;
+  const filled = (name === 'star');
+  const attrs = filled
+    ? `fill="currentColor" stroke="none"`
+    : `fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
+  return `<svg class="ico ico-${name}" viewBox="0 0 24 24" width="${sz}" height="${sz}" ${attrs} aria-hidden="true">${_SVG[name] || ''}</svg>`;
+}
+
 function personChipsHtml(value) {
   const names = splitPersons(value);
   if (!names.length) return '';
@@ -2067,7 +2088,7 @@ async function _saveMemo() {
   closeMemoModal();
   renderPersonView('D', '詩雅'); renderPersonView('E', '育菱');
 }
-// ⭐ 重要清單モーダル
+// <svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg> 重要清單モーダル
 function openImportantList(panelKey, personName) {
   const items = [];
   (issueData || []).forEach(r => {
@@ -2084,7 +2105,7 @@ function openImportantList(panelKey, personName) {
       onchange="toggleMemoFlag('${escapeAttr(num)}','${escapeAttr(personName)}');this.closest('.imp-row').style.opacity=this.checked?'1':'0.4';">
       <span class="imp-num">${escapeHtml(num)}</span>
       <span class="imp-name" title="點擊編輯" onclick="closeImportantModal();openEditEntryModal('mission','${escapeAttr(num)}')">${escapeHtml(r['Issue'] || '')}</span></div>`;
-  }).join('') : '<div style="padding:24px;text-align:center;color:#999;">尚未標記任何重要 Mission（在清單以 ★ 標記）</div>';
+  }).join('') : `<div style="padding:24px;text-align:center;color:#999;">尚未標記任何重要 Mission（在清單點 ${svgIco('star', 12)} 標記）</div>`;
   document.getElementById('importantModalOverlay').classList.add('open');
   document.body.classList.add('modal-open');
 }
@@ -2146,7 +2167,7 @@ function renderRow(r, opts) {
 
   let h = `<tr${trAttrs}>`;
   h += `<td class="num num-cell"><span class="${toggleCls}"${toggleAttr}>${toggleSym}</span>${numHtml}</td>`; // 1 編號
-  h += `<td class="lbl">${escapeHtml(r['Issue'])}<button type="button" class="row-edit-btn" title="編輯" onclick="event.stopPropagation();openEditEntryModal('${isMission ? 'mission' : 'issue'}','${escapeAttr(num)}')">✎</button></td>`; // 2 Issue / Mission（✎で編集）
+  h += `<td class="lbl">${escapeHtml(r['Issue'])}<button type="button" class="row-edit-btn" title="編輯" onclick="event.stopPropagation();openEditEntryModal('${isMission ? 'mission' : 'issue'}','${escapeAttr(num)}')">${svgIco('note', 13)}</button></td>`; // 2 Issue / Mission（✎で編集）
   if (isMission) {
     // Mission 行では 處・組 列を空欄に（親 Issue の情報を二重表示しない）
     h += '<td></td><td></td>';                                                              // 3 處 / 4 組（空）
@@ -3677,7 +3698,7 @@ function simpleRow(r, opts) {
     const parentNum = (r['親編號']||'').trim();
     if (parentNum) labelHtml += ` <span class="parent-hint">↳ ${escapeHtml(parentNum)}</span>`;
   }
-  const sEditBtn = opts.showEdit ? `<button type="button" class="row-edit-btn" title="編輯" onclick="event.stopPropagation();openEditEntryModal('${isMission ? 'mission' : 'issue'}','${escapeAttr(num)}')">✎</button>` : '';
+  const sEditBtn = opts.showEdit ? `<button type="button" class="row-edit-btn" title="編輯" onclick="event.stopPropagation();openEditEntryModal('${isMission ? 'mission' : 'issue'}','${escapeAttr(num)}')">${svgIco('note', 13)}</button>` : '';
   h += `<td class="lbl">${labelHtml}${sEditBtn}</td>`;
   if (opts.showDept !== false) {
     h += `<td class="dept ${deptColorClass(dept)}">${escapeHtml(dept)}</td>`;
@@ -4128,9 +4149,9 @@ function renderPersonView(panelKey, personName) {
     const mo = getMemoObj(num, personName);
     const hasMemo = !!(mo.memo && mo.memo.trim());
     const hasMsg = !!(mo.msg && mo.msg.trim());
-    const icons = ((hasMsg ? '💬' : '') + (hasMemo ? '📝' : '')) || '<span class="memo-add">＋</span>';
-    const tip = [hasMsg ? '💬 ' + mo.msg : '', hasMemo ? '📝 ' + mo.memo : ''].filter(Boolean).join('\n') || '點擊編輯';
-    const star = `<span class="flag-star${mo.flag ? ' on' : ''}" title="${mo.flag ? '取消重要' : '標記重要'}" onclick="event.stopPropagation();toggleMemoFlag('${escapeAttr(num)}','${escapeAttr(personName)}')">${mo.flag ? '★' : '☆'}</span>`;
+    const icons = ((hasMsg ? svgIco('msg', 13) : '') + (hasMemo ? svgIco('doc', 13) : '')) || `<span class="memo-add">${svgIco('plus', 13)}</span>`;
+    const tip = [hasMsg ? '小沼留言：' + mo.msg : '', hasMemo ? '備註：' + mo.memo : ''].filter(Boolean).join('\n') || '點擊編輯';
+    const star = `<span class="flag-star${mo.flag ? ' on' : ''}" title="${mo.flag ? '取消重要' : '標記重要'}" onclick="event.stopPropagation();toggleMemoFlag('${escapeAttr(num)}','${escapeAttr(personName)}')">${svgIco('star', 15)}</span>`;
     const memoCell = `<td class="memo-personal${mo.flag ? ' flagged' : ''}">${star}<span class="memo-open" title="${escapeAttr(tip)}" onclick="openMemoModal('${escapeAttr(num)}','${escapeAttr(personName)}')">${icons}</span></td>`;
     return simpleRow(r, { showOwner: false, showRemark: true, parent, showGroup: true, showConf: true, extraCellAfterDept: extraCell, showEdit: true, memoCell });
   };
@@ -4140,7 +4161,7 @@ function renderPersonView(panelKey, personName) {
         + `<span class="sum-badge sum-prog">進行中 ${cProg}</span>`
         + `<span class="sum-badge sum-need">需確認 ${cNeed}</span>`
         + `<span class="sum-badge sum-stale">停滯&gt;7天 ${cStale}</span>`
-        + `<span class="sum-badge sum-flag">★ 重要 ${cFlag}</span></th></tr>`;
+        + `<span class="sum-badge sum-flag">${svgIco('star', 11)} 重要 ${cFlag}</span></th></tr>`;
 
   if (!bodyMissions.length) {
     const msg = fImportant ? '沒有標記為重要的 Mission' : '符合條件的 Mission 沒有';
