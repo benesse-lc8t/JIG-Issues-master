@@ -35,6 +35,8 @@
 // スタンドアロン型 Apps Script として Web App デプロイする場合は必須。
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
+// 再公開が反映されたか確認するための目印。doGet が返す。変更のたびに上げる。
+const CODE_VERSION = 'gs-2026-05-31-addrow3';
 
 const STATUS_VALUES = ['未開始', '策劃中', '需確認', '進行中', '結案'];
 const STATUS_COLORS = {
@@ -443,6 +445,7 @@ function doGet() {
     const logSheet = ss ? ss.getSheetByName(LOG_SHEET_NAME) : null;
     return _writeJson({
       ok: true,
+      codeVersion: CODE_VERSION,   // 再公開が反映されたか確認用（最新値が出れば反映済み）
       WRITE_FIELDS,
       sheetName:    MISSION_SHEET_FOR_WRITE,
       headers,
