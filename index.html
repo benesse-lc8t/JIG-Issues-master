@@ -356,6 +356,16 @@
   .simple-table .role-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 700; letter-spacing: 0.03em; margin-right: 3px; white-space: nowrap; }
   .simple-table .role-owner     { background: #FEF7E0; color: #B06000; border: 1px solid #F9AB00; } /* 擔當 = 橙 */
   .simple-table .role-strategic { background: #F3E8FD; color: #7026A6; border: 1px solid #9334E6; } /* 戰略負責人 = 紫 */
+  .simple-table .role-issue     { background: #E6F4EA; color: #137333; border: 1px solid #34A853; } /* ISSUE = 緑 */
+  /* Tab D/E：要對應セクション・サマリーバッジ・狀態クリック編集 */
+  .simple-table tr.sec-row.summary-row th { background: #EAF1FB; color: #1A2733; font-weight: 700; }
+  .simple-table tr.sec-row.need-row th { background: #FCE8E6; color: #B31412; font-weight: 700; }
+  .sum-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 8px; border-radius: 9px; margin-left: 6px; }
+  .sum-prog  { background: #E8F0FE; color: #1967D2; }
+  .sum-need  { background: #FEE7BB; color: #B06000; }
+  .sum-stale { background: #FCE8E6; color: #B31412; }
+  .simple-table td.st-clickable { cursor: pointer; }
+  .simple-table td.st-clickable:hover { filter: brightness(0.95); }
   .simple-table td.conf-icon { text-align: center; padding: 2px 4px; }
   .simple-table td.conf-icon a { display: inline-block; opacity: 0.85; transition: opacity 0.15s; margin: 0 2px; }
   .simple-table td.conf-icon a:hover { opacity: 1; }
@@ -1176,7 +1186,7 @@
 <!-- ===== D：詩雅（Mission 専用） ===== -->
 <div class="panel" id="panel-D">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    詩雅 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單
+    詩雅 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Issue／Mission</b> 清單 · 上方為「需對應」，其下依<b>處</b>分組 · ✎ 可直接編輯
   </div>
   <div class="ctrl-bar">
     <select id="filterDeptD"><option value="">處：全部</option></select>
@@ -1230,7 +1240,7 @@
 <!-- ===== E：育菱（Mission 専用） ===== -->
 <div class="panel" id="panel-E">
   <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    育菱 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單
+    育菱 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Issue／Mission</b> 清單 · 上方為「需對應」，其下依<b>處</b>分組 · ✎ 可直接編輯
   </div>
   <div class="ctrl-bar">
     <select id="filterDeptE"><option value="">處：全部</option></select>
@@ -1363,9 +1373,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.28.2';
+const APP_VERSION = '0.29.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'Issue にも擔當チップを追加（追加・編集とも複数選択可）。編號列のヘッダ特定（not_found 修正）込み。※Apps Script 再公開が必要（codeVersion=edit3）。';
+const APP_NOTE  = '詩雅／育菱タブを刷新：①ヒット判定を複数担当・短縮/フル名対応に修正 ②上部に「需對應（需確認・停滞>7日）」セクション ③その場で✎編集・狀態クリック編集 ④關わる Issue も表示 ⑤處ごとグループ＋件数サマリー。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -3457,7 +3467,8 @@ function simpleRow(r, opts) {
     const parentNum = (r['親編號']||'').trim();
     if (parentNum) labelHtml += ` <span class="parent-hint">↳ ${escapeHtml(parentNum)}</span>`;
   }
-  h += `<td class="lbl">${labelHtml}</td>`;
+  const sEditBtn = opts.showEdit ? `<button type="button" class="row-edit-btn" title="編輯" onclick="event.stopPropagation();openEditEntryModal('${isMission ? 'mission' : 'issue'}','${escapeAttr(num)}')">✎</button>` : '';
+  h += `<td class="lbl">${labelHtml}${sEditBtn}</td>`;
   if (opts.showDept !== false) {
     h += `<td class="dept ${deptColorClass(dept)}">${escapeHtml(dept)}</td>`;
   }
@@ -3481,6 +3492,8 @@ function simpleRow(r, opts) {
   }
   if (opts.editable && isMission) {
     h += `<td class="st cell-editable" data-edit="status" data-mission="${escapeAttr(num)}" data-current="${escapeAttr((r['狀態']||'').trim())}" title="點擊變更">${statusBadge(r['狀態'], isMission)}</td>`;
+  } else if (opts.showEdit) {
+    h += `<td class="st st-clickable" title="點擊編輯" onclick="openEditEntryModal('${isMission ? 'mission' : 'issue'}','${escapeAttr(num)}')">${statusBadge(r['狀態'], isMission)}</td>`;
   } else {
     h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;
   }
@@ -3808,9 +3821,17 @@ function renderTableC() {
 
 // ===== Tab D / E：特定担当者の Mission 一覧（擔當 or 戰略負責人、フィルタ可）=====
 const _filtersWiredDE = { D: false, E: false };
+// 人物セル（複数名・短縮/フル名混在）に personName が含まれるか。
+// 例：擔當="詩雅/育菱" や "張育菱" でも personName="育菱" にヒットさせる。
+function personMatches(val, personName) {
+  personName = (personName || '').trim();
+  if (!personName) return false;
+  return splitPersons(val).some(n => n === personName || n.endsWith(personName) || personName.endsWith(n));
+}
+
 function setupTabDEFilters(panelKey, personName) {
-  // このパネルに出る Mission（擔當 or 戰略負責人 = person）の処/組 を候補に
-  const isMineFilter = r => (r['擔當']||'').trim() === personName || (r['戰略負責人']||'').trim() === personName;
+  // このパネルに出る項目（擔當 or 戰略負責人 = person）の処/組 を候補に
+  const isMineFilter = r => personMatches(r['擔當'], personName) || personMatches(r['戰略負責人'], personName);
   populateDeptGroupOwner(panelKey, isMineFilter);
 
   if (_filtersWiredDE[panelKey]) return;
@@ -3837,21 +3858,19 @@ function renderPersonView(panelKey, personName) {
   const fRole   = (document.getElementById(`filterRole${panelKey}`)?.value   || '').trim();
   const fStatus = (document.getElementById(`filterStatus${panelKey}`)?.value || '').trim();
   const fStale  = (document.getElementById(`filterStale${panelKey}`)?.value  || '').trim();
-
   const issueMap = buildIssueMap();
-  // 擔當 もしくは 戰略負責人 が personName の Mission を全部拾う
+  const showClosed = getShowClosed();
+
+  // 関わる Issue・Mission を収集（複数担当・短縮/フル名対応）
   const decorated = [];
   issueData.forEach(r => {
-    if (!isMissionDatum(r)) return;
-    const isOwner = (r['擔當']||'').trim() === personName;
-    const isStrategic = (r['戰略負責人']||'').trim() === personName;
+    const isOwner = personMatches(r['擔當'], personName);
+    const isStrategic = personMatches(r['戰略負責人'], personName);
     if (!isOwner && !isStrategic) return;
-    decorated.push({ row: r, isOwner, isStrategic });
+    decorated.push({ row: r, isOwner, isStrategic, isMission: isMissionDatum(r) });
   });
   const totalAll = decorated.length;
 
-  const showClosed = getShowClosed();
-  // フィルタ適用
   const filtered = decorated.filter(({ row: r, isOwner, isStrategic }) => {
     if (!showClosed && isClosedStatus(r['狀態'])) return false;
     if (fDept   && (r['處']||'').trim() !== fDept)   return false;
@@ -3864,34 +3883,71 @@ function renderPersonView(panelKey, personName) {
     return true;
   });
 
-  // 親 Issue 編號でソートして dedup を効かせる
-  filtered.sort((a, b) => (a.row['親編號']||'').localeCompare(b.row['親編號']||''));
+  // サマリー集計
+  let cProg = 0, cNeed = 0, cStale = 0, cIssue = 0, cMission = 0;
+  filtered.forEach(({ row: r, isMission }) => {
+    const st = (r['狀態']||'').trim();
+    if (st === '進行中') cProg++;
+    if (st === '需確認') cNeed++;
+    const d = stalenessDays(r); if (d != null && d > 7) cStale++;
+    if (isMission) cMission++; else cIssue++;
+  });
 
-  // 役割別カウント（フィルタ後の表示分内訳）
-  const ownerOnly     = filtered.filter(d => d.isOwner && !d.isStrategic).length;
-  const strategicOnly = filtered.filter(d => !d.isOwner && d.isStrategic).length;
-  const both          = filtered.filter(d => d.isOwner && d.isStrategic).length;
+  // 1 行の HTML（✎編集・狀態クリック編集つき）
+  const rowHtml = (d, pp) => {
+    const r = d.row;
+    const parent = d.isMission ? makeParentInfo(r, issueMap, pp.v) : { num: '', name: '', show: false };
+    pp.v = parent.num;
+    let roleHtml = '';
+    if (d.isOwner)     roleHtml += '<span class="role-badge role-owner">擔當</span>';
+    if (d.isStrategic) roleHtml += '<span class="role-badge role-strategic">負責人</span>';
+    const typeTag = d.isMission ? '' : '<span class="role-badge role-issue">ISSUE</span> ';
+    const extraCell = `<td>${typeTag}${roleHtml}</td>`;
+    return simpleRow(r, { showOwner: false, showRemark: true, parent, showGroup: true, showConf: true, extraCellAfterDept: extraCell, showEdit: true });
+  };
 
   let html = '';
-  if (filtered.length) {
-    const breakdown = [];
-    if (ownerOnly)     breakdown.push(`擔當 ${ownerOnly}`);
-    if (strategicOnly) breakdown.push(`戰略負責人 ${strategicOnly}`);
-    if (both)          breakdown.push(`兩者 ${both}`);
-    html += `<tr class="sec-row"><th colspan="10">▶ ${escapeHtml(personName)} 相關 Mission · 顯示 ${filtered.length} 筆${breakdown.length ? `（${breakdown.join(' / ')}）` : ''}</th></tr>`;
-    let prevParent = null;
-    filtered.forEach(({ row: r, isOwner, isStrategic }) => {
-      const parent = makeParentInfo(r, issueMap, prevParent);
-      let roleHtml = '';
-      if (isOwner)     roleHtml += '<span class="role-badge role-owner">擔當</span>';
-      if (isStrategic) roleHtml += '<span class="role-badge role-strategic">負責人</span>';
-      const extraCell = `<td>${roleHtml}</td>`;
-      html += simpleRow(r, { showOwner: false, showRemark: true, parent, showGroup: true, showConf: true, extraCellAfterDept: extraCell });
-      prevParent = parent.num;
-    });
-  } else {
-    html = `<tr><td colspan="10" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>`;
+  html += `<tr class="sec-row summary-row"><th colspan="10">${escapeHtml(personName)}　合計 ${filtered.length} 筆（Issue ${cIssue}／Mission ${cMission}）`
+        + `<span class="sum-badge sum-prog">進行中 ${cProg}</span>`
+        + `<span class="sum-badge sum-need">需確認 ${cNeed}</span>`
+        + `<span class="sum-badge sum-stale">停滯&gt;7天 ${cStale}</span></th></tr>`;
+
+  if (!filtered.length) {
+    html += `<tr><td colspan="10" style="text-align:center; padding:30px; color:#999;">符合條件的項目沒有</td></tr>`;
+    tbody.innerHTML = html;
+    const ce0 = document.getElementById(`filterCount${panelKey}`);
+    if (ce0) ce0.textContent = (fDept || fGroup || fRole || fStatus || fStale) ? `顯示 0 / ${totalAll} 筆` : `${totalAll} 筆`;
+    return;
   }
+
+  // 要對應（需確認 もしくは 停滞>7日）を先頭に
+  const needAction = filtered.filter(({ row: r }) => (r['狀態']||'').trim() === '需確認' || ((stalenessDays(r) ?? -1) > 7));
+  const needSet = new Set(needAction.map(d => d.row));
+  const rest = filtered.filter(d => !needSet.has(d.row));
+
+  if (needAction.length) {
+    needAction.sort((a, b) => ((stalenessDays(b.row) ?? -1) - (stalenessDays(a.row) ?? -1)));
+    html += `<tr class="sec-row need-row"><th colspan="10">⚠ 需對應（需確認・停滯&gt;7天） ${needAction.length} 筆</th></tr>`;
+    const pp = { v: null };
+    needAction.forEach(d => { html += rowHtml(d, pp); });
+  }
+
+  // 處ごとにグループ（色マップ順）
+  const byDept = {};
+  rest.forEach(d => { const dept = (d.row['處']||'').trim() || '（未分類）'; (byDept[dept] = byDept[dept] || []).push(d); });
+  const deptOrder = Object.keys(DEPT_COLOR_MAP);
+  const deptKeys = Object.keys(byDept).sort((a, b) => {
+    const ia = deptOrder.indexOf(a), ib = deptOrder.indexOf(b);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b, 'zh-Hant');
+  });
+  deptKeys.forEach(dept => {
+    const list = byDept[dept];
+    list.sort((a, b) => (a.row['親編號'] || a.row['編號'] || '').localeCompare(b.row['親編號'] || b.row['編號'] || '', 'zh-Hant'));
+    html += `<tr class="sec-row"><th colspan="10">${escapeHtml(dept)} · ${list.length} 筆</th></tr>`;
+    const pp = { v: null };
+    list.forEach(d => { html += rowHtml(d, pp); });
+  });
+
   tbody.innerHTML = html;
 
   const countEl = document.getElementById(`filterCount${panelKey}`);
