@@ -1373,9 +1373,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.29.0';
+const APP_VERSION = '0.29.1';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '詩雅／育菱タブを刷新：①ヒット判定を複数担当・短縮/フル名対応に修正 ②上部に「需對應（需確認・停滞>7日）」セクション ③その場で✎編集・狀態クリック編集 ④關わる Issue も表示 ⑤處ごとグループ＋件数サマリー。Apps Script 変更なし。';
+const APP_NOTE  = '詩雅／育菱タブ：處グループ＋Issue 混在で分かりにくくなる「親Issue 省略表示」を廃止し、親Issue を毎行フル表示に。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -3894,10 +3894,10 @@ function renderPersonView(panelKey, personName) {
   });
 
   // 1 行の HTML（✎編集・狀態クリック編集つき）
-  const rowHtml = (d, pp) => {
+  // 處グループ＋Issue 混在のため、親Issue は省略せず毎行フル表示（prevParent=null）。
+  const rowHtml = (d) => {
     const r = d.row;
-    const parent = d.isMission ? makeParentInfo(r, issueMap, pp.v) : { num: '', name: '', show: false };
-    pp.v = parent.num;
+    const parent = d.isMission ? makeParentInfo(r, issueMap, null) : { num: '', name: '', show: false };
     let roleHtml = '';
     if (d.isOwner)     roleHtml += '<span class="role-badge role-owner">擔當</span>';
     if (d.isStrategic) roleHtml += '<span class="role-badge role-strategic">負責人</span>';
@@ -3928,8 +3928,7 @@ function renderPersonView(panelKey, personName) {
   if (needAction.length) {
     needAction.sort((a, b) => ((stalenessDays(b.row) ?? -1) - (stalenessDays(a.row) ?? -1)));
     html += `<tr class="sec-row need-row"><th colspan="10">⚠ 需對應（需確認・停滯&gt;7天） ${needAction.length} 筆</th></tr>`;
-    const pp = { v: null };
-    needAction.forEach(d => { html += rowHtml(d, pp); });
+    needAction.forEach(d => { html += rowHtml(d); });
   }
 
   // 處ごとにグループ（色マップ順）
@@ -3944,8 +3943,7 @@ function renderPersonView(panelKey, personName) {
     const list = byDept[dept];
     list.sort((a, b) => (a.row['親編號'] || a.row['編號'] || '').localeCompare(b.row['親編號'] || b.row['編號'] || '', 'zh-Hant'));
     html += `<tr class="sec-row"><th colspan="10">${escapeHtml(dept)} · ${list.length} 筆</th></tr>`;
-    const pp = { v: null };
-    list.forEach(d => { html += rowHtml(d, pp); });
+    list.forEach(d => { html += rowHtml(d); });
   });
 
   tbody.innerHTML = html;
