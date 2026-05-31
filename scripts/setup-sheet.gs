@@ -176,13 +176,14 @@ function doPost(e) {
       }
     }
 
-    // Confluence URL（複数 URL は改行区切り）。リンク編集は進捗ではないため 更新日 は自動更新しない。
+    // Confluence URL（複数 URL は改行区切り）。行の更新なので 更新日 も自動更新する。
     if (Object.prototype.hasOwnProperty.call(data, 'Confluence URL')) {
       const col = headers.indexOf(WRITE_FIELDS['Confluence URL']) + 1;
       console.log('  Confluence URL col index:', col);
       if (col > 0) {
         sheet.getRange(rowIdx, col).setValue(String(data['Confluence URL']));
         changes['Confluence URL'] = String(data['Confluence URL']);
+        touchedContent = true;
       }
     }
 

@@ -799,9 +799,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.13.3';
+const APP_VERSION = '0.14.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'Confluence アイコンを外部依存なしの内蔵 SVG（data-URI）に変更。ヘッダーに確実表示＆favicon 読み込み失敗時の onerror 無限ループ（画像点滅）を解消。';
+const APP_NOTE  = '更新日を自動記録に変更（手入力不可）。狀態 / Mission進度 / Confluence 連結を編集すると、その行の更新日が自動でその日に更新される。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1036,7 +1036,9 @@ function freshnessCell(dateStr, editOpts) {
   if (editOpts && editOpts.editable) {
     return `<td class="upd ${cls} cell-editable" data-edit="date" data-mission="${escapeAttr(editOpts.missionId)}" data-raw="${escapeAttr(rawIso)}" title="點擊編輯日期（${escapeAttr(v||'未設定')}）">${escapeHtml(label)}</td>`;
   }
-  return `<td class="upd ${cls}" title="${escapeHtml(v)}">${escapeHtml(label)}</td>`;
+  // 自動記録モード：手入力不可。編集（狀態 / Mission進度 / 連結）時に自動でその日付が入る。
+  const title = (editOpts && editOpts.auto) ? '編輯時自動記錄（無需手動輸入）' : escapeAttr(v);
+  return `<td class="upd ${cls}" title="${title}">${escapeHtml(label)}</td>`;
 }
 
 // Confluence セル：管理頁面（ページ名）＋ favicon ＋ リンク
@@ -1746,8 +1748,8 @@ function missionEditRow(r, opts) {
   } else {
     h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;
   }
-  // 更新（點擊編輯）
-  h += freshnessCell(r['更新日'], isMission ? { editable: true, missionId: num } : null);
+  // 更新（自動記録・手入力不可）：狀態 / Mission進度 / 連結 を編集すると自動でその日に更新される
+  h += freshnessCell(r['更新日'], isMission ? { auto: true } : null);
   // 🔗 Confluence（複数 URL 対応・貼り付け編集可）。編集・表示対象は Mission 自身の URL のみ。
   h += confEditCell(r['Confluence URL自身'] || '', num, isMission);
   // 處 / 組 / 擔當（継承情報・末尾）
