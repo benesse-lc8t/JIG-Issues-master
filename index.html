@@ -1353,9 +1353,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.28.0';
+const APP_VERSION = '0.28.1';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '既存 Issue／Mission をダッシュボードから編集可能に（Tab A 各行の ✎）。追加モーダルを追加/編集兼用化し、名称・擔當/戰略負責人(チップ)・狀態/組/處・Confluence を編集（編號は変更不可）。一覧の擔當/戰略負責人を處カラーのチップ表示に。Apps Script に updateMission/updateIssue を追加（同一 URL 再公開が必要・codeVersion=edit1）。';
+const APP_NOTE  = '編集の not_found 修正：更新時の編號列をヘッダ名で特定（Issue主檔は編號が C 列のため A 列決め打ちで not_found になっていた）。※Apps Script 再公開が必要（codeVersion=edit2）。';
 
 // ===== Tab switch =====
 function show(id, e) {

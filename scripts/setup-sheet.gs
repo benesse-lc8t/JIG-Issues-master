@@ -36,7 +36,7 @@
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 // 再公開が反映されたか確認するための目印。doGet が返す。変更のたびに上げる。
-const CODE_VERSION = 'gs-2026-05-31-edit1';
+const CODE_VERSION = 'gs-2026-05-31-edit2';
 
 const STATUS_VALUES = ['未開始', '策劃中', '需確認', '進行中', '結案'];
 const STATUS_COLORS = {
@@ -432,7 +432,11 @@ function _handleUpdate(ss, data, sheetName) {
   if (!sheet) return _writeJson({ ok: false, error: 'sheet_not_found', sheetName: sheetName });
   const last = sheet.getLastRow();
   if (last < 2) return _writeJson({ ok: false, error: 'no_data_rows' });
-  const ids = sheet.getRange(2, 1, last - 1, 1).getValues();
+  // 編號の列はシートにより異なる（Mission一覽=A / Issue主檔=C）。ヘッダ名で特定する。
+  const head0 = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => String(h).trim());
+  const numC = head0.indexOf('編號');
+  if (numC < 0) return _writeJson({ ok: false, error: 'no_id_column', sheetName: sheetName });
+  const ids = sheet.getRange(2, numC + 1, last - 1, 1).getValues();
   let rowIdx = -1;
   for (let i = 0; i < ids.length; i++) { if (String(ids[i][0]).trim() === id) { rowIdx = i + 2; break; } }
   if (rowIdx < 0) return _writeJson({ ok: false, error: 'not_found', id: id });
