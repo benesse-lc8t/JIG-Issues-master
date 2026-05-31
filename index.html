@@ -70,11 +70,13 @@
 
   /* topbar 右肩のアクション群（管理者ボタンと人物ボタンを縦に並べる） */
   .topbar-actions { display: flex; flex-direction: column; gap: 4px; align-items: stretch; }
-  .person-btns { display: flex; gap: 4px; }
-  .person-btn { flex: 1; padding: 4px 10px; font-size: 10px; font-weight: 500; border: 1px solid var(--border); border-radius: 4px; background: #fff; color: #5F6368; cursor: pointer; white-space: nowrap; transition: all 0.15s; font-family: inherit; }
-  .person-btn:hover { background: #F1F3F4; color: #202124; }
-  .person-btn.btn-shiya.active  { background: #FCE8E6; color: #B31412; border-color: #EA4335; }
-  .person-btn.btn-yuling.active { background: #F3E8FD; color: #7026A6; border-color: #9334E6; }
+  /* 詩雅／育菱の呼び出し：普段は目立たない小さなアイコン、hover/選択時のみ色づく */
+  .person-btns { display: flex; gap: 2px; }
+  .person-btn { display: inline-flex; align-items: center; gap: 3px; padding: 3px 6px; font-size: 10px; font-weight: 500; border: none; border-radius: 5px; background: transparent; color: #C5C8CC; cursor: pointer; white-space: nowrap; opacity: 0.75; transition: all 0.15s; font-family: inherit; }
+  .person-btn .ico { width: 14px; height: 14px; }
+  .person-btn:hover { background: #F1F3F4; color: #5F6368; opacity: 1; }
+  .person-btn.btn-shiya.active  { background: #FCE8E6; color: #B31412; opacity: 1; }
+  .person-btn.btn-yuling.active { background: #F3E8FD; color: #7026A6; opacity: 1; }
 
   /* Panel：active タブと連動した色アクセントを上端に持たせる */
   #panel-A.active { border-top: 3px solid #4285F4; }
@@ -1103,8 +1105,8 @@
   <div class="topbar-actions">
     <button id="adminBtn" class="admin-btn" onclick="show('Admin',event)" title="僅供管理者使用：資料來源設定">⚙ 管理者專用</button>
     <div class="person-btns">
-      <button type="button" class="person-btn btn-shiya" onclick="show('D',event)" title="顯示詩雅擔當的 Mission">👤 詩雅</button>
-      <button type="button" class="person-btn btn-yuling" onclick="show('E',event)" title="顯示育菱擔當的 Mission">👤 育菱</button>
+      <button type="button" class="person-btn btn-shiya" onclick="show('D',event)" title="顯示詩雅的 Mission"><svg class="ico" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>詩雅</span></button>
+      <button type="button" class="person-btn btn-yuling" onclick="show('E',event)" title="顯示育菱的 Mission"><svg class="ico" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>育菱</span></button>
     </div>
   </div>
 </div>
@@ -1445,9 +1447,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.30.7';
+const APP_VERSION = '0.30.8';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '個人備註モーダル：進度ログ枠が flex で高さ 0 に潰れて中身が見えない問題を修正（flex:0 0 auto で固定）。Apps Script 変更なし。';
+const APP_NOTE  = '詩雅／育菱の呼び出しボタンを目立たない小さな人物 SVG アイコン（普段はミュート・hover/選択時のみ色づく）に変更。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
