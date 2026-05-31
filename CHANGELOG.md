@@ -5,6 +5,23 @@
 
 ---
 
+## v0.26.0 — 2026-05-31
+
+**ダッシュボードから Issue／Mission を追加（事務局の構造管理を画面内に）**
+
+事務局がシートを直接開いて行追加していた作業を、ダッシュボード内の最小フォームに集約（目的B＝事務局の負荷低減）。既存の更新経路は変更せず、append アクションを「足すだけ」。
+
+### ダッシュボード（index.html）
+- Tab A（Issue & Mission）ツールバー右端に控えめな **「＋ 新增」** ボタン。
+- **新增モーダル**（Issue／Mission をトグル）。最小項目固定・詳細は Confluence へ誘導（フィルタ②③遵守）。
+  - *Mission*：親 Issue を選択 → **編號を自動採番（親編號-M{n}）してプレビュー**、Mission名、擔當、戰略負責人、狀態、Confluence URL。處/組/會議等は親から継承（入力不要）。
+  - *Issue*：編號（手動＋**重複ライブチェック**）、Issue名、處（色マップ7部門から選択）、組、戰略負責人、狀態、Confluence URL。
+- 保存は `action` 付き POST → 成功後に `loadFromSheet()` で再読込し、継承列込みで確実に反映。背景スクロールロック・Esc/Ctrl+Enter 対応。
+
+### Apps Script（setup-sheet.gs）
+- `doPost` に **`action:'addMission'` / `action:'addIssue'`** を追加。`_appendByHeaders`（ヘッダ名で列特定し1行 append）・`_nextMissionId`（親配下の次番号採番）を新設。Mission は親存在チェック、Issue は編號一意チェック。`ISSUE_SHEET_FOR_WRITE='Issue主檔'` 追加。
+- **要再公開**：`doPost` 変更のため、Apps Script を**同一 URL で新バージョンとして再デプロイ**（§9）。未実施だと追加 POST は旧コードに弾かれる（更新機能は従来どおり）。
+
 ## v0.25.3 — 2026-05-31
 
 **編集モーダルのスクロール裏抜けを修正**

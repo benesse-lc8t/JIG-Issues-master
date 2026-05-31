@@ -75,6 +75,7 @@ const PERSON_COL_WIDTHS  = { 1: 120, 2: 130, 3: 150, 4: 80 };
 const WRITE_TOKEN = 'JIG-WRITE-TBBS-2026';
 // 編集対象シート
 const MISSION_SHEET_FOR_WRITE = 'Mission一覽';
+const ISSUE_SHEET_FOR_WRITE   = 'Issue主檔'; // 新規 Issue 追加の対象
 // ダッシュボード側のキー → Sheet 列名のマッピング
 const WRITE_FIELDS = {
   '狀態':   '狀態',
@@ -124,6 +125,14 @@ function doPost(e) {
     if (!data || data.token !== WRITE_TOKEN) {
       console.log('  → forbidden (token mismatch)');
       return _writeJson({ ok: false, error: 'forbidden' });
+    }
+
+    // 追加アクション（行を append）。action 無しは従来どおりの更新（既存行）。
+    const action = String(data.action || '').trim();
+    if (action === 'addMission' || action === 'addIssue') {
+      const ssA = _getSpreadsheet();
+      if (!ssA) return _writeJson({ ok: false, error: 'no_spreadsheet', hint: 'Set SHEET_ID in the script.' });
+      return action === 'addMission' ? _handleAddMission(ssA, data) : _handleAddIssue(ssA, data);
     }
 
     const missionId = String(data.mission || '').trim();
@@ -281,6 +290,114 @@ function doPost(e) {
     console.log('  → exception:', String(err && err.stack || err));
     return _writeJson({ ok: false, error: 'exception', message: String(err && err.message || err) });
   }
+}
+
+// ===== 行 append 系ヘルパー（新規 Issue / Mission 追加）=====
+
+// ヘッダ名で列を特定し、その列にだけ値を入れた 1 行を append する。
+// 列順の決め打ちをしない（実際のシート列構成に追従）。
+function _appendByHeaders(sheet, valueMap) {
+  const lastCol = sheet.getLastColumn();
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => String(h).trim());
+  const row = new Array(lastCol).fill('');
+  Object.keys(valueMap).forEach(k => {
+    const ci = headers.indexOf(k);
+    if (ci >= 0) row[ci] = valueMap[k];
+  });
+  sheet.appendRow(row);
+  return { row: sheet.getLastRow(), headers };
+}
+
+// 親編號配下の次の Mission 編號（親編號-M{n}）を採番する。
+function _nextMissionId(sheet, parentId) {
+  const last = sheet.getLastRow();
+  let max = 0;
+  if (last >= 2) {
+    const ids = sheet.getRange(2, 1, last - 1, 1).getValues();
+    const esc = parentId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp('^' + esc + '-M(\\d+)$');
+    ids.forEach(r => { const m = String(r[0]).trim().match(re); if (m) max = Math.max(max, parseInt(m[1], 10)); });
+  }
+  return parentId + '-M' + (max + 1);
+}
+
+function _handleAddMission(ss, data) {
+  const parent = String(data['親編號'] || '').trim();
+  const name   = String(data['Mission'] || '').trim();
+  if (!parent) return _writeJson({ ok: false, error: 'parent_required' });
+  if (!name)   return _writeJson({ ok: false, error: 'mission_name_required' });
+  const status = String(data['狀態'] || '').trim();
+  if (status && !ALLOWED_STATUS.has(status)) return _writeJson({ ok: false, error: 'invalid_status', value: status });
+
+  // 親 Issue の存在チェック（Issue主檔 の編號）
+  const issueSheet = ss.getSheetByName(ISSUE_SHEET_FOR_WRITE);
+  if (issueSheet) {
+    const il = issueSheet.getLastRow();
+    if (il >= 2) {
+      const ihead = issueSheet.getRange(1, 1, 1, issueSheet.getLastColumn()).getValues()[0].map(h => String(h).trim());
+      const inum = ihead.indexOf('編號');
+      if (inum >= 0) {
+        const ivals = issueSheet.getRange(2, inum + 1, il - 1, 1).getValues();
+        if (!ivals.some(r => String(r[0]).trim() === parent)) {
+          return _writeJson({ ok: false, error: 'parent_not_found', parent: parent });
+        }
+      }
+    }
+  }
+
+  const sheet = ss.getSheetByName(MISSION_SHEET_FOR_WRITE);
+  if (!sheet) return _writeJson({ ok: false, error: 'mission_sheet_not_found', sheetName: MISSION_SHEET_FOR_WRITE });
+  const newId = _nextMissionId(sheet, parent);
+  const vmap = {
+    '編號': newId,
+    'Mission': name,
+    '親編號': parent,
+    '戰略負責人': String(data['戰略負責人'] || ''),
+    '擔當': String(data['擔當'] || ''),
+    '狀態': status,
+    '更新日': new Date(),
+    'Confluence URL': String(data['Confluence URL'] || '')
+  };
+  const r = _appendByHeaders(sheet, vmap);
+  SpreadsheetApp.flush();
+  console.log('  → addMission ok:', newId, 'row', r.row);
+  return _writeJson({ ok: true, action: 'addMission', mission: newId, '編號': newId, row: r.row, parent: parent });
+}
+
+function _handleAddIssue(ss, data) {
+  const id   = String(data['編號'] || '').trim();
+  const name = String(data['Issue'] || '').trim();
+  if (!id)   return _writeJson({ ok: false, error: 'issue_id_required' });
+  if (!name) return _writeJson({ ok: false, error: 'issue_name_required' });
+  const status = String(data['狀態'] || '').trim();
+  if (status && !ALLOWED_STATUS.has(status)) return _writeJson({ ok: false, error: 'invalid_status', value: status });
+
+  const sheet = ss.getSheetByName(ISSUE_SHEET_FOR_WRITE);
+  if (!sheet) return _writeJson({ ok: false, error: 'issue_sheet_not_found', sheetName: ISSUE_SHEET_FOR_WRITE });
+
+  // 編號の一意チェック
+  const last = sheet.getLastRow();
+  const head = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => String(h).trim());
+  const numC = head.indexOf('編號');
+  if (numC >= 0 && last >= 2) {
+    const vals = sheet.getRange(2, numC + 1, last - 1, 1).getValues();
+    if (vals.some(r => String(r[0]).trim() === id)) return _writeJson({ ok: false, error: 'duplicate_id', '編號': id });
+  }
+
+  const vmap = {
+    '編號': id,
+    'Issue': name,
+    '處': String(data['處'] || ''),
+    '組': String(data['組'] || ''),
+    '戰略負責人': String(data['戰略負責人'] || ''),
+    '狀態': status,
+    '更新日': new Date(),
+    'Confluence URL': String(data['Confluence URL'] || '')
+  };
+  const r = _appendByHeaders(sheet, vmap);
+  SpreadsheetApp.flush();
+  console.log('  → addIssue ok:', id, 'row', r.row);
+  return _writeJson({ ok: true, action: 'addIssue', '編號': id, mission: id, row: r.row });
 }
 
 // 診断用：ブラウザで Web App URL を開くと、デプロイ済みコードが実際に見ている
