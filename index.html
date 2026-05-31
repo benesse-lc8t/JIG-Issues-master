@@ -377,13 +377,15 @@
   .simple-table td.cell-editable::after { content: '✎'; position: absolute; top: 1px; right: 2px; font-size: 8px; color: transparent; }
   .simple-table td.cell-editable:hover::after { color: var(--g-blue); }
   .simple-table td.cell-saving { outline: 1px solid var(--g-blue); pointer-events: none; position: relative; }
-  /* 保存中：セルが左から右へ色で満たされていく塗りつぶし効果（1 回のみ・繰り返さない） */
+  /* 保存中：セル全体が濃い青から徐々に薄くなるフェード（1 回のみ・繰り返さない・保存実測 ~5-6 秒に合わせる） */
   .simple-table td.cell-saving::before {
-    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 0;
-    background: rgba(26,115,232,0.20); z-index: 1; pointer-events: none;
-    animation: cellFill 1.8s ease-out forwards;
+    content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    animation: cellFade 5s ease-out forwards;
   }
-  @keyframes cellFill { from { width: 0; } to { width: 100%; } }
+  @keyframes cellFade {
+    0%   { background: rgba(26,115,232,0.42); }
+    100% { background: rgba(26,115,232,0.05); }
+  }
   /* ミニスピナー（データ読込ステータス用） */
   .mini-spin { display: inline-block; width: 9px; height: 9px; border: 1.5px solid #C5CDD6; border-top-color: var(--g-blue); border-radius: 50%; animation: miniSpin 0.7s linear infinite; vertical-align: -1px; }
   @keyframes miniSpin { to { transform: rotate(360deg); } }
@@ -820,9 +822,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.16.2';
+const APP_VERSION = '0.16.3';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '保存中の表示を、セルが左から色で満たされる塗りつぶし効果（1回のみ・繰り返さない）に変更。';
+const APP_NOTE  = '保存中の表示を「濃い青→徐々に薄くなる」フェード（1回のみ・約5秒）に変更。保存実測（~6秒）に合わせて早く終わりすぎないように。';
 
 // ===== Tab switch =====
 function show(id, e) {
