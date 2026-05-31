@@ -226,8 +226,8 @@ Issue 共-2 …
 
 ## 9. 開発運用メモ
 
-- 作業ブランチ：`claude/keen-einstein-9NcDI`（指定があれば変更）
-- main への push は明示指示があれば fast-forward で実施
+- 作業ブランチ：`claude/cool-bell-vs8ov`（指定があれば変更）
+- main への push は **指示なしでも ff で反映してよい**（2026-05-31 に小沼氏が許可。「今後指示なしで main まで PUSH」）。運用：作業ブランチへコミット → `git merge --ff-only` で main へ → 両方 push。
 - 変更時は本ファイルの該当節を更新し、判断の整合を保つ
 - 重要な方針変更があれば、本ファイル末尾の「変更履歴」に追記
 - バージョンは `index.html` 冒頭の `APP_VERSION` と右上バッジで管理。変更ごとに上げて CHANGELOG.md に追記する運用。
@@ -241,34 +241,39 @@ Issue 共-2 …
 - `getActiveSpreadsheet()` は**スタンドアロン Web App では使えない**（null を返す）。`SpreadsheetApp.openById(SHEET_ID)` を使うこと。`setup-sheet.gs` の先頭の `SHEET_ID` 定数を正しいスプレッドシート ID に設定しておく。
 - `SpreadsheetApp.getUi().alert()` はスタンドアロン実行コンテキストでは**ハングする**（例外をスローしない）。`console.log` に置き換えること。
 
-## 10. 次セッションへの引継ぎ（2026-05-31 時点）
+## 10. 次セッションへの引継ぎ（2026-05-31 v0.31.2 時点）
 
 新しいセッションを始めたら、まず本ファイルと `CHANGELOG.md` を読むこと。以下が現状サマリ。
 
 ### 現在の状態
-- **最新版：v0.22.1**（`index.html` 冒頭 `APP_VERSION` と右上バッジで確認）
-- 作業ブランチ：`claude/stoic-fermat-McakE`（旧 `claude/keen-einstein-9NcDI`）。**毎回コミット＆ `main` にも push 済み**（明示指示で main へ反映する運用が定着）。
-- 直近の大きな作業テーマは **Mission進度タブ（Tab C）の編集 UX 刷新** と **Confluence リンク表示の整理**。詳細は CHANGELOG v0.16〜v0.22。
+- **最新版：v0.31.2**（`index.html` 冒頭 `APP_VERSION` と右上バッジで確認）。
+- 作業ブランチ：`claude/cool-bell-vs8ov`。**毎コミット → main も ff push**（§9。指示なしで main 反映可）。`main` と作業ブランチは常に同じ先端。
+- アーキテクチャは不変（静的 `index.html` ＋ gviz 読取 ＋ Apps Script `doPost` 書込）。
 
-### この期間で入った主な機能（UI/UX）
-- **統合編集モーダル**：Mission進度セルのダブルクリック（または狀態/🔗セルのクリック）で、狀態・Mission進度・Confluence URL を 1 つのモーダルで編集。Ctrl+Enter 保存／Esc キャンセル。ヘッダーに ISSUE / MISSION を 2 段表示。
-- **楽観的更新＋伸びるバー**：保存は約6秒かかるため、入力値を即時反映しバックグラウンド保存。セルが左→右に満ち色が変化（約5秒）。
-- **Confluence リンク**：1 セルに複数 URL を `名前|URL`（改行区切り）で保持（名前なしは URL のみ＝後方互換）。`parseConfEntries()`/`serializeConfEntries()`/`confLabel()`/`confEntryLabel()` が中核。一覧はアイコンのみ＋件数バッジ、複数はクリックで「Confluence 連結」モーダル、単一は直接リンク。ヘッダーは favicon（`conf-th-icon`）。
-- **表示モーダル（読み取り専用）**：他タブ（Issue&Mission/D/E）の Mission進度セルクリックで、編集モーダルを `readOnly` 再利用で表示。✎編輯ボタンで Tab C の編集モーダルへ遷移。
-- **ダイジェストテキストウィンドウ**：Mission進度セルのホバーで画面中央に本文を大表示（約350ms、操作不可、`pointer-events:none`）。
-- **列幅リサイズ**：localStorage 永続（キー `jig:colw:panel-X`）＋リセットボタン。
+### ⚠️ 最重要：未完了の管理者作業（保存系を使う前に必須）
+**Apps Script を `codeVersion=gs-2026-05-31-announce1` まで再公開＋`setupJIG` を 1 回実行**すること。これが終わるまで、個人備註の `留言`/`重要`、`公告`（お知らせ）など新規保存系は動かない（読取は動く）。
+- 確認：Web App URL（＝`index.html` の `SHEET_WRITE_URL`）をブラウザで開き、JSON の `codeVersion` が `announce1` であること。
+- `setupJIG`：既存 `個人備註` タブへ `留言`/`重要` 列を追補、`公告` タブを新規作成。未実行でも各 save の初回に自動追補/作成されるが、明示実行が確実。
 
-### 完了済み（旧 TODO①）
-1. **Apps Script の再デプロイは完了**（2026-05-31）。`scripts/setup-sheet.gs` 側の「Confluence URL 編集時も `更新日` を自動更新」「応答 JSON の `更新日` に時刻 `HH:mm` を含める」が**デプロイ済みで、サーバーが実際にこの応答を返す**。
-   - 該当コード：Confluence URL 編集時の `touchedContent`→更新日自動セット（setup-sheet.gs L179-200）、応答の `更新日` を `yyyy-MM-dd HH:mm` 形式で返却（同 L206）。
-   - `index.html` の `ensureEditTimestamp()`（L1803-1811）は**防御的フォールバックとして残置**。引数に時刻が既にあればそのまま返す実装なので、再デプロイ済みサーバーの応答（時刻入り）は素通りし、二重処理も値の改変も起きない＝無害。撤去は任意。
-
-### 残りの TODO（任意）
-2. **スプレッドシートの `更新日` 列の書式**を「日時」にすると、シート上でも時刻まで見える（任意）。
-3. Confluence リンクの**手書きラベル**は実装済み（v0.19.0）。さらに別カラム管理にしたい等の要望が出たら検討。
+### この期間で入った主な機能（v0.23〜v0.31）
+- **ダッシュボードから Issue/Mission 追加・編集**：Tab A の「＋ 新增」と各行の ✎（追加/編集兼用モーダル）。`doPost` の `addMission`/`addIssue`/`updateMission`/`updateIssue`。**append/update は数式列を壊さず（アンカー=編號先書き→自動算出列スキップ）、データ入力規則違反は各セル setValue 直後の `flush()` を try 内で発火させ捕捉してスキップ→`warnings` 通知**。編號は不変。`_appendByHeaders`/`_updateRowByHeaders`/`_handleUpdate`。編號列はヘッダ名で特定（Mission一覽=A 列／Issue主檔=C 列）。
+- **人員/チップ**：`人員` タブ→`window.personMap`。一覧の擔當/戰略負責人は `personChipsHtml`（處カラー）。新增/編集の人物は**名前チップピッカー**（複数選択・×削除・`window._namePickSel`）。`STRATEGIC_LEADS`（4名）で戰略負責人を限定。既定記入者 `DEFAULT_AUTHOR='王詩雅'`。
+- **UI 言語＝繁中（§8.1 厳守）**。絵文字は廃し**インライン SVG**（`svgIco(name,size)`＋`_SVG`：star/note/doc/msg/plus）。
+- **詩雅／育菱タブ（D/E）**：本文は Mission のみ（關聯 Issue は件数サマリーのみ）、上部「需對應（需確認・停滞>7日）」、處グループ＋サマリーバッジ、各行 ✎＋狀態クリック編集。ヒット判定 `personMatches`（複数担当・短縮/フル名対応）。
+- **個人備註**（タブ `個人備註`＝編號/姓名/備註/留言/重要/更新日）：D/E の「★備」列＝★重要フラグ（個人別・行トグル／只看重要フィルタ／⭐重要清單モーダル）＋私的備註＋小沼留言。モーダルに Mission 名・親Issue・進度の歷來記錄（読取専用）も表示。`doPost` の `saveMemo`（編號＋姓名 upsert・部分更新）。
+- **公告（お知らせボード）**：タブ `公告`（訊息/更新日・1件）。トップに読取表示、編集は管理者專用ページの「公告板」。`doPost` の `saveAnnounce`。
+- **詩雅／育菱の呼び出し**は topbar から撤去 → 管理者專用ページ内の「▶」格納式トグルへ（§7 の UI 隠蔽）。
+- 列幅保存は列数 `__n` を記録し列数変化時に自動破棄。読込中は不確定プログレスバー（`.load-bar`）。
 
 ### よく使う識別子
-- `SHEET_ID`（setup-sheet.gs 先頭）／`WRITE_TOKEN = 'JIG-WRITE-TBBS-2026'`／`SHEET_WRITE_URL`（index.html）。
+- `SHEET_ID`（setup-sheet.gs 先頭）／`WRITE_TOKEN='JIG-WRITE-TBBS-2026'`／`SHEET_WRITE_URL`（index.html）／`CODE_VERSION`（setup-sheet.gs 先頭・再公開確認用）。
+- タブ：`Issue主檔`/`Mission一覽`/`Mission進度ログ`/`人員`/`個人備註`/`公告`。
+- `doPost` の action：無し（既存 Mission 更新＝狀態/進度ログ/Confluence）／`addMission`/`addIssue`/`updateMission`/`updateIssue`/`saveMemo`/`saveAnnounce`。
+
+### 残りの TODO（任意・次フェーズ）
+- **本人認証**（現状は共有トークン＋名前選択。個人備註/留言/隠しタブは「UI 隠蔽」止まりで厳密非公開ではない＝§7）。
+- 溜まった `Mission進度ログ` の **AI 要約・停滞検知**（§1.5 の本来目的）。
+- 「前回記入から○日」など**空白の週の可視化**（§1.5 の逃げ場のなさ強化）。
 - Apps Script `WRITE_FIELDS`：`{狀態, 備註→Mission進度, 更新日, Confluence URL}`。
 
 ## 変更履歴
