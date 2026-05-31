@@ -1183,9 +1183,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.24.3';
+const APP_VERSION = '0.25.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '記入者を常時チップ表示から「ボタン→クリックで展開するドロップダウン（検索窓＋組カラーチップ）」に変更。全社展開で人数が増えても省スペース＆検索で選べる。';
+const APP_NOTE  = '人員マスタ（人員タブ）を導入。記入者チップの名簿・色を人員マスタ（處ベース）から生成し、同じ處の人を色で固めて表示。人員タブが無ければ従来どおりの名前収集にフォールバック。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1626,6 +1626,58 @@ const DEPT_COLOR_MAP = {
 };
 function deptColorClass(d) {
   return DEPT_COLOR_MAP[(d||'').trim()] || 'dept-c-grey';
+}
+// 處 → チップ色（bg/fg）。一覧の dept-c-* と同じ配色に揃える
+const DEPT_CHIP_COLORS = {
+  'dept-c-blue':   { bg: '#E8F0FE', fg: '#1967D2' },
+  'dept-c-green':  { bg: '#E6F4EA', fg: '#137333' },
+  'dept-c-yellow': { bg: '#FEF7E0', fg: '#B06000' },
+  'dept-c-red':    { bg: '#FCE8E6', fg: '#B31412' },
+  'dept-c-purple': { bg: '#F3E8FD', fg: '#7026A6' },
+  'dept-c-teal':   { bg: '#E0F7FA', fg: '#00838F' },
+  'dept-c-grey':   { bg: '#F1F3F4', fg: '#5F6368' },
+};
+function deptChipColor(dept) {
+  return DEPT_CHIP_COLORS[deptColorClass(dept)] || DEPT_CHIP_COLORS['dept-c-grey'];
+}
+
+// ===== 人員マスタ（名簿の一次ソース）=====
+// window.personMap = { 姓名: { dept, group, order } }
+window.personMap = window.personMap || {};
+const PERSON_SHEET_NAME = '人員';
+async function loadPersonMaster() {
+  window.personMap = {};
+  if (!SHEET_ID) return;
+  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+  const url = `${base}&sheet=${encodeURIComponent(PERSON_SHEET_NAME)}`;
+  try {
+    const res = await fetch(url + '&_=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return;
+    const csv = await res.text();
+    if (!csv || csv.trim().startsWith('<')) return; // タブ未作成
+    const wb = XLSX.read(csv, { type: 'string' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    if (rows.length < 2) return;
+    const H = rows[0].map(h => String(h).trim());
+    if (H.indexOf('姓名') < 0) return; // 人員シートでなければ無視
+    const ci = { 姓名: H.indexOf('姓名'), 處: H.indexOf('處'), 組: H.indexOf('組'), 顯示順: H.indexOf('顯示順') };
+    const map = {};
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i]; if (!r) continue;
+      const name = String(r[ci.姓名] ?? '').trim();
+      if (!name) continue;
+      const order = ci.顯示順 >= 0 ? parseFloat(r[ci.顯示順]) : NaN;
+      map[name] = {
+        dept:  ci.處 >= 0 ? String(r[ci.處] ?? '').trim() : '',
+        group: ci.組 >= 0 ? String(r[ci.組] ?? '').trim() : '',
+        order: isFinite(order) ? order : null,
+      };
+    }
+    window.personMap = map;
+  } catch (e) {
+    console.warn('[personMaster] 読込失敗', e);
+  }
 }
 
 // 1 行を 11 セル固定で生成する共通ヘルパー（v0.6.0：Confluence 列統合 + 管理頁面廃止 + 📄列廃止）
@@ -2364,45 +2416,50 @@ function startRemarkEdit(td, missionId) {
 function splitPersons(v) {
   return String(v || '').split(/[\/、,，;；]/).map(s => s.trim()).filter(Boolean);
 }
-// 人名 → 所属組コード（最頻出の組）。チップ配色に使う
-function buildAuthorGroupMap() {
-  const tally = {}; // name → { grpCode: count }
-  (issueData || []).forEach(r => {
-    const grp = (r['組'] || '').trim();
-    const def = GROUP_DEF[grp];
-    const code = def ? def.key : '';
-    [...splitPersons(r['擔當']), ...splitPersons(r['戰略負責人'])].forEach(n => {
-      tally[n] = tally[n] || {};
-      tally[n][code] = (tally[n][code] || 0) + 1;
-    });
-  });
-  const map = {};
-  Object.keys(tally).forEach(n => {
-    map[n] = Object.entries(tally[n]).sort((a, b) => b[1] - a[1])[0][0] || '';
-  });
-  return map;
-}
-// 記入者候補（重複なし・名前順）
+// 記入者候補を集める。人員マスタ（窗口）があればそれを名簿の一次ソースにし、
+// 無ければ従来どおり Mission の擔當/戰略負責人 から拾う（フォールバック）。
 function collectAuthorNames() {
+  const pm = window.personMap || {};
+  if (Object.keys(pm).length) return Object.keys(pm);
   const set = new Set();
   (issueData || []).forEach(r => {
     [...splitPersons(r['擔當']), ...splitPersons(r['戰略負責人'])].forEach(n => set.add(n));
   });
-  return [...set].sort((a, b) => a.localeCompare(b, 'zh-Hant'));
+  return [...set];
+}
+// 人名 → 處（部門）。人員マスタを最優先、無ければ Mission 行の處から最頻出を推定
+function buildAuthorDeptMap() {
+  const pm = window.personMap || {};
+  if (Object.keys(pm).length) {
+    const m = {};
+    Object.keys(pm).forEach(n => { m[n] = pm[n].dept || ''; });
+    return m;
+  }
+  const tally = {};
+  (issueData || []).forEach(r => {
+    const dept = (r['處'] || '').trim();
+    [...splitPersons(r['擔當']), ...splitPersons(r['戰略負責人'])].forEach(n => {
+      tally[n] = tally[n] || {};
+      if (dept) tally[n][dept] = (tally[n][dept] || 0) + 1;
+    });
+  });
+  const map = {};
+  Object.keys(tally).forEach(n => {
+    const e = Object.entries(tally[n]).sort((a, b) => b[1] - a[1])[0];
+    map[n] = e ? e[0] : '';
+  });
+  return map;
 }
 let _selectedAuthor = '';
 let _authorChipData = []; // [{name, code, bg, fg}]
 function selectedAuthorName() { return _selectedAuthor; }
-function chipColors(code) {
-  return code ? { bg: `var(--${code}-bg)`, fg: `var(--${code}-fg)` } : { bg: '#F1F3F4', fg: '#5F6368' };
-}
 // トリガ（ボタン）の表示を選択状態に合わせて更新
 function refreshAuthorTrigger() {
   const trg = document.getElementById('authorTrigger');
   if (!trg) return;
   if (_selectedAuthor) {
     const d = _authorChipData.find(x => x.name === _selectedAuthor);
-    const c = d ? chipColors(d.code) : chipColors('');
+    const c = d ? { bg: d.bg, fg: d.fg } : { bg: '#F1F3F4', fg: '#5F6368' };
     trg.textContent = _selectedAuthor;
     trg.classList.remove('is-placeholder');
     trg.classList.add('has-sel');
@@ -2454,24 +2511,31 @@ function closeAuthorMenu() {
 }
 function authorMenuOpen() { return document.getElementById('authorMenu').classList.contains('open'); }
 // 記入者ドロップダウンを構築（ボタン→クリックでメニュー展開）
+// 色は處（部門）ベース。人員マスタがあれば名簿・處・表示順をそこから取る。
 function populateAuthorSelect(row) {
   const dd = document.getElementById('remarkModalAuthor');
   if (!dd) return;
+  const pm = window.personMap || {};
   const names = collectAuthorNames();
-  const grpMap = buildAuthorGroupMap();
+  const deptMap = buildAuthorDeptMap();
   const preferred = (row && splitPersons(row['擔當'])[0]) || localStorage.getItem('jig:lastAuthor') || '';
   if (preferred && !names.includes(preferred)) names.unshift(preferred);
   _selectedAuthor = preferred || '';
-  // 同じ組を隣接させて探しやすく（組コード順 → 名前順）
-  const ORDER = ['com','L','Z','M','C','X','S','IP',''];
+  // 同じ處が隣接するよう並べる（處は DEPT_COLOR_MAP の登録順 → 人員マスタの顯示順 → 名前順）
+  const DEPT_ORDER = Object.keys(DEPT_COLOR_MAP);
+  const deptRank = d => { const i = DEPT_ORDER.indexOf((d || '').trim()); return i < 0 ? 99 : i; };
+  const ord = n => (pm[n] && pm[n].order != null) ? pm[n].order : Infinity;
   names.sort((a, b) => {
-    const ga = ORDER.indexOf(grpMap[a] || ''), gb = ORDER.indexOf(grpMap[b] || '');
-    return ga !== gb ? ga - gb : a.localeCompare(b, 'zh-Hant');
+    const da = deptRank(deptMap[a]), db = deptRank(deptMap[b]);
+    if (da !== db) return da - db;
+    const oa = ord(a), ob = ord(b);
+    if (oa !== ob) return oa - ob;
+    return a.localeCompare(b, 'zh-Hant');
   });
   _authorChipData = names.map(n => {
-    const code = grpMap[n] || '';
-    const c = chipColors(code);
-    return { name: n, code, bg: c.bg, fg: c.fg };
+    const dept = deptMap[n] || '';
+    const c = deptChipColor(dept);
+    return { name: n, dept, bg: c.bg, fg: c.fg };
   });
   closeAuthorMenu();
   refreshAuthorTrigger();
@@ -3544,6 +3608,7 @@ async function loadFromSheet() {
       fillShortNames(data);
       issueData = data;
       await loadMissionLog();   // 追記ログを取得（モーダルのタイムライン用）
+      await loadPersonMaster(); // 人員マスタ（記入者チップの名前・色）
       renderAll();
       const ts = new Date().toLocaleString('zh-TW', { hour12:false });
       const issueCount = data.filter(r => {

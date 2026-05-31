@@ -64,6 +64,12 @@ const LOG_SHEET_NAME = 'Mission進度ログ';
 const LOG_HEADERS     = ['編號', '日時', '擔當', '進度'];
 const LOG_COL_WIDTHS  = { 1: 110, 2: 140, 3: 90, 4: 480 };
 
+// ===== 人員マスタ（名簿の一次ソース）=====
+// 記入者チップの名前・色（處ベース）の出どころ。管理者がここに名簿を貼る。
+const PERSON_SHEET_NAME = '人員';
+const PERSON_HEADERS     = ['姓名', '處', '組', '顯示順'];
+const PERSON_COL_WIDTHS  = { 1: 120, 2: 130, 3: 150, 4: 80 };
+
 // ===== 編集 API 設定 =====
 // 編集 API のトークン（index.html の WRITE_TOKEN と同じ値にする）
 const WRITE_TOKEN = 'JIG-WRITE-TBBS-2026';
@@ -298,6 +304,8 @@ function doGet() {
       remarkColIndex: remarkCol,   // -1 なら列が見つかっていない
       logSheetName:   LOG_SHEET_NAME,
       logSheetExists: !!logSheet,  // false ならログタブ未作成（setupJIG 要実行）
+      personSheetName:   PERSON_SHEET_NAME,
+      personSheetExists: !!(ss && ss.getSheetByName(PERSON_SHEET_NAME)),
     });
   } catch (err) {
     return _writeJson({ ok: false, error: String(err.message) });
@@ -472,6 +480,17 @@ function setupJIG() {
     Object.keys(LOG_COL_WIDTHS).forEach(k => logSheet.setColumnWidth(Number(k), LOG_COL_WIDTHS[k]));
     logSheet.setFrozenRows(1);
     log.push('✓ 「Mission進度ログ」タブを作成（追記専用・4列）');
+  }
+
+  // --- 4. 人員 タブ（名簿の一次ソース）---
+  let personSheet = ss.getSheetByName(PERSON_SHEET_NAME);
+  if (!personSheet) {
+    personSheet = ss.insertSheet(PERSON_SHEET_NAME);
+    personSheet.getRange(1, 1, 1, PERSON_HEADERS.length).setValues([PERSON_HEADERS])
+      .setFontWeight('bold').setBackground('#F7F4EC');
+    Object.keys(PERSON_COL_WIDTHS).forEach(k => personSheet.setColumnWidth(Number(k), PERSON_COL_WIDTHS[k]));
+    personSheet.setFrozenRows(1);
+    log.push('✓ 「人員」タブを作成（姓名 / 處 / 組 / 顯示順）。ここに名簿を貼ると記入者チップに色が付きます');
   }
 
   const msg = log.length ? '✅ セットアップ完了\n\n' + log.join('\n')
