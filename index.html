@@ -381,6 +381,8 @@
   .sum-flag { background: #FEF7E0; color: #B06000; }
   /* メモモーダルのフィールドラベル */
   .memo-field-label { display: block; font-size: 12px; font-weight: 600; color: #5F6368; margin-bottom: 4px; }
+  .memo-mission-name { font-size: 15px; font-weight: 700; color: #202124; margin-bottom: 12px; line-height: 1.45; }
+  .memo-mn-parent { font-size: 11px; font-weight: 600; color: #1967D2; background: #E8F0FE; border-radius: 6px; padding: 1px 7px; margin-right: 5px; vertical-align: 2px; }
   /* 重要清單モーダルの行 */
   .imp-row { display: flex; align-items: center; gap: 8px; padding: 7px 4px; border-bottom: 1px solid #F1F3F4; font-size: 13px; }
   .imp-row .imp-num { color: #5F6368; font-size: 11px; min-width: 78px; }
@@ -1041,6 +1043,9 @@
       <button class="remark-modal-close" id="memoModalClose" title="取消（Esc）" aria-label="關閉">×</button>
     </div>
     <div class="remark-modal-body">
+      <div class="memo-mission-name" id="memoMissionName"></div>
+      <div class="memo-field-label" style="margin-bottom:4px;">Mission 進度（歷來記錄）</div>
+      <div class="remark-modal-log" id="memoLog" style="max-height:180px; margin-bottom:14px;"></div>
       <label class="memo-field-label"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8.5 13.5h7M8.5 17h5"/></svg> 私的備註（只有你自己看得到）</label>
       <textarea class="remark-modal-ta" id="memoModalTa" rows="4" placeholder="寫給自己的備忘…"></textarea>
       <label class="memo-field-label" style="margin-top:12px;"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 來自小沼的留言</label>
@@ -1438,9 +1443,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.30.4';
+const APP_VERSION = '0.30.5';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '列幅の保存値に列数を記録し、列数が変わったら自動破棄（詩雅タブの右端はみ出しを自動修復）。Apps Script 変更なし。';
+const APP_NOTE  = '個人備註モーダルに Mission 名称（親Issue つき）と、Mission 進度の歷來記錄（時系列・読み取り専用）を表示。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2055,7 +2060,14 @@ let _memoCtx = { id: '', who: '' };
 function openMemoModal(id, who) {
   _memoCtx = { id: id, who: who };
   const o = getMemoObj(id, who);
-  document.getElementById('memoModalSub').textContent = `${id} · ${who}`;
+  const row = (issueData || []).find(r => (r['編號'] || '').trim() === id);
+  const mName = row ? (row['Issue'] || '').trim() : '';
+  const parentNum = row ? (row['親編號'] || '').trim() : '';
+  document.getElementById('memoModalSub').textContent = `${id}${who ? ' · ' + who : ''}`;
+  document.getElementById('memoMissionName').innerHTML = mName
+    ? `${parentNum ? `<span class="memo-mn-parent">${escapeHtml(parentNum)}</span> ` : ''}${escapeHtml(mName)}`
+    : escapeHtml(id);
+  document.getElementById('memoLog').innerHTML = _missionLogHtml(id, row ? (row['Mission進度'] || '') : '', '尚無進度記錄');
   document.getElementById('memoModalTa').value = o.memo || '';
   document.getElementById('memoModalMsg').value = o.msg || '';
   document.getElementById('memoModalFlag').checked = !!o.flag;
@@ -3410,13 +3422,11 @@ function populateAuthorSelect(row) {
   closeAuthorMenu();
   refreshAuthorTrigger();
 }
-// タイムライン描画：window.missionLog[id] を新しい順に。無ければ現況テキストを移行表示
-function renderMissionLog(missionId, currentText) {
-  const box = document.getElementById('remarkModalLog');
-  if (!box) return;
+// タイムライン HTML：window.missionLog[id] を新しい順に。無ければ現況テキストを移行表示
+function _missionLogHtml(missionId, currentText, emptyText) {
   const entries = (window.missionLog && window.missionLog[missionId]) || [];
   if (entries.length) {
-    box.innerHTML = entries.map((e, i) => `
+    return entries.map((e, i) => `
       <div class="rm-log-entry${i === 0 ? ' rm-log-latest' : ''}">
         <div class="rm-log-meta">
           <span class="rm-log-date">${escapeHtml(e.date || '無日期')}</span>
@@ -3424,16 +3434,18 @@ function renderMissionLog(missionId, currentText) {
         </div>
         <div class="rm-log-text">${escapeHtml(e.text)}</div>
       </div>`).join('');
-  } else if ((currentText || '').trim()) {
-    // ログ未蓄積だが現況テキストがある（移行期）→ 旧データを 1 件として表示
-    box.innerHTML =
-      `<div class="rm-log-entry rm-log-legacy">
+  }
+  if ((currentText || '').trim()) {
+    return `<div class="rm-log-entry rm-log-legacy">
         <div class="rm-log-meta"><span class="rm-log-date">先前記錄</span></div>
         <div class="rm-log-text">${escapeHtml(currentText)}</div>
       </div>`;
-  } else {
-    box.innerHTML = '<div class="rm-log-empty">尚無記錄，先寫下第一筆進度。</div>';
   }
+  return `<div class="rm-log-empty">${emptyText || '尚無記錄，先寫下第一筆進度。'}</div>`;
+}
+function renderMissionLog(missionId, currentText) {
+  const box = document.getElementById('remarkModalLog');
+  if (box) box.innerHTML = _missionLogHtml(missionId, currentText);
 }
 // 楽観的更新：ローカルの missionLog 先頭へ追記（保存応答の logEntry から）
 function prependMissionLog(missionId, entry) {
