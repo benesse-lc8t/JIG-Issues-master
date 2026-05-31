@@ -154,6 +154,7 @@
   td.dept-c-red    { background: #FCE8E6; color: #B31412; font-weight: 700; }
   td.dept-c-purple { background: #F3E8FD; color: #7026A6; font-weight: 700; }
   td.dept-c-teal   { background: #E0F7FA; color: #00838F; font-weight: 700; }
+  td.dept-c-pink   { background: #FDE7F3; color: #B80672; font-weight: 700; }
   td.dept-c-grey   { background: #F8F9FA; color: #5F6368; font-weight: 700; }
 
   /* Row hover — Issue 地色より少し濃い Google Blue tint で「ホバーが見える」 */
@@ -165,6 +166,7 @@
   #panel-A tbody tr.issue-row:hover td.dept-c-red,
   #panel-A tbody tr.issue-row:hover td.dept-c-purple,
   #panel-A tbody tr.issue-row:hover td.dept-c-teal,
+  #panel-A tbody tr.issue-row:hover td.dept-c-pink,
   #panel-A tbody tr.issue-row:hover td.dept-c-grey { filter: brightness(0.97); }
 
   /* B table */
@@ -294,6 +296,7 @@
   tr.mission-row.mc-red    { color: #B31412; }
   tr.mission-row.mc-purple { color: #7026A6; }
   tr.mission-row.mc-teal   { color: #00838F; }
+  tr.mission-row.mc-pink   { color: #B80672; }
   tr.mission-row.mc-grey   { color: #5F6368; }
 
   /* Mission 編號をバッジ風に（親處色で塗りつぶし＋白文字） */
@@ -314,6 +317,7 @@
   tr.mission-row.mc-red    .m-num-badge { background: #EA4335; }
   tr.mission-row.mc-purple .m-num-badge { background: #9334E6; }
   tr.mission-row.mc-teal   .m-num-badge { background: #00ACC1; }
+  tr.mission-row.mc-pink   .m-num-badge { background: #D01884; }
   tr.mission-row.mc-grey   .m-num-badge { background: #9AA0A6; }
 
   /* Mission の狀態バッジを更に小さく */
@@ -602,7 +606,7 @@
   .author-menu {
     display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 20;
     background: #fff; border: 1px solid #DADCE0; border-radius: 10px;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.18); padding: 9px; max-height: 240px; overflow-y: auto;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.18); padding: 9px; max-height: 320px; overflow-y: auto;
   }
   .author-menu.open { display: block; }
   .author-menu-search {
@@ -610,10 +614,10 @@
     padding: 6px 9px; border: 1px solid #E0E0E0; border-radius: 6px; margin-bottom: 8px; outline: none;
   }
   .author-menu-search:focus { border-color: var(--g-blue); }
-  .author-menu-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .author-menu-chips { display: flex; flex-wrap: wrap; gap: 4px; }
   .author-chip {
-    font-family: var(--font-cjk); font-size: 12px; font-weight: 600; cursor: pointer;
-    padding: 3px 11px; border-radius: 13px; border: 1.5px solid transparent;
+    font-family: var(--font-cjk); font-size: 11px; font-weight: 600; cursor: pointer;
+    padding: 2px 8px; border-radius: 11px; border: 1px solid transparent;
     background: var(--chip-bg, #F1F3F4); color: var(--chip-fg, #5F6368);
     transition: all 0.12s; opacity: 0.7; white-space: nowrap;
   }
@@ -1183,9 +1187,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.25.0';
+const APP_VERSION = '0.25.1';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '人員マスタ（人員タブ）を導入。記入者チップの名簿・色を人員マスタ（處ベース）から生成し、同じ處の人を色で固めて表示。人員タブが無ければ従来どおりの名前収集にフォールバック。';
+const APP_NOTE  = '記入者チップを小型化（スクロール低減）。總管理の色をグレー→ピンクに変更（グレーは真に不明な部門のみ）。既定の記入者を名簿のフルネームに解決し、略称（例「育菱」）が重複チップとして末尾に追加される不具合を修正。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1622,7 +1626,7 @@ const DEPT_COLOR_MAP = {
   'CX計劃':   'dept-c-red',
   '資訊事業': 'dept-c-purple',
   '財務':     'dept-c-teal',
-  '總管理':   'dept-c-grey',
+  '總管理':   'dept-c-pink',
 };
 function deptColorClass(d) {
   return DEPT_COLOR_MAP[(d||'').trim()] || 'dept-c-grey';
@@ -1635,6 +1639,7 @@ const DEPT_CHIP_COLORS = {
   'dept-c-red':    { bg: '#FCE8E6', fg: '#B31412' },
   'dept-c-purple': { bg: '#F3E8FD', fg: '#7026A6' },
   'dept-c-teal':   { bg: '#E0F7FA', fg: '#00838F' },
+  'dept-c-pink':   { bg: '#FDE7F3', fg: '#B80672' },
   'dept-c-grey':   { bg: '#F1F3F4', fg: '#5F6368' },
 };
 function deptChipColor(dept) {
@@ -2450,6 +2455,16 @@ function buildAuthorDeptMap() {
   });
   return map;
 }
+// Mission の擔當は略称（例「育菱」）、人員マスタはフルネーム（例「張育菱」）のことがある。
+// 略称→名簿のフルネームを末尾一致／部分一致で解決する。見つからなければ原文を返す。
+function resolveRosterName(raw, names) {
+  raw = String(raw || '').trim();
+  if (!raw) return '';
+  const list = names || collectAuthorNames();
+  if (list.includes(raw)) return raw;
+  const hit = list.find(n => n.endsWith(raw)) || list.find(n => n.includes(raw));
+  return hit || raw;
+}
 let _selectedAuthor = '';
 let _authorChipData = []; // [{name, code, bg, fg}]
 function selectedAuthorName() { return _selectedAuthor; }
@@ -2518,8 +2533,13 @@ function populateAuthorSelect(row) {
   const pm = window.personMap || {};
   const names = collectAuthorNames();
   const deptMap = buildAuthorDeptMap();
-  const preferred = (row && splitPersons(row['擔當'])[0]) || localStorage.getItem('jig:lastAuthor') || '';
-  if (preferred && !names.includes(preferred)) names.unshift(preferred);
+  const rawPref = (row && splitPersons(row['擔當'])[0]) || localStorage.getItem('jig:lastAuthor') || '';
+  let preferred = resolveRosterName(rawPref, names);
+  if (preferred && !names.includes(preferred)) {
+    // 名簿運用時は名簿に無い名前で幽霊チップを作らない。フォールバック時のみ先頭に補う
+    if (Object.keys(pm).length) preferred = '';
+    else names.unshift(preferred);
+  }
   _selectedAuthor = preferred || '';
   // 同じ處が隣接するよう並べる（處は DEPT_COLOR_MAP の登録順 → 人員マスタの顯示順 → 名前順）
   const DEPT_ORDER = Object.keys(DEPT_COLOR_MAP);
