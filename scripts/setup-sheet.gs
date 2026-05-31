@@ -234,29 +234,32 @@ function diagnoseMissionSheet() {
 }
 
 /**
- * ヘッダ修復用：実際のデータに合わせたヘッダを書き直す。
- * diagnoseMissionSheet の出力を見てから CORRECT_HEADERS を編集して実行。
+ * ヘッダ修復用：diagnoseMissionSheet の結果に基づいた正しいヘッダに書き直す。
+ * 診断結果：
+ *   A=編號, B=Mission, C=親編號,
+ *   D=管理頁面(データ: BCL登録用戸擴大 等), E=戦略負責人(人名),
+ *   F=擔當(人名), G=狀態(進行中等), H=Mission進度(空),
+ *   I=更新日(空), J=Confluence URL(空)
  */
 function fixMissionHeaders() {
-  // ↓ diagnoseMissionSheet の結果を見て、実際の列順に合わせて書き直す
   const CORRECT_HEADERS = [
-    '編號',         // A
-    'Mission',      // B
-    '親編號',       // C
-    '確認會議',     // D ← 実際に入っているデータに合わせる
-    '戰略負責人',   // E
-    '擔當',         // F
-    '狀態',         // G
-    'Mission進度',  // H
-    '更新日',       // I
-    'Confluence URL', // J
+    '編號',           // A
+    'Mission',        // B
+    '親編號',         // C
+    '管理頁面',       // D  ← BCL登録用戸擴大 等の継承ページ名
+    '戰略負責人',     // E  ← 育菱 等の人名
+    '擔當',           // F  ← 少琪 等の人名
+    '狀態',           // G  ← 進行中 等のステータス
+    'Mission進度',    // H  ← 空（書き込み対象）
+    '更新日',         // I  ← 空（書き込み対象）
+    'Confluence URL', // J  ← 空
   ];
   const ss = _getSpreadsheet();
   const sheet = ss.getSheetByName('Mission一覽');
   if (!sheet) { console.log('Mission一覽 が見つかりません'); return; }
   sheet.getRange(1, 1, 1, CORRECT_HEADERS.length).setValues([CORRECT_HEADERS])
     .setFontWeight('bold').setBackground('#F7F4EC');
-  console.log('[fixMissionHeaders] 完了：', CORRECT_HEADERS.join(' / '));
+  console.log('[fixMissionHeaders] ヘッダ修復完了：', CORRECT_HEADERS.join(' / '));
 }
 
 function _parseDateLooseGS(v) {
@@ -322,42 +325,45 @@ function setupJIG() {
   let taskSheet = ss.getSheetByName('Mission一覽');
   let taskCreated = false;
   if (!taskSheet) {
+    // 新規作成時のみ MISSION_HEADERS で 8 列を設定
     taskSheet = ss.insertSheet('Mission一覽');
     taskCreated = true;
-    log.push('✓ 「Mission一覽」タブを作成');
+    taskSheet.getRange(1, 1, 1, MISSION_HEADERS.length).setValues([MISSION_HEADERS])
+      .setFontWeight('bold').setBackground('#F7F4EC');
+    Object.keys(MISSION_COL_WIDTHS).forEach(k => taskSheet.setColumnWidth(Number(k), MISSION_COL_WIDTHS[k]));
+    log.push('✓ 「Mission一覽」タブを作成（8 列）');
+  } else {
+    // 既存シートはヘッダを上書きせず、列名のリネームのみ行う（データ保護）
+    const mHeaders = readHeaders(taskSheet);
+    const RENAME_MAP = { '事務局備註': 'Mission進度', '備註': 'Mission進度', 'Task': 'Mission' };
+    mHeaders.forEach((h, i) => {
+      const newName = RENAME_MAP[String(h).trim()];
+      if (newName) {
+        taskSheet.getRange(1, i + 1).setValue(newName).setFontWeight('bold').setBackground('#F7F4EC');
+        log.push(`✓ Mission一覽 列「${h}」→「${newName}」に変更`);
+      }
+    });
   }
-  // ヘッダ（8 列に上書き）
-  taskSheet.getRange(1, 1, 1, MISSION_HEADERS.length).setValues([MISSION_HEADERS])
-    .setFontWeight('bold').setBackground('#F7F4EC');
-
-  // 余分な列を削除（8 列を超えている場合）
-  const lastCol = taskSheet.getLastColumn();
-  if (lastCol > MISSION_HEADERS.length) {
-    taskSheet.deleteColumns(MISSION_HEADERS.length + 1, lastCol - MISSION_HEADERS.length);
-    log.push(`✓ Mission一覽 の余分な列（${lastCol - MISSION_HEADERS.length} 列）を削除`);
-  }
-
-  // 列幅
-  Object.keys(MISSION_COL_WIDTHS).forEach(k => taskSheet.setColumnWidth(Number(k), MISSION_COL_WIDTHS[k]));
 
   // 行 freeze
   taskSheet.setFrozenRows(1);
 
-  // プルダウン（狀態：E列）
-  const taskRows = Math.max(taskSheet.getMaxRows() - 1, 1000);
-  applyStatusValidation(taskSheet.getRange(2, 5, taskRows, 1));
+  // 狀態列のプルダウン・条件付き書式（列名で位置を特定）
+  const mHeaders2  = readHeaders(taskSheet);
+  const mStatusCol = mHeaders2.indexOf('狀態') + 1;
+  const mUpdCol    = mHeaders2.indexOf('更新日') + 1;
+  const taskRows   = Math.max(taskSheet.getMaxRows() - 1, 1000);
+  if (mStatusCol > 0) applyStatusValidation(taskSheet.getRange(2, mStatusCol, taskRows, 1));
 
-  // 条件付き書式
   const taskRules = taskSheet.getConditionalFormatRules();
-  const added1 = addStatusColorRulesIfMissing(taskRules, taskSheet.getRange(2, 5, taskRows, 1));
-  const added2 = addFreshnessRulesIfMissing(taskRules, taskSheet.getRange(2, 7, taskRows, 1), 7);
+  let added1 = 0, added2 = 0;
+  if (mStatusCol > 0) added1 = addStatusColorRulesIfMissing(taskRules, taskSheet.getRange(2, mStatusCol, taskRows, 1));
+  if (mUpdCol    > 0) added2 = addFreshnessRulesIfMissing(taskRules, taskSheet.getRange(2, mUpdCol, taskRows, 1), mUpdCol);
   if (added1 + added2 > 0) {
     taskSheet.setConditionalFormatRules(taskRules);
     log.push(`✓ Mission一覽 に条件付き書式 ${added1 + added2} 件を追加`);
   }
-  if (taskCreated) {
-    log.push('  　└ 列幅・行 freeze・プルダウンも設定済み');
-  }
+  if (taskCreated) log.push('  　└ 列幅・行 freeze・プルダウンも設定済み');
 
   const msg = log.length ? '✅ セットアップ完了\n\n' + log.join('\n')
                          : 'ℹ️ 既に整っています（追加・変更なし）';
