@@ -366,11 +366,23 @@
   .sum-stale { background: #FCE8E6; color: #B31412; }
   .simple-table td.st-clickable { cursor: pointer; }
   .simple-table td.st-clickable:hover { filter: brightness(0.95); }
-  /* Tab D/E：私的備註セル（細いアイコン列） */
-  .simple-table td.memo-personal { width: 46px; text-align: center; cursor: pointer; font-size: 13px; }
-  .simple-table td.memo-personal.has-memo { background: #FFFCF2; }
-  .simple-table td.memo-personal:hover { background: #FEF7E0; }
+  /* Tab D/E：私的備註セル（★重要 ＋ 📝/💬 アイコン） */
+  .simple-table td.memo-personal { width: 62px; text-align: center; white-space: nowrap; font-size: 13px; }
+  .simple-table td.memo-personal.flagged { background: #FFFDF0; }
+  .memo-personal .flag-star { cursor: pointer; color: #DADCE0; margin-right: 3px; }
+  .memo-personal .flag-star.on { color: #F9AB00; }
+  .memo-personal .flag-star:hover { color: #F9AB00; }
+  .memo-personal .memo-open { cursor: pointer; }
+  .memo-personal .memo-open:hover { opacity: 0.7; }
   .memo-personal .memo-add { color: #C9A227; font-weight: 700; }
+  .sum-flag { background: #FEF7E0; color: #B06000; }
+  /* メモモーダルのフィールドラベル */
+  .memo-field-label { display: block; font-size: 12px; font-weight: 600; color: #5F6368; margin-bottom: 4px; }
+  /* 重要清單モーダルの行 */
+  .imp-row { display: flex; align-items: center; gap: 8px; padding: 7px 4px; border-bottom: 1px solid #F1F3F4; font-size: 13px; }
+  .imp-row .imp-num { color: #5F6368; font-size: 11px; min-width: 78px; }
+  .imp-row .imp-name { flex: 1; cursor: pointer; }
+  .imp-row .imp-name:hover { color: var(--g-blue); text-decoration: underline; }
   .simple-table td.conf-icon { text-align: center; padding: 2px 4px; }
   .simple-table td.conf-icon a { display: inline-block; opacity: 0.85; transition: opacity 0.15s; margin: 0 2px; }
   .simple-table td.conf-icon a:hover { opacity: 1; }
@@ -1026,13 +1038,31 @@
       <button class="remark-modal-close" id="memoModalClose" title="取消（Esc）" aria-label="關閉">×</button>
     </div>
     <div class="remark-modal-body">
-      <div class="remark-modal-hint" style="margin-bottom:6px;">只有你自己看得到（顯示於你的分頁）。Ctrl+Enter 儲存。</div>
-      <textarea class="remark-modal-ta" id="memoModalTa" rows="5" placeholder="寫給自己的備忘…"></textarea>
+      <label class="memo-field-label">📝 私的備註（只有你自己看得到）</label>
+      <textarea class="remark-modal-ta" id="memoModalTa" rows="4" placeholder="寫給自己的備忘…"></textarea>
+      <label class="memo-field-label" style="margin-top:12px;">💬 來自小沼的留言</label>
+      <textarea class="remark-modal-ta" id="memoModalMsg" rows="3" placeholder="小沼留給你的話…"></textarea>
+      <label class="ctrl-toggle" style="margin-top:12px; display:inline-flex; gap:5px;"><input type="checkbox" id="memoModalFlag"> ★ 標記為重要</label>
+      <div class="remark-modal-hint" style="margin-top:6px;">Ctrl+Enter 儲存。</div>
     </div>
     <div class="remark-modal-footer">
       <button class="remark-modal-cancel" id="memoModalCancel">取消</button>
       <button class="remark-modal-save" id="memoModalSave">儲存</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== ⭐ 重要清單モーダル（フラグした Mission のチェック一覧） ===== -->
+<div class="remark-modal-overlay" id="importantModalOverlay" role="dialog" aria-modal="true">
+  <div class="remark-modal" id="importantModal" style="width:min(520px,94vw);">
+    <div class="remark-modal-header">
+      <div class="remark-modal-meta">
+        <div class="remark-modal-meta-row"><span class="remark-modal-meta-name">⭐ 重要清單</span></div>
+        <div class="remark-modal-meta-row" id="importantSub" style="font-size:11px;color:#5F6368;"></div>
+      </div>
+      <button class="remark-modal-close" id="importantClose" title="關閉（Esc）" aria-label="關閉">×</button>
+    </div>
+    <div class="remark-modal-body" id="importantBody"></div>
   </div>
 </div>
 
@@ -1240,6 +1270,8 @@
     </select>
     <span class="ctrl-sep"></span>
     <label class="ctrl-toggle"><input type="checkbox" class="toggle-closed">顯示結案</label>
+    <label class="ctrl-toggle"><input type="checkbox" id="filterImportantD">只看 ★ 重要</label>
+    <button type="button" class="ctrl-clear" id="importantListD">⭐ 重要清單</button>
     <span class="ctrl-sep"></span>
     <button type="button" class="ctrl-clear" id="clearFilterD">清除</button>
     <span class="ctrl-count" id="filterCountD"></span>
@@ -1257,7 +1289,7 @@
         <th style="width:80px;">狀態</th>
         <th style="width:64px;">更新</th>
         <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
-        <th style="width:46px;" title="私的備註（只給自己看）">📝</th>
+        <th style="width:62px;" title="★重要 / 私的備註 / 小沼留言">★ 備</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -1295,6 +1327,8 @@
     </select>
     <span class="ctrl-sep"></span>
     <label class="ctrl-toggle"><input type="checkbox" class="toggle-closed">顯示結案</label>
+    <label class="ctrl-toggle"><input type="checkbox" id="filterImportantE">只看 ★ 重要</label>
+    <button type="button" class="ctrl-clear" id="importantListE">⭐ 重要清單</button>
     <span class="ctrl-sep"></span>
     <button type="button" class="ctrl-clear" id="clearFilterE">清除</button>
     <span class="ctrl-count" id="filterCountE"></span>
@@ -1312,7 +1346,7 @@
         <th style="width:80px;">狀態</th>
         <th style="width:64px;">更新</th>
         <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
-        <th style="width:46px;" title="私的備註（只給自己看）">📝</th>
+        <th style="width:62px;" title="★重要 / 私的備註 / 小沼留言">★ 備</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -1401,9 +1435,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.30.1';
+const APP_VERSION = '0.30.2';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '私的備註列を細いアイコン列（📝/＋）に変更し、Tab D/E の横はみ出しを解消。';
+const APP_NOTE  = '個人備註を拡張：★重要フラグ（個人別・行トグル／「只看重要」フィルタ／⭐重要清單モーダル）と「小沼からの留言」（本人タブに表示）を追加。個人備註タブに 留言/重要 列。※Apps Script 再公開＋setupJIG（列追加）が必要（codeVersion=memo2）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1936,7 +1970,9 @@ async function loadPersonMaster() {
 const MEMO_SHEET_NAME = '個人備註';
 window.personalMemo = window.personalMemo || {};
 function memoKey(id, who) { return String(id || '').trim() + ' ' + String(who || '').trim(); }
-function getMemo(id, who) { return window.personalMemo[memoKey(id, who)] || ''; }
+function _truthyFlag(v) { const s = String(v || '').trim().toLowerCase(); return !!s && s !== '0' && s !== 'false' && s !== 'no' && s !== '否'; }
+function getMemoObj(id, who) { return window.personalMemo[memoKey(id, who)] || { memo: '', msg: '', flag: false }; }
+function getMemo(id, who) { return getMemoObj(id, who).memo || ''; }
 async function loadPersonalMemos() {
   window.personalMemo = {};
   if (!SHEET_ID) return;
@@ -1951,26 +1987,57 @@ async function loadPersonalMemos() {
     const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
     if (rows.length < 2) return;
     const H = rows[0].map(h => String(h).trim());
-    const ci = { id: H.indexOf('編號'), who: H.indexOf('姓名'), memo: H.indexOf('備註') };
+    const ci = { id: H.indexOf('編號'), who: H.indexOf('姓名'), memo: H.indexOf('備註'), msg: H.indexOf('留言'), flag: H.indexOf('重要') };
     if (ci.id < 0 || ci.who < 0) return; // 個人備註シートでなければ無視
     const map = {};
     for (let i = 1; i < rows.length; i++) {
       const r = rows[i]; if (!r) continue;
       const id = String(r[ci.id] ?? '').trim(), who = String(r[ci.who] ?? '').trim();
       if (!id || !who) continue;
-      map[memoKey(id, who)] = ci.memo >= 0 ? String(r[ci.memo] ?? '') : '';
+      map[memoKey(id, who)] = {
+        memo: ci.memo >= 0 ? String(r[ci.memo] ?? '') : '',
+        msg:  ci.msg  >= 0 ? String(r[ci.msg]  ?? '') : '',
+        flag: ci.flag >= 0 ? _truthyFlag(r[ci.flag]) : false,
+      };
     }
     window.personalMemo = map;
   } catch (e) {
     console.warn('[personalMemo] 読込失敗', e);
   }
 }
+// 個人備註（メモ＋留言＋重要フラグ）の保存ヘルパー
+async function _postMemo(fields) {
+  if (!SHEET_WRITE_URL) { toast('編輯功能未設定：請管理員設定 Web App URL', 'error'); return false; }
+  try {
+    const res = await fetch(SHEET_WRITE_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ token: WRITE_TOKEN, action: 'saveMemo' }, fields)),
+      redirect: 'follow'
+    });
+    const text = await res.text();
+    let data; try { data = JSON.parse(text); } catch (_) { data = { ok: false }; }
+    if (!data.ok) console.warn('[saveMemo] failed', data);
+    return !!data.ok;
+  } catch (e) { console.warn('[saveMemo] exception', e); return false; }
+}
+// 行の ★ で重要フラグをトグル（楽観的更新→失敗時に戻す）
+async function toggleMemoFlag(id, who) {
+  const cur = getMemoObj(id, who);
+  const obj = { memo: cur.memo || '', msg: cur.msg || '', flag: !cur.flag };
+  window.personalMemo[memoKey(id, who)] = obj;
+  renderPersonView('D', '詩雅'); renderPersonView('E', '育菱');
+  const ok = await _postMemo({ '編號': id, '姓名': who, '重要': obj.flag ? '★' : '' });
+  if (!ok) { obj.flag = !obj.flag; renderPersonView('D', '詩雅'); renderPersonView('E', '育菱'); toast('儲存失敗', 'error'); }
+}
 // 個人備註モーダル
 let _memoCtx = { id: '', who: '' };
 function openMemoModal(id, who) {
   _memoCtx = { id: id, who: who };
+  const o = getMemoObj(id, who);
   document.getElementById('memoModalSub').textContent = `${id} · ${who}`;
-  document.getElementById('memoModalTa').value = getMemo(id, who);
+  document.getElementById('memoModalTa').value = o.memo || '';
+  document.getElementById('memoModalMsg').value = o.msg || '';
+  document.getElementById('memoModalFlag').checked = !!o.flag;
   const sb = document.getElementById('memoModalSave');
   sb.disabled = false; sb.classList.remove('is-progress'); sb.textContent = '儲存';
   document.getElementById('memoModalOverlay').classList.add('open');
@@ -1985,30 +2052,45 @@ async function _saveMemo() {
   const sb = document.getElementById('memoModalSave');
   if (sb.disabled) return;
   const memo = document.getElementById('memoModalTa').value;
+  const msg = document.getElementById('memoModalMsg').value;
+  const flag = document.getElementById('memoModalFlag').checked;
   if (!SHEET_WRITE_URL) { toast('編輯功能未設定：請管理員設定 Web App URL', 'error'); return; }
   sb.disabled = true; sb.classList.add('is-progress'); sb.innerHTML = '<span>儲存中…</span>';
-  try {
-    const res = await fetch(SHEET_WRITE_URL, {
-      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ token: WRITE_TOKEN, action: 'saveMemo', '編號': _memoCtx.id, '姓名': _memoCtx.who, '備註': memo }),
-      redirect: 'follow'
-    });
-    const text = await res.text();
-    let data; try { data = JSON.parse(text); } catch (_) { data = { ok: false, error: 'bad_response', raw: text }; }
-    console.info('[saveMemo] response', { status: res.status, data });
-    if (!data.ok) {
-      toast(`儲存失敗：${data.error || 'unknown'}`, 'error');
-      sb.disabled = false; sb.classList.remove('is-progress'); sb.textContent = '儲存';
-      return;
-    }
-    window.personalMemo[memoKey(_memoCtx.id, _memoCtx.who)] = memo; // ローカル即時反映
-    toast('已儲存個人備註', 'success');
-    closeMemoModal();
-    renderPersonView('D', '詩雅'); renderPersonView('E', '育菱');
-  } catch (e) {
-    toast(`網路錯誤：${e.message}`, 'error');
+  const ok = await _postMemo({ '編號': _memoCtx.id, '姓名': _memoCtx.who, '備註': memo, '留言': msg, '重要': flag ? '★' : '' });
+  if (!ok) {
+    toast('儲存失敗', 'error');
     sb.disabled = false; sb.classList.remove('is-progress'); sb.textContent = '儲存';
+    return;
   }
+  window.personalMemo[memoKey(_memoCtx.id, _memoCtx.who)] = { memo, msg, flag };
+  toast('已儲存個人備註', 'success');
+  closeMemoModal();
+  renderPersonView('D', '詩雅'); renderPersonView('E', '育菱');
+}
+// ⭐ 重要清單モーダル
+function openImportantList(panelKey, personName) {
+  const items = [];
+  (issueData || []).forEach(r => {
+    if (!isMissionDatum(r)) return;
+    const num = (r['編號'] || '').trim();
+    if (getMemoObj(num, personName).flag) items.push(r);
+  });
+  items.sort((a, b) => (a['親編號'] || '').localeCompare(b['親編號'] || '', 'zh-Hant'));
+  document.getElementById('importantSub').textContent = `${personName} · ${items.length} 件`;
+  const body = document.getElementById('importantBody');
+  body.innerHTML = items.length ? items.map(r => {
+    const num = (r['編號'] || '').trim();
+    return `<div class="imp-row"><input type="checkbox" checked title="取消重要"
+      onchange="toggleMemoFlag('${escapeAttr(num)}','${escapeAttr(personName)}');this.closest('.imp-row').style.opacity=this.checked?'1':'0.4';">
+      <span class="imp-num">${escapeHtml(num)}</span>
+      <span class="imp-name" title="點擊編輯" onclick="closeImportantModal();openEditEntryModal('mission','${escapeAttr(num)}')">${escapeHtml(r['Issue'] || '')}</span></div>`;
+  }).join('') : '<div style="padding:24px;text-align:center;color:#999;">尚未標記任何重要 Mission（在清單以 ★ 標記）</div>';
+  document.getElementById('importantModalOverlay').classList.add('open');
+  document.body.classList.add('modal-open');
+}
+function closeImportantModal() {
+  document.getElementById('importantModalOverlay').classList.remove('open');
+  document.body.classList.remove('modal-open');
 }
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('memoModalSave')?.addEventListener('click', _saveMemo);
@@ -2017,10 +2099,17 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('memoModalOverlay')?.addEventListener('mousedown', e => {
     if (e.target === document.getElementById('memoModalOverlay')) closeMemoModal();
   });
+  document.getElementById('importantClose')?.addEventListener('click', closeImportantModal);
+  document.getElementById('importantModalOverlay')?.addEventListener('mousedown', e => {
+    if (e.target === document.getElementById('importantModalOverlay')) closeImportantModal();
+  });
   document.addEventListener('keydown', e => {
-    if (!document.getElementById('memoModalOverlay')?.classList.contains('open')) return;
-    if (e.key === 'Escape') closeMemoModal();
-    else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') _saveMemo();
+    if (document.getElementById('memoModalOverlay')?.classList.contains('open')) {
+      if (e.key === 'Escape') closeMemoModal();
+      else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') _saveMemo();
+    } else if (document.getElementById('importantModalOverlay')?.classList.contains('open')) {
+      if (e.key === 'Escape') closeImportantModal();
+    }
   });
 });
 
@@ -3962,11 +4051,14 @@ function setupTabDEFilters(panelKey, personName) {
     const el = document.getElementById(id);
     if (el) el.addEventListener('change', () => renderPersonView(panelKey, personName));
   });
+  document.getElementById(`filterImportant${panelKey}`)?.addEventListener('change', () => renderPersonView(panelKey, personName));
+  document.getElementById(`importantList${panelKey}`)?.addEventListener('click', () => openImportantList(panelKey, personName));
   document.getElementById(`clearFilter${panelKey}`).addEventListener('click', () => {
     [`filterDept${panelKey}`,`filterGroup${panelKey}`,`filterRole${panelKey}`,`filterStatus${panelKey}`,`filterStale${panelKey}`].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
+    const imp = document.getElementById(`filterImportant${panelKey}`); if (imp) imp.checked = false;
     renderPersonView(panelKey, personName);
   });
 }
@@ -3980,8 +4072,10 @@ function renderPersonView(panelKey, personName) {
   const fRole   = (document.getElementById(`filterRole${panelKey}`)?.value   || '').trim();
   const fStatus = (document.getElementById(`filterStatus${panelKey}`)?.value || '').trim();
   const fStale  = (document.getElementById(`filterStale${panelKey}`)?.value  || '').trim();
+  const fImportant = !!document.getElementById(`filterImportant${panelKey}`)?.checked;
   const issueMap = buildIssueMap();
   const showClosed = getShowClosed();
+  const flagOf = r => getMemoObj((r['編號']||'').trim(), personName).flag;
 
   // 関わる Issue・Mission を収集（複数担当・短縮/フル名対応）
   const decorated = [];
@@ -4009,13 +4103,16 @@ function renderPersonView(panelKey, personName) {
   const missionsF = filtered.filter(d => d.isMission);
   const issueCountF = filtered.length - missionsF.length; // 關わる Issue 数（フィルタ後）
   // サマリー集計（表示対象＝Mission ベース）
-  let cProg = 0, cNeed = 0, cStale = 0;
+  let cProg = 0, cNeed = 0, cStale = 0, cFlag = 0;
   missionsF.forEach(({ row: r }) => {
     const st = (r['狀態']||'').trim();
     if (st === '進行中') cProg++;
     if (st === '需確認') cNeed++;
     const d = stalenessDays(r); if (d != null && d > 7) cStale++;
+    if (flagOf(r)) cFlag++;
   });
+  // 「只看重要」フィルタは本文だけに効かせる（サマリーは全体）
+  const bodyMissions = fImportant ? missionsF.filter(d => flagOf(d.row)) : missionsF;
 
   // 1 行の HTML（✎編集・狀態クリック編集つき）
   // 處グループ＋Issue 混在のため、親Issue は省略せず毎行フル表示（prevParent=null）。
@@ -4028,8 +4125,13 @@ function renderPersonView(panelKey, personName) {
     const typeTag = d.isMission ? '' : '<span class="role-badge role-issue">ISSUE</span> ';
     const extraCell = `<td>${typeTag}${roleHtml}</td>`;
     const num = (r['編號'] || '').trim();
-    const memo = getMemo(num, personName);
-    const memoCell = `<td class="memo-personal${memo ? ' has-memo' : ''}" title="${memo ? escapeAttr(memo) : '點擊新增個人備註'}" onclick="openMemoModal('${escapeAttr(num)}','${escapeAttr(personName)}')">${memo ? '📝' : '<span class="memo-add">＋</span>'}</td>`;
+    const mo = getMemoObj(num, personName);
+    const hasMemo = !!(mo.memo && mo.memo.trim());
+    const hasMsg = !!(mo.msg && mo.msg.trim());
+    const icons = ((hasMsg ? '💬' : '') + (hasMemo ? '📝' : '')) || '<span class="memo-add">＋</span>';
+    const tip = [hasMsg ? '💬 ' + mo.msg : '', hasMemo ? '📝 ' + mo.memo : ''].filter(Boolean).join('\n') || '點擊編輯';
+    const star = `<span class="flag-star${mo.flag ? ' on' : ''}" title="${mo.flag ? '取消重要' : '標記重要'}" onclick="event.stopPropagation();toggleMemoFlag('${escapeAttr(num)}','${escapeAttr(personName)}')">${mo.flag ? '★' : '☆'}</span>`;
+    const memoCell = `<td class="memo-personal${mo.flag ? ' flagged' : ''}">${star}<span class="memo-open" title="${escapeAttr(tip)}" onclick="openMemoModal('${escapeAttr(num)}','${escapeAttr(personName)}')">${icons}</span></td>`;
     return simpleRow(r, { showOwner: false, showRemark: true, parent, showGroup: true, showConf: true, extraCellAfterDept: extraCell, showEdit: true, memoCell });
   };
 
@@ -4037,20 +4139,22 @@ function renderPersonView(panelKey, personName) {
   html += `<tr class="sec-row summary-row"><th colspan="11">${escapeHtml(personName)}　Mission ${missionsF.length} 筆 · 關聯 Issue ${issueCountF}`
         + `<span class="sum-badge sum-prog">進行中 ${cProg}</span>`
         + `<span class="sum-badge sum-need">需確認 ${cNeed}</span>`
-        + `<span class="sum-badge sum-stale">停滯&gt;7天 ${cStale}</span></th></tr>`;
+        + `<span class="sum-badge sum-stale">停滯&gt;7天 ${cStale}</span>`
+        + `<span class="sum-badge sum-flag">★ 重要 ${cFlag}</span></th></tr>`;
 
-  if (!missionsF.length) {
-    html += `<tr><td colspan="11" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>`;
+  if (!bodyMissions.length) {
+    const msg = fImportant ? '沒有標記為重要的 Mission' : '符合條件的 Mission 沒有';
+    html += `<tr><td colspan="11" style="text-align:center; padding:30px; color:#999;">${msg}</td></tr>`;
     tbody.innerHTML = html;
     const ce0 = document.getElementById(`filterCount${panelKey}`);
-    if (ce0) ce0.textContent = (fDept || fGroup || fRole || fStatus || fStale) ? `顯示 0 / ${totalMissions} 筆` : `${totalMissions} 筆`;
+    if (ce0) ce0.textContent = (fDept || fGroup || fRole || fStatus || fStale || fImportant) ? `顯示 0 / ${totalMissions} 筆` : `${totalMissions} 筆`;
     return;
   }
 
   // 要對應（需確認 もしくは 停滞>7日）を先頭に（Mission のみ）
-  const needAction = missionsF.filter(({ row: r }) => (r['狀態']||'').trim() === '需確認' || ((stalenessDays(r) ?? -1) > 7));
+  const needAction = bodyMissions.filter(({ row: r }) => (r['狀態']||'').trim() === '需確認' || ((stalenessDays(r) ?? -1) > 7));
   const needSet = new Set(needAction.map(d => d.row));
-  const rest = missionsF.filter(d => !needSet.has(d.row));
+  const rest = bodyMissions.filter(d => !needSet.has(d.row));
 
   if (needAction.length) {
     needAction.sort((a, b) => ((stalenessDays(b.row) ?? -1) - (stalenessDays(a.row) ?? -1)));
@@ -4077,8 +4181,8 @@ function renderPersonView(panelKey, personName) {
 
   const countEl = document.getElementById(`filterCount${panelKey}`);
   if (countEl) {
-    countEl.textContent = (fDept || fGroup || fRole || fStatus || fStale)
-      ? `顯示 ${missionsF.length} / ${totalMissions} 筆`
+    countEl.textContent = (fDept || fGroup || fRole || fStatus || fStale || fImportant)
+      ? `顯示 ${bodyMissions.length} / ${totalMissions} 筆`
       : `${totalMissions} 筆`;
   }
 }

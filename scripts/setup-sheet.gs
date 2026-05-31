@@ -36,7 +36,7 @@
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 // 再公開が反映されたか確認するための目印。doGet が返す。変更のたびに上げる。
-const CODE_VERSION = 'gs-2026-05-31-memo1';
+const CODE_VERSION = 'gs-2026-05-31-memo2';
 
 const STATUS_VALUES = ['未開始', '策劃中', '需確認', '進行中', '結案'];
 const STATUS_COLORS = {
@@ -70,8 +70,8 @@ const LOG_COL_WIDTHS  = { 1: 110, 2: 140, 3: 90, 4: 480 };
 // 詩雅／育菱が自分の Mission に書く私的メモ。1人1ミッション1行（編號+姓名で upsert）。
 // UI 上は本人のタブにのみ表示（厳密非公開ではない＝§7 の制約は受容）。
 const MEMO_SHEET_NAME = '個人備註';
-const MEMO_HEADERS     = ['編號', '姓名', '備註', '更新日'];
-const MEMO_COL_WIDTHS  = { 1: 110, 2: 90, 3: 480, 4: 140 };
+const MEMO_HEADERS     = ['編號', '姓名', '備註', '留言', '重要', '更新日'];
+const MEMO_COL_WIDTHS  = { 1: 110, 2: 90, 3: 340, 4: 340, 5: 60, 6: 140 };
 
 // ===== 人員マスタ（名簿の一次ソース）=====
 // 記入者チップの名前・色（處ベース）の出どころ。管理者がここに名簿を貼る。
@@ -468,7 +468,6 @@ function _handleSaveMemo(ss, data) {
   const id  = String(data['編號'] || '').trim();
   const who = String(data['姓名'] || '').trim();
   if (!id || !who) return _writeJson({ ok: false, error: 'id_or_name_required' });
-  const memo = String(data['備註'] || '');
 
   let sheet = ss.getSheetByName(MEMO_SHEET_NAME);
   if (!sheet) {
@@ -477,12 +476,22 @@ function _handleSaveMemo(ss, data) {
     sheet.setFrozenRows(1);
     Object.keys(MEMO_COL_WIDTHS).forEach(k => sheet.setColumnWidth(Number(k), MEMO_COL_WIDTHS[k]));
   }
-  const lastCol = sheet.getLastColumn();
-  const head = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => String(h).trim());
-  const ci = { id: head.indexOf('編號'), who: head.indexOf('姓名'), memo: head.indexOf('備註'), upd: head.indexOf('更新日') };
+  let lastCol = sheet.getLastColumn();
+  let head = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => String(h).trim());
+  // 不足列（留言 / 重要 等）を必要に応じて追記
+  MEMO_HEADERS.forEach(name => {
+    if (head.indexOf(name) < 0) { sheet.getRange(1, sheet.getLastColumn() + 1).setValue(name).setFontWeight('bold'); }
+  });
+  lastCol = sheet.getLastColumn();
+  head = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => String(h).trim());
+  const ci = { id: head.indexOf('編號'), who: head.indexOf('姓名'), upd: head.indexOf('更新日') };
   if (ci.id < 0 || ci.who < 0) return _writeJson({ ok: false, error: 'memo_headers_invalid', headers: head });
   const tz = Session.getScriptTimeZone() || 'Asia/Taipei';
   const now = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm');
+
+  // 指定されたフィールドだけ書く（備註 / 留言 / 重要 のうち届いたもの）
+  const writes = {};
+  ['備註', '留言', '重要'].forEach(k => { if (Object.prototype.hasOwnProperty.call(data, k)) writes[k] = String(data[k]); });
 
   const last = sheet.getLastRow();
   let rowIdx = -1;
@@ -495,16 +504,16 @@ function _handleSaveMemo(ss, data) {
   if (rowIdx < 0) {
     const row = new Array(lastCol).fill('');
     row[ci.id] = id; row[ci.who] = who;
-    if (ci.memo >= 0) row[ci.memo] = memo;
-    if (ci.upd >= 0)  row[ci.upd]  = now;
+    Object.keys(writes).forEach(k => { const c = head.indexOf(k); if (c >= 0) row[c] = writes[k]; });
+    if (ci.upd >= 0) row[ci.upd] = now;
     sheet.appendRow(row);
     rowIdx = sheet.getLastRow();
   } else {
-    if (ci.memo >= 0) sheet.getRange(rowIdx, ci.memo + 1).setValue(memo);
-    if (ci.upd >= 0)  sheet.getRange(rowIdx, ci.upd + 1).setValue(now);
+    Object.keys(writes).forEach(k => { const c = head.indexOf(k); if (c >= 0) sheet.getRange(rowIdx, c + 1).setValue(writes[k]); });
+    if (ci.upd >= 0) sheet.getRange(rowIdx, ci.upd + 1).setValue(now);
   }
   SpreadsheetApp.flush();
-  console.log('  → saveMemo ok:', id, who, 'row', rowIdx);
+  console.log('  → saveMemo ok:', id, who, 'row', rowIdx, 'fields', Object.keys(writes).join(','));
   return _writeJson({ ok: true, action: 'saveMemo', '編號': id, '姓名': who, mission: id, row: rowIdx, '更新': now });
 }
 
@@ -758,7 +767,7 @@ function setupJIG() {
     log.push('✓ 「人員」タブを作成（姓名 / 處 / 組 / 顯示順）。ここに名簿を貼ると記入者チップに色が付きます');
   }
 
-  // --- 5. 個人備註 タブ（事務局の私的メモ）---
+  // --- 5. 個人備註 タブ（事務局の私的メモ＋小沼の留言＋重要フラグ）---
   let memoSheet = ss.getSheetByName(MEMO_SHEET_NAME);
   if (!memoSheet) {
     memoSheet = ss.insertSheet(MEMO_SHEET_NAME);
@@ -766,7 +775,17 @@ function setupJIG() {
       .setFontWeight('bold').setBackground('#F7F4EC');
     Object.keys(MEMO_COL_WIDTHS).forEach(k => memoSheet.setColumnWidth(Number(k), MEMO_COL_WIDTHS[k]));
     memoSheet.setFrozenRows(1);
-    log.push('✓ 「個人備註」タブを作成（編號 / 姓名 / 備註 / 更新日）。詩雅・育菱の私的メモ置き場');
+    log.push('✓ 「個人備註」タブを作成（' + MEMO_HEADERS.join(' / ') + '）');
+  } else {
+    // 既存タブに不足列（留言 / 重要 等）を追記
+    const mh = readHeaders(memoSheet);
+    MEMO_HEADERS.forEach(name => {
+      if (!mh.includes(name)) {
+        const col = memoSheet.getLastColumn() + 1;
+        memoSheet.getRange(1, col).setValue(name).setFontWeight('bold').setBackground('#F7F4EC');
+        log.push('✓ 個人備註 に列「' + name + '」を追加');
+      }
+    });
   }
 
   const msg = log.length ? '✅ セットアップ完了\n\n' + log.join('\n')
