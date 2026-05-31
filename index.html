@@ -562,6 +562,28 @@
   #remarkModal.read-only .remark-modal-conf-inp,
   #remarkModal.read-only .remark-modal-conf-name { background: #F8F9FA; cursor: default; box-shadow: none; border-color: #E8EAED; }
   #remarkModal.read-only .remark-modal-conf-name { font-weight: 600; color: #202124; }
+  /* 読み取り時は「今週の進度」入力欄を隠す（タイムラインだけ見せる） */
+  #remarkModal.read-only #remarkModalNewSec { display: none; }
+
+  /* 今週の進度：記入者プルダウン */
+  .remark-modal-author-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .remark-modal-author-label { font-size: 11px; color: #5F6368; white-space: nowrap; }
+  .remark-modal-author {
+    flex: 1; padding: 7px 9px; border: 1px solid #DADCE0; border-radius: 8px;
+    font-size: 13px; background: #fff; color: #202124;
+  }
+  .remark-modal-author:focus { border-color: var(--g-blue); outline: none; box-shadow: 0 0 0 2px rgba(26,115,232,0.16); }
+  /* これまでの記録（タイムライン） */
+  .remark-modal-log { display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; padding-right: 2px; }
+  .rm-log-entry { border-left: 3px solid #C7D6F5; padding: 5px 11px; background: #F8FAFD; border-radius: 0 8px 8px 0; }
+  .rm-log-entry.rm-log-latest { border-left-color: #4285F4; background: #F0F6FF; }
+  .rm-log-meta { display: flex; gap: 8px; align-items: baseline; font-size: 11px; color: #5F6368; margin-bottom: 2px; }
+  .rm-log-date { font-weight: 600; color: #3C4043; }
+  .rm-log-author { color: #1A73E8; font-weight: 600; }
+  .rm-log-text { font-size: 13px; color: #202124; white-space: pre-wrap; line-height: 1.5; word-break: break-word; }
+  .rm-log-entry.rm-log-legacy { border-left-color: #DADCE0; background: #FafafA; }
+  .rm-log-entry.rm-log-legacy .rm-log-date { color: #9AA0A6; font-style: italic; font-weight: 500; }
+  .rm-log-empty { font-size: 12px; color: #9AA0A6; padding: 8px 2px; }
 
   /* ダイジェストテキストウィンドウ（ホバー時の中央プレビュー・操作不可） */
   .digest-window {
@@ -716,9 +738,17 @@
         <div class="remark-modal-label">狀態</div>
         <div class="remark-modal-status" id="remarkModalStatus"></div>
       </div>
-      <div class="remark-modal-section">
-        <div class="remark-modal-label">Mission進度</div>
-        <textarea class="remark-modal-ta" id="remarkModalTa" placeholder="Mission の進捗・状況を入力…" rows="8"></textarea>
+      <div class="remark-modal-section" id="remarkModalNewSec">
+        <div class="remark-modal-label">今週の進度（追記）</div>
+        <div class="remark-modal-author-row">
+          <label class="remark-modal-author-label" for="remarkModalAuthor">記入者</label>
+          <select class="remark-modal-author" id="remarkModalAuthor"></select>
+        </div>
+        <textarea class="remark-modal-ta" id="remarkModalNew" placeholder="今週の一言。重い詳細・成果物は Confluence リンクへ" rows="3"></textarea>
+      </div>
+      <div class="remark-modal-section" id="remarkModalLogSec">
+        <div class="remark-modal-label">これまでの記録</div>
+        <div class="remark-modal-log" id="remarkModalLog"></div>
       </div>
       <div class="remark-modal-section">
         <div class="remark-modal-label">Confluence URL</div>
@@ -1096,9 +1126,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.23.0';
+const APP_VERSION = '0.24.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'Issue&Mission タブの件数表示に Mission を追加（「Issue X/Y · Mission X/Y 筆」形式）。';
+const APP_NOTE  = '進度を追記ログ化（本人週次記入）。編集モーダルに記入者プルダウン＋「今週の進度」＋これまでの記録（タイムライン）。Mission進度ログ タブ＋Apps Script の append 対応。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1173,6 +1203,7 @@ const SHEET_NAME = 'Issue主檔';
 // Mission シート名（v0.7.0〜）。後方互換のため旧名「Task一覽」もフォールバックで読む。
 const MISSION_SHEET_NAME = 'Mission一覽';
 const TASK_SHEET_NAME    = 'Task一覽'; // legacy 名（Phase 2 で完全に Mission へ移行予定）
+const LOG_SHEET_NAME     = 'Mission進度ログ'; // 追記専用ログ（本人の週次進度・CLAUDE.md §1.5）
 
 // 編集 API（Mission進度タブのインライン編集に使用）
 // 1. scripts/setup-sheet.gs の doPost を Web App としてデプロイ
@@ -2053,12 +2084,13 @@ function startStatusEdit(td, missionId) {
     _origStatus = row ? (row['狀態'] || '').trim() : '';
     buildStatusBtns(_origStatus);
 
-    // Mission進度
+    // 今週の進度（新規一行・追記方式）＋ 記入者 ＋ これまでの記録
     _origRemark = row ? (row['Mission進度'] || row['事務局備註'] || '').trim() : '';
-    const ta = $('remarkModalTa');
-    ta.value = _origRemark;
+    const ta = $('remarkModalNew');
+    ta.value = '';                 // 追記方式：新規入力は常に空欄から
     ta.readOnly = _readOnly;
-    ta.placeholder = _readOnly ? '（尚未填寫 Mission進度）' : 'Mission の進捗・状況を入力…';
+    populateAuthorSelect(row);
+    renderMissionLog(_missionId, _origRemark);
 
     // Confluence URL（自身のみ）
     _origConf = row ? (row['Confluence URL自身'] || '').trim() : '';
@@ -2082,7 +2114,7 @@ function startStatusEdit(td, missionId) {
         const first = $('remarkModalConfList').querySelector('.remark-modal-conf-inp');
         if (first) { first.focus(); first.select(); }
       } else {
-        const t = $('remarkModalTa'); t.focus();
+        const t = $('remarkModalNew'); t.focus();
         t.setSelectionRange(t.value.length, t.value.length);
       }
     });
@@ -2108,20 +2140,23 @@ function startStatusEdit(td, missionId) {
   // ---- 保存 ----
   async function doSave() {
     if (_readOnly) return;
-    const newRemark = $('remarkModalTa').value;
+    const newLine   = $('remarkModalNew').value.trim();
     const newStatus = selectedStatus();
     const newConf   = confJoined();
+    const author    = ($('remarkModalAuthor').value || '').trim();
 
-    const remarkChanged = newRemark !== _origRemark;
+    const hasNewLine    = newLine !== '';
     const statusChanged = newStatus !== _origStatus;
     const confChanged   = newConf   !== _origConf;
 
-    if (!remarkChanged && !statusChanged && !confChanged) { closeModal(); return; }
+    if (!hasNewLine && !statusChanged && !confChanged) { closeModal(); return; }
 
     // スナップショット（closeModal が参照をクリアする前に確保）
     const snapId = _missionId;
     const snapRemarkTd = _remarkTd, snapStatusTd = _statusTd, snapConfTd = _confTd;
     const snapOrigRemark = _origRemark, snapOrigStatus = _origStatus;
+
+    if (hasNewLine && author) localStorage.setItem('jig:lastAuthor', author); // 次回の既定に
 
     $('remarkModalSaveBtn').disabled = true;
     $('remarkModalSaveBtn').classList.add('saving');
@@ -2130,13 +2165,13 @@ function startStatusEdit(td, missionId) {
 
     // フィールド組み立て（変更分のみ送信）
     const fields = {};
-    if (remarkChanged) fields['備註'] = newRemark;
+    if (hasNewLine)    { fields['進度'] = newLine; fields['擔當'] = author; } // 追記＋現況ミラー
     if (statusChanged) fields['狀態'] = newStatus;
     if (confChanged)   fields['Confluence URL'] = newConf;
 
-    // 楽観的更新：各セルに即時反映
-    if (remarkChanged && snapRemarkTd) {
-      snapRemarkTd.textContent = newRemark;
+    // 楽観的更新：各セルに即時反映（現況セルには新規一行をミラー）
+    if (hasNewLine && snapRemarkTd) {
+      snapRemarkTd.textContent = newLine;
       snapRemarkTd.classList.add('cell-saving');
     }
     if (statusChanged && snapStatusTd) {
@@ -2157,22 +2192,29 @@ function startStatusEdit(td, missionId) {
 
     if (!result) {
       // 失敗 → 楽観的更新を戻す
-      if (remarkChanged && snapRemarkTd) snapRemarkTd.textContent = snapOrigRemark;
+      if (hasNewLine && snapRemarkTd) snapRemarkTd.textContent = snapOrigRemark;
       if (statusChanged && snapStatusTd) { snapStatusTd.innerHTML = statusBadge(snapOrigStatus, true); snapStatusTd.dataset.current = snapOrigStatus; }
       return;
     }
 
-    // ローカルデータ反映
+    // ローカルデータ反映（現況ミラーは備註キー経由で row['Mission進度'] に入る）
     const localChanges = { ...result.changes };
-    if (remarkChanged) localChanges['備註']  = localChanges['備註']  ?? newRemark;
-    if (statusChanged) localChanges['狀態']  = localChanges['狀態']  ?? newStatus;
+    if (hasNewLine)    localChanges['備註'] = localChanges['備註'] ?? newLine;
+    if (statusChanged) localChanges['狀態'] = localChanges['狀態'] ?? newStatus;
     if (confChanged)   localChanges['Confluence URL'] = localChanges['Confluence URL'] ?? newConf;
     applyLocalEdit(snapId, localChanges);
 
-    if (remarkChanged && snapRemarkTd) flashSaved(snapRemarkTd);
+    // 追記ログをローカルにも反映（タイムライン即時更新用）
+    if (hasNewLine) {
+      const entry = (result.changes && result.changes.logEntry) ||
+                    { '日時': '', '擔當': author, '進度': newLine };
+      prependMissionLog(snapId, entry);
+    }
+
+    if (hasNewLine && snapRemarkTd) flashSaved(snapRemarkTd);
     if (statusChanged && snapStatusTd) flashSaved(snapStatusTd);
 
-    const labels = [remarkChanged && 'Mission進度', statusChanged && '狀態', confChanged && 'Confluence URL'].filter(Boolean).join('・');
+    const labels = [hasNewLine && '進度を追記', statusChanged && '狀態', confChanged && 'Confluence URL'].filter(Boolean).join('・');
     toast(`已儲存：${snapId}（${labels}）`, 'success');
     setTimeout(() => renderTableC(), 300);
   }
@@ -2214,6 +2256,63 @@ function startStatusEdit(td, missionId) {
 
 function startRemarkEdit(td, missionId) {
   window._openRemarkFromTd(td, missionId);
+}
+
+// ===== 記入者プルダウン & 進度タイムライン（編集モーダル用）=====
+// 記入者候補：issueData の 擔當 / 戰略負責人 から重複なく集める
+function collectAuthorNames() {
+  const set = new Set();
+  (issueData || []).forEach(r => {
+    ['擔當', '戰略負責人'].forEach(k => {
+      const v = (r[k] || '').trim();
+      if (v) v.split(/[\/、,，;；]/).forEach(x => { const t = x.trim(); if (t) set.add(t); });
+    });
+  });
+  return [...set].sort();
+}
+function populateAuthorSelect(row) {
+  const sel = document.getElementById('remarkModalAuthor');
+  if (!sel) return;
+  const names = collectAuthorNames();
+  // 既定：その Mission の擔當 → 前回使った記入者 の順で優先
+  const preferred = (row && (row['擔當'] || '').trim()) || localStorage.getItem('jig:lastAuthor') || '';
+  if (preferred && !names.includes(preferred)) names.unshift(preferred);
+  sel.innerHTML = '<option value="">（記入者を選択）</option>' +
+    names.map(n => `<option value="${escapeAttr(n)}">${escapeHtml(n)}</option>`).join('');
+  sel.value = preferred || '';
+}
+// タイムライン描画：window.missionLog[id] を新しい順に。無ければ現況テキストを移行表示
+function renderMissionLog(missionId, currentText) {
+  const box = document.getElementById('remarkModalLog');
+  if (!box) return;
+  const entries = (window.missionLog && window.missionLog[missionId]) || [];
+  if (entries.length) {
+    box.innerHTML = entries.map((e, i) => `
+      <div class="rm-log-entry${i === 0 ? ' rm-log-latest' : ''}">
+        <div class="rm-log-meta">
+          <span class="rm-log-date">${escapeHtml(e.date || '日付なし')}</span>
+          ${e.author ? `<span class="rm-log-author">${escapeHtml(e.author)}</span>` : ''}
+        </div>
+        <div class="rm-log-text">${escapeHtml(e.text)}</div>
+      </div>`).join('');
+  } else if ((currentText || '').trim()) {
+    // ログ未蓄積だが現況テキストがある（移行期）→ 旧データを 1 件として表示
+    box.innerHTML =
+      `<div class="rm-log-entry rm-log-legacy">
+        <div class="rm-log-meta"><span class="rm-log-date">以前の記録</span></div>
+        <div class="rm-log-text">${escapeHtml(currentText)}</div>
+      </div>`;
+  } else {
+    box.innerHTML = '<div class="rm-log-empty">まだ記録はありません。最初の一言を書きましょう。</div>';
+  }
+}
+// 楽観的更新：ローカルの missionLog 先頭へ追記（保存応答の logEntry から）
+function prependMissionLog(missionId, entry) {
+  if (!entry) return;
+  window.missionLog = window.missionLog || {};
+  (window.missionLog[missionId] = window.missionLog[missionId] || []).unshift({
+    date: entry['日時'] || '', author: entry['擔當'] || '', text: entry['進度'] || ''
+  });
 }
 
 // ===== ダイジェストテキストウィンドウ（Mission進度 セルのホバーで中央プレビュー）=====
@@ -3150,6 +3249,57 @@ async function loadMissionsAndMerge(issues) {
   return issues;
 }
 
+// ===== Mission進度ログ（追記専用ログ）を読み込む =====
+// window.missionLog = { 編號: [ {date, author, text}, ... 新しい順 ] }
+window.missionLog = window.missionLog || {};
+async function loadMissionLog() {
+  window.missionLog = {};
+  if (!SHEET_ID) return;
+  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+  const url = `${base}&sheet=${encodeURIComponent(LOG_SHEET_NAME)}`;
+  try {
+    const res = await fetch(url + '&_=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return;
+    const csv = await res.text();
+    if (!csv || csv.trim().startsWith('<')) return; // シート未作成など
+    const wb = XLSX.read(csv, { type: 'string' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+    if (rows.length < 2) return;
+    const headers = rows[0].map(h => String(h).trim());
+    // ログシート判定：「進度」列が無ければ別シートが返ったとみなしスキップ
+    if (headers.indexOf('進度') < 0) return;
+    const ci = {
+      編號: headers.indexOf('編號'),
+      日時: headers.indexOf('日時'),
+      擔當: headers.indexOf('擔當'),
+      進度: headers.indexOf('進度'),
+    };
+    const map = {};
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r) continue;
+      const id = String(r[ci.編號] ?? '').trim();
+      const text = String(r[ci.進度] ?? '').trim();
+      if (!id || !text) continue;
+      const date = String(r[ci.日時] ?? '').trim();
+      const author = ci.擔當 >= 0 ? String(r[ci.擔當] ?? '').trim() : '';
+      (map[id] = map[id] || []).push({ date, author, text, _i: i });
+    }
+    // 新しい順に整列（日時パース優先、無理なら行順の逆＝append 後勝ち）
+    Object.keys(map).forEach(id => {
+      map[id].sort((a, b) => {
+        const da = parseDateLoose(a.date), db = parseDateLoose(b.date);
+        if (da && db && da.getTime() !== db.getTime()) return db - da;
+        return b._i - a._i;
+      });
+    });
+    window.missionLog = map;
+  } catch (e) {
+    console.warn('[missionLog] 読込失敗', e);
+  }
+}
+
 // ===== 從 Google 試算表載入（唯一資料來源）=====
 async function loadFromSheet() {
   const urls = sheetCsvUrls();
@@ -3175,6 +3325,7 @@ async function loadFromSheet() {
       const missionAdded = missionCountAfter - missionCountBefore;
       fillShortNames(data);
       issueData = data;
+      await loadMissionLog();   // 追記ログを取得（モーダルのタイムライン用）
       renderAll();
       const ts = new Date().toLocaleString('zh-TW', { hour12:false });
       const issueCount = data.filter(r => {

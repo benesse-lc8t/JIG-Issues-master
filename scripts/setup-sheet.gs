@@ -57,6 +57,13 @@ const MISSION_HEADERS = [
 ];
 const MISSION_COL_WIDTHS = { 1: 100, 2: 320, 3: 90, 4: 90, 5: 80, 6: 220, 7: 90, 8: 240 };
 
+// ===== Mission進度ログ（追記専用ログ）=====
+// 本人が週1で書く進度を 1 記入＝1 行で溜める。上書きしない。
+// 回収・AI コンテキスト供給・停滞検知の燃料（CLAUDE.md §1.5）。
+const LOG_SHEET_NAME = 'Mission進度ログ';
+const LOG_HEADERS     = ['編號', '日時', '擔當', '進度'];
+const LOG_COL_WIDTHS  = { 1: 110, 2: 140, 3: 90, 4: 480 };
+
 // ===== 編集 API 設定 =====
 // 編集 API のトークン（index.html の WRITE_TOKEN と同じ値にする）
 const WRITE_TOKEN = 'JIG-WRITE-TBBS-2026';
@@ -176,6 +183,36 @@ function doPost(e) {
       }
     }
 
+    // 進度ログ（追記）：本人の週次一行。`Mission進度ログ` へ 1 行 append し、
+    // Mission一覽 の現況(Mission進度 H列)へ最新行をミラーする。上書きはしない。
+    if (Object.prototype.hasOwnProperty.call(data, '進度')) {
+      const lineText = String(data['進度']);
+      if (lineText.trim()) {
+        const author = String(data['擔當'] || '').trim();
+        const when = new Date();
+        let logSheet = ss.getSheetByName(LOG_SHEET_NAME);
+        if (!logSheet) {
+          // 未作成なら自動生成（setupJIG を流し忘れても動くように）
+          logSheet = ss.insertSheet(LOG_SHEET_NAME);
+          logSheet.getRange(1, 1, 1, LOG_HEADERS.length).setValues([LOG_HEADERS])
+            .setFontWeight('bold').setBackground('#F7F4EC');
+          logSheet.setFrozenRows(1);
+          Object.keys(LOG_COL_WIDTHS).forEach(k => logSheet.setColumnWidth(Number(k), LOG_COL_WIDTHS[k]));
+        }
+        logSheet.appendRow([missionId, when, author, lineText]);
+        const whenStr = Utilities.formatDate(when, Session.getScriptTimeZone() || 'Asia/Taipei', 'yyyy-MM-dd HH:mm');
+        // 現況(H=Mission進度)へミラー
+        const mcol = headers.indexOf(WRITE_FIELDS['備註']) + 1;
+        if (mcol > 0) {
+          sheet.getRange(rowIdx, mcol).setValue(lineText);
+          changes['備註'] = lineText;
+        }
+        changes['logEntry'] = { '日時': whenStr, '擔當': author, '進度': lineText };
+        console.log('  進度ログ append:', JSON.stringify(changes['logEntry']));
+        touchedContent = true;
+      }
+    }
+
     // Confluence URL（複数 URL は改行区切り）。行の更新なので 更新日 も自動更新する。
     if (Object.prototype.hasOwnProperty.call(data, 'Confluence URL')) {
       const col = headers.indexOf(WRITE_FIELDS['Confluence URL']) + 1;
@@ -227,6 +264,7 @@ function doGet() {
       : null;
     const remarkTarget = WRITE_FIELDS['備註'];
     const remarkCol    = headers ? headers.indexOf(remarkTarget) : -99;
+    const logSheet = ss ? ss.getSheetByName(LOG_SHEET_NAME) : null;
     return _writeJson({
       ok: true,
       WRITE_FIELDS,
@@ -234,6 +272,8 @@ function doGet() {
       headers,
       remarkTarget,
       remarkColIndex: remarkCol,   // -1 なら列が見つかっていない
+      logSheetName:   LOG_SHEET_NAME,
+      logSheetExists: !!logSheet,  // false ならログタブ未作成（setupJIG 要実行）
     });
   } catch (err) {
     return _writeJson({ ok: false, error: String(err.message) });
@@ -398,6 +438,17 @@ function setupJIG() {
     log.push(`✓ Mission一覽 に条件付き書式 ${added1 + added2} 件を追加`);
   }
   if (taskCreated) log.push('  　└ 列幅・行 freeze・プルダウンも設定済み');
+
+  // --- 3. Mission進度ログ タブ（追記専用）---
+  let logSheet = ss.getSheetByName(LOG_SHEET_NAME);
+  if (!logSheet) {
+    logSheet = ss.insertSheet(LOG_SHEET_NAME);
+    logSheet.getRange(1, 1, 1, LOG_HEADERS.length).setValues([LOG_HEADERS])
+      .setFontWeight('bold').setBackground('#F7F4EC');
+    Object.keys(LOG_COL_WIDTHS).forEach(k => logSheet.setColumnWidth(Number(k), LOG_COL_WIDTHS[k]));
+    logSheet.setFrozenRows(1);
+    log.push('✓ 「Mission進度ログ」タブを作成（追記専用・4列）');
+  }
 
   const msg = log.length ? '✅ セットアップ完了\n\n' + log.join('\n')
                          : 'ℹ️ 既に整っています（追加・変更なし）';
