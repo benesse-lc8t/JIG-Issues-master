@@ -1438,9 +1438,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.30.3';
+const APP_VERSION = '0.30.4';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '絵文字アイコンを洗練されたインライン SVG（Feather 風・currentColor 追従）に置換：重要(星)/私的備註(doc)/留言(message)/編輯(pencil)/追加(plus)。svgIco ヘルパー追加。Apps Script 変更なし。';
+const APP_NOTE  = '列幅の保存値に列数を記録し、列数が変わったら自動破棄（詩雅タブの右端はみ出しを自動修復）。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -4594,13 +4594,17 @@ function loadColWidths(table) {
   try { map = JSON.parse(localStorage.getItem(colWidthKey(table)) || '{}') || {}; }
   catch (e) { map = {}; }
   const ths = table.querySelectorAll('thead th');
+  // 列数が変わった（列の追加・削除）場合は古い保存値を破棄。幅ズレ・横はみ出しの自動修復。
+  if (map.__n !== ths.length) {
+    try { localStorage.removeItem(colWidthKey(table)); } catch (e) {}
+    return;
+  }
   ths.forEach((th, i) => { if (map[i] != null) applyThWidth(th, map[i]); });
 }
 function saveColWidths(table) {
-  const map = {};
-  table.querySelectorAll('thead th').forEach((th, i) => {
-    if (th.style.width) map[i] = parseInt(th.style.width, 10);
-  });
+  const ths = table.querySelectorAll('thead th');
+  const map = { __n: ths.length };
+  ths.forEach((th, i) => { if (th.style.width) map[i] = parseInt(th.style.width, 10); });
   try { localStorage.setItem(colWidthKey(table), JSON.stringify(map)); } catch (e) {}
 }
 function resetColWidths(table) {
