@@ -190,6 +190,8 @@ function doPost(e) {
       if (lineText.trim()) {
         const author = String(data['擔當'] || '').trim();
         const when = new Date();
+        const tz = Session.getScriptTimeZone() || 'Asia/Taipei';
+        const whenStr = Utilities.formatDate(when, tz, 'yyyy-MM-dd HH:mm'); // 文字列で保存（gviz 文字化け回避）
         let logSheet = ss.getSheetByName(LOG_SHEET_NAME);
         if (!logSheet) {
           // 未作成なら自動生成（setupJIG を流し忘れても動くように）
@@ -199,10 +201,32 @@ function doPost(e) {
           logSheet.setFrozenRows(1);
           Object.keys(LOG_COL_WIDTHS).forEach(k => logSheet.setColumnWidth(Number(k), LOG_COL_WIDTHS[k]));
         }
-        logSheet.appendRow([missionId, when, author, lineText]);
-        const whenStr = Utilities.formatDate(when, Session.getScriptTimeZone() || 'Asia/Taipei', 'yyyy-MM-dd HH:mm');
-        // 現況(H=Mission進度)へミラー
         const mcol = headers.indexOf(WRITE_FIELDS['備註']) + 1;
+
+        // 初回ログ時の移行：この Mission のログがまだ無く、既存の現況(H)が非空なら、
+        // 既存内容を「過去分（（既存））」として 1 行 seed してから新規を追記する（消えないように）。
+        let hasPriorLog = false;
+        const logLast = logSheet.getLastRow();
+        if (logLast >= 2) {
+          const logIds = logSheet.getRange(2, 1, logLast - 1, 1).getValues();
+          hasPriorLog = logIds.some(r => String(r[0]).trim() === missionId);
+        }
+        const existingCurrent = mcol > 0 ? String(sheet.getRange(rowIdx, mcol).getValue()).trim() : '';
+        if (!hasPriorLog && existingCurrent && existingCurrent !== lineText) {
+          let seedDate = '';
+          const updColH = headers.indexOf(WRITE_FIELDS['更新日']) + 1;
+          if (updColH > 0) {
+            const uv = sheet.getRange(rowIdx, updColH).getValue();
+            if (uv instanceof Date) seedDate = Utilities.formatDate(uv, tz, 'yyyy-MM-dd HH:mm');
+            else if (uv) seedDate = String(uv);
+          }
+          logSheet.appendRow([missionId, seedDate, '（既存）', existingCurrent]);
+          console.log('  進度ログ seed（既存現況を移行）:', existingCurrent.slice(0, 40));
+        }
+
+        // 新規行を追記
+        logSheet.appendRow([missionId, whenStr, author, lineText]);
+        // 現況(H=Mission進度)へミラー
         if (mcol > 0) {
           sheet.getRange(rowIdx, mcol).setValue(lineText);
           changes['備註'] = lineText;

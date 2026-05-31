@@ -422,6 +422,8 @@
     background: #fff; border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.22);
     width: min(680px, 94vw); max-height: 90vh; display: flex; flex-direction: column;
     animation: modalIn 0.16s ease-out;
+    border-top: 5px solid var(--rm-accent, #DADCE0);
+    overflow: hidden;
   }
   @keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
   .remark-modal-header {
@@ -570,7 +572,7 @@
   .remark-modal-author-label { font-size: 11px; color: #5F6368; white-space: nowrap; }
   .remark-modal-author {
     flex: 1; padding: 7px 9px; border: 1px solid #DADCE0; border-radius: 8px;
-    font-size: 13px; background: #fff; color: #202124;
+    font-size: 13px; font-family: inherit; background: #fff; color: #202124;
   }
   .remark-modal-author:focus { border-color: var(--g-blue); outline: none; box-shadow: 0 0 0 2px rgba(26,115,232,0.16); }
   /* これまでの記録（タイムライン） */
@@ -580,10 +582,12 @@
   .rm-log-meta { display: flex; gap: 8px; align-items: baseline; font-size: 11px; color: #5F6368; margin-bottom: 2px; }
   .rm-log-date { font-weight: 600; color: #3C4043; }
   .rm-log-author { color: #1A73E8; font-weight: 600; }
-  .rm-log-text { font-size: 13px; color: #202124; white-space: pre-wrap; line-height: 1.5; word-break: break-word; }
+  .rm-log-text { font-size: 12px; color: #3C4043; white-space: pre-wrap; line-height: 1.45; word-break: break-word; }
   .rm-log-entry.rm-log-legacy { border-left-color: #DADCE0; background: #FafafA; }
   .rm-log-entry.rm-log-legacy .rm-log-date { color: #9AA0A6; font-style: italic; font-weight: 500; }
   .rm-log-empty { font-size: 12px; color: #9AA0A6; padding: 8px 2px; }
+  /* 進度説明のプレースホルダ：薄く・小さめ */
+  #remarkModalNew::placeholder { color: #BCC0C6; font-size: 12px; }
 
   /* ダイジェストテキストウィンドウ（ホバー時の中央プレビュー・操作不可） */
   .digest-window {
@@ -1126,9 +1130,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.24.0';
+const APP_VERSION = '0.24.1';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '進度を追記ログ化（本人週次記入）。編集モーダルに記入者プルダウン＋「今週の進度」＋これまでの記録（タイムライン）。Mission進度ログ タブ＋Apps Script の append 対応。';
+const APP_NOTE  = '進度ログの微調整：日時の文字化け（シリアル値）を変換、既存 Mission進度 をログへ移行表示、ログ本文を小さめに、進度說明プレースホルダを薄く、フォント統一、狀態カラーをモーダル上縁に差し色。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1990,6 +1994,7 @@ function startStatusEdit(td, missionId) {
         if (_readOnly) return;
         getStatusBtns().forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+        setModalAccent(v);
       });
       statusEl.appendChild(btn);
     });
@@ -2083,6 +2088,7 @@ function startStatusEdit(td, missionId) {
     // 狀態
     _origStatus = row ? (row['狀態'] || '').trim() : '';
     buildStatusBtns(_origStatus);
+    setModalAccent(_origStatus);
 
     // 今週の進度（新規一行・追記方式）＋ 記入者 ＋ これまでの記録
     _origRemark = row ? (row['Mission進度'] || row['事務局備註'] || '').trim() : '';
@@ -2313,6 +2319,15 @@ function prependMissionLog(missionId, entry) {
   (window.missionLog[missionId] = window.missionLog[missionId] || []).unshift({
     date: entry['日時'] || '', author: entry['擔當'] || '', text: entry['進度'] || ''
   });
+}
+// 狀態に応じたモーダル上縁の差し色（狀態ボタンの配色と統一）
+const STATUS_ACCENT = {
+  '': '#DADCE0', '未開始': '#9AA0A6', '策劃中': '#00ACC1',
+  '需確認': '#F9AB00', '進行中': '#4285F4', '結案': '#34A853',
+};
+function setModalAccent(status) {
+  const m = document.getElementById('remarkModal');
+  if (m) m.style.setProperty('--rm-accent', STATUS_ACCENT[(status || '').trim()] || '#DADCE0');
 }
 
 // ===== ダイジェストテキストウィンドウ（Mission進度 セルのホバーで中央プレビュー）=====
@@ -3249,6 +3264,18 @@ async function loadMissionsAndMerge(issues) {
   return issues;
 }
 
+// Google スプレッドシートのシリアル値（1899-12-30 起点）を「yyyy-MM-dd HH:mm」へ変換
+function sheetSerialToStr(v) {
+  const n = parseFloat(v);
+  if (!isFinite(n)) return String(v);
+  const ms = Math.round((n - 25569) * 86400000); // 1970-01-01 起点の UTC ミリ秒
+  const d = new Date(ms);
+  if (isNaN(d.getTime())) return String(v);
+  const p = x => String(x).padStart(2, '0');
+  // シリアルは壁掛け時刻を表すので getUTC* で元の時刻を取り出す
+  return `${d.getUTCFullYear()}-${p(d.getUTCMonth()+1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
+}
+
 // ===== Mission進度ログ（追記専用ログ）を読み込む =====
 // window.missionLog = { 編號: [ {date, author, text}, ... 新しい順 ] }
 window.missionLog = window.missionLog || {};
@@ -3282,7 +3309,9 @@ async function loadMissionLog() {
       const id = String(r[ci.編號] ?? '').trim();
       const text = String(r[ci.進度] ?? '').trim();
       if (!id || !text) continue;
-      const date = String(r[ci.日時] ?? '').trim();
+      let date = String(r[ci.日時] ?? '').trim();
+      // gviz が日時を Google シリアル値（例 46173.04…）で返す場合は日時文字列へ変換
+      if (/^\d+(\.\d+)?$/.test(date)) date = sheetSerialToStr(date);
       const author = ci.擔當 >= 0 ? String(r[ci.擔當] ?? '').trim() : '';
       (map[id] = map[id] || []).push({ date, author, text, _i: i });
     }
