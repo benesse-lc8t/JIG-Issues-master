@@ -491,9 +491,6 @@
 
 <!-- ===== B：會議議程（Mission 専用） ===== -->
 <div class="panel" id="panel-B">
-  <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    依確認會議分組顯示 <b>Mission</b>，依星期與時間排序的會議週次議程
-  </div>
   <div class="ctrl-bar">
     <select id="filterDeptB"><option value="">處：全部</option></select>
     <select id="filterGroupB"><option value="">組：全部</option></select>
@@ -528,7 +525,7 @@
         <th style="width:76px;">處</th>
         <th style="width:90px;">組</th>
         <th style="width:76px;">擔當</th>
-        <th style="min-width:120px;">備註</th>
+        <th style="min-width:120px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
         <th style="width:34px;">🔗</th>
@@ -777,9 +774,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.10.3';
+const APP_VERSION = '0.10.4';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'Issue & Mission タブの備考列を「Mission進度」に改名。Mission 行の Mission進度 コメントが表示されるよう修正（従来は 事務局備註 のみ参照で空欄だった）。';
+const APP_NOTE  = '會議議程タブの備考列見出しを「Mission進度」に統一。冗長な説明文を削除。';
 
 // ===== Tab switch =====
 function show(id, e) {
