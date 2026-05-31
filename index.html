@@ -231,7 +231,8 @@
   .conf a { color: var(--g-blue); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
   .conf a:hover { text-decoration: underline; color: var(--g-blue-fg); }
   .conf img { width: 14px; height: 14px; vertical-align: middle; flex-shrink: 0; }
-  .conf .conf-text { display: inline-block; max-width: 130px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+  .conf .conf-text { display: inline-block; max-width: 110px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+  .conf .conf-count { flex-shrink: 0; background: var(--g-blue); color: #fff; font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 7px; }
 
   /* 確認會議・會議時間 折り畳み */
   .mtg-col { transition: none; }
@@ -521,6 +522,7 @@
     font: inherit; font-size: 11px; color: var(--g-blue); padding: 2px 0; font-weight: 500;
   }
   .remark-modal-conf-add:hover { text-decoration: underline; }
+  .remark-modal-conf-none { font-size: 11px; color: #9AA0A6; font-style: italic; padding: 2px 0; }
   /* ヒント & フッター */
   .remark-modal-hint { font-size: 10px; color: #9AA0A6; }
   .remark-modal-footer {
@@ -541,6 +543,25 @@
   .remark-modal-save:hover { background: #1558B0; }
   .remark-modal-save:disabled { opacity: 0.55; cursor: default; }
   .remark-modal-save.saving { background: #5F6368; }
+  /* 編輯ボタン（表示モーダル＝読み取り専用のときだけ表示） */
+  .remark-modal-edit {
+    display: none; padding: 7px 22px; border: none; border-radius: 6px;
+    background: var(--g-blue); color: #fff; font: inherit; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: background 0.12s;
+  }
+  .remark-modal-edit:hover { background: #1558B0; }
+  /* 読み取り専用（表示モーダル）：編集系 UI を隠し、入力を不活性に */
+  #remarkModal.read-only .remark-modal-cancel,
+  #remarkModal.read-only .remark-modal-save,
+  #remarkModal.read-only .remark-modal-conf-add,
+  #remarkModal.read-only .remark-modal-conf-del,
+  #remarkModal.read-only .remark-modal-hint { display: none; }
+  #remarkModal.read-only .remark-modal-edit { display: inline-block; }
+  #remarkModal.read-only .modal-st-btn { pointer-events: none; }
+  #remarkModal.read-only .remark-modal-ta,
+  #remarkModal.read-only .remark-modal-conf-inp,
+  #remarkModal.read-only .remark-modal-conf-name { background: #F8F9FA; cursor: default; box-shadow: none; border-color: #E8EAED; }
+  #remarkModal.read-only .remark-modal-conf-name { font-weight: 600; color: #202124; }
 
   /* トースト通知 */
   .toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; pointer-events: none; }
@@ -661,6 +682,7 @@
     <div class="remark-modal-footer">
       <button class="remark-modal-cancel" id="remarkModalCancelBtn">キャンセル</button>
       <button class="remark-modal-save" id="remarkModalSaveBtn">儲存</button>
+      <button class="remark-modal-edit" id="remarkModalEditBtn" title="切換到 Mission進度 頁面編輯">✎ 編輯</button>
     </div>
   </div>
 </div>
@@ -1007,9 +1029,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.19.0';
+const APP_VERSION = '0.20.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'Confluence リンクに手書きの名前を付けられるように（モーダルの各 URL に名前入力）。保存形式は 名前|URL。空欄は URL 自動抽出にフォールバック。';
+const APP_NOTE  = '他タブの Confluence セルを複数リンク対応（アイコン＋件数バッジ＋ラベル）。他タブの Mission進度 クリックで読み取り専用「表示モーダル」を表示、編輯ボタンで Mission進度 タブの編集モーダルへ。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1366,16 +1388,20 @@ function confLabel(url) {
 function confLabelLines(urls) {
   return urls.map(u => { const l = confLabel(u); return (l.space ? `[${l.space}] ` : '') + l.title; }).join('\n');
 }
-function confluenceCell(pageName, url) {
+function confluenceCell(pageName, urlRaw) {
+  const entries = parseConfEntries(urlRaw);
   const name = (pageName || '').trim();
-  const u = (url || '').trim();
-  if (!name && !u) return '<td class="conf"></td>';
-  const iconHtml = `<img src="${escapeAttr(faviconFor(u))}" alt="Confluence" onerror="this.onerror=null;this.src='${CONF_FAVICON}'">`;
-  const text = `<span class="conf-text" title="${escapeAttr(name)}">${escapeHtml(name || 'Confluence 頁面')}</span>`;
-  const inner = u
-    ? `<a href="${escapeAttr(u)}" target="_blank" rel="noopener" title="${escapeAttr(u)}">${iconHtml}${text}</a>`
-    : `${iconHtml}${text}`;
-  return `<td class="conf">${inner}</td>`;
+  if (!entries.length) {
+    if (!name) return '<td class="conf"></td>';
+    return `<td class="conf"><span class="conf-text" title="${escapeAttr(name)}">${escapeHtml(name)}</span></td>`;
+  }
+  // 複数リンク：先頭にリンク＋ラベル、2 件以上は +N バッジ。tooltip に全件のラベル
+  const first = entries[0];
+  const label = confEntryLabel(first);
+  const icon  = `<img src="${escapeAttr(faviconFor(first.url))}" alt="Confluence" onerror="this.onerror=null;this.src='${CONF_FAVICON}'">`;
+  const badge = entries.length > 1 ? `<span class="conf-count">+${entries.length - 1}</span>` : '';
+  const tip   = confLabelLinesFromRaw(urlRaw);
+  return `<td class="conf"><a href="${escapeAttr(first.url)}" target="_blank" rel="noopener" title="${escapeAttr(tip)}">${icon}<span class="conf-text">${escapeHtml(label)}</span>${badge}</a></td>`;
 }
 
 // Tab C 専用：Confluence URL セル（Mission 自身の複数 URL のみを favicon リンクで表示。クリックで貼り付け編集）
@@ -1492,7 +1518,7 @@ function renderRow(r, opts) {
   // 11 Mission進度：一覧性優先で 1 行省略表示。Mission 行はクリックで Mission進度タブの該当へジャンプ
   const memoText = r['Mission進度'] || r['事務局備註'] || '';
   if (isMission && memoText) {
-    h += `<td class="memo memo-clip memo-jump" title="${escapeAttr(memoText)}（點擊跳至 Mission進度）" onclick="jumpToMission('${escapeAttr(num)}')">${escapeHtml(memoText)}</td>`;
+    h += `<td class="memo memo-clip memo-jump" title="${escapeAttr(memoText)}（點擊檢視詳情）" onclick="openDisplayModal('${escapeAttr(num)}')">${escapeHtml(memoText)}</td>`;
   } else {
     h += `<td class="memo memo-clip" title="${escapeAttr(memoText)}">${escapeHtml(memoText)}</td>`;
   }
@@ -1820,6 +1846,9 @@ function startStatusEdit(td, missionId) {
   let _remarkTd = null, _statusTd = null, _confTd = null;
   let _missionId = null;
   let _origRemark = '', _origStatus = '', _origConf = '';
+  let _readOnly = false;  // 表示モーダル（読み取り専用）のとき true
+
+  const cssEsc = s => (window.CSS && CSS.escape) ? CSS.escape(String(s)) : String(s);
 
   // ---- DOM helpers ----
   function getStatusBtns() { return [...$('remarkModalStatus').querySelectorAll('.modal-st-btn')]; }
@@ -1850,6 +1879,7 @@ function startStatusEdit(td, missionId) {
       btn.dataset.v = v;
       btn.textContent = v || '（未設定）';
       btn.addEventListener('click', () => {
+        if (_readOnly) return;
         getStatusBtns().forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
       });
@@ -1867,12 +1897,14 @@ function startStatusEdit(td, missionId) {
     const nameInp = document.createElement('input');
     nameInp.type = 'text'; nameInp.className = 'remark-modal-conf-name';
     nameInp.value = entry.label || '';
+    if (_readOnly) nameInp.readOnly = true;
     // 入力行：URL 入力 ＋ ↗ 開く ＋ ✕ 削除
     const inputLine = document.createElement('div');
     inputLine.className = 'remark-modal-conf-inputline';
     const inp = document.createElement('input');
     inp.type = 'url'; inp.className = 'remark-modal-conf-inp';
     inp.placeholder = '貼上 Confluence 連結…'; inp.value = entry.url || '';
+    if (_readOnly) inp.readOnly = true;
     // ↗ 開く：入力された URL を別タブで開く（http(s) のみ有効）
     const open = document.createElement('button');
     open.type = 'button'; open.className = 'remark-modal-conf-open'; open.textContent = '↗'; open.title = '在新分頁開啟';
@@ -1898,24 +1930,33 @@ function startStatusEdit(td, missionId) {
   }
 
   function buildConfList(raw) {
-    $('remarkModalConfList').innerHTML = '';
+    const list = $('remarkModalConfList');
+    list.innerHTML = '';
     const entries = parseConfEntries(raw);
+    if (!entries.length && _readOnly) {
+      list.innerHTML = '<div class="remark-modal-conf-none">（無連結）</div>';
+      return;
+    }
     (entries.length ? entries : [{ label: '', url: '' }]).forEach(addConfRow);
   }
 
   // ---- open / close ----
   function closeModal() {
     $('remarkModalOverlay').classList.remove('open');
+    $('remarkModal').classList.remove('read-only');
+    _readOnly = false;
     _remarkTd = _statusTd = _confTd = _missionId = null;
   }
 
   // focusOn: 'remark' | 'status' | 'conf'
   window.openEditModal = function openEditModal(opts) {
-    // opts = { missionId, remarkTd, statusTd, confTd, focusOn }
+    // opts = { missionId, remarkTd, statusTd, confTd, focusOn, readOnly }
     _missionId  = opts.missionId;
     _remarkTd   = opts.remarkTd   || null;
     _statusTd   = opts.statusTd   || null;
     _confTd     = opts.confTd     || null;
+    _readOnly   = !!opts.readOnly;
+    $('remarkModal').classList.toggle('read-only', _readOnly);
 
     const row = issueData.find(r => (r['編號']||'').trim() === _missionId);
 
@@ -1937,7 +1978,10 @@ function startStatusEdit(td, missionId) {
 
     // Mission進度
     _origRemark = row ? (row['Mission進度'] || row['事務局備註'] || '').trim() : '';
-    $('remarkModalTa').value = _origRemark;
+    const ta = $('remarkModalTa');
+    ta.value = _origRemark;
+    ta.readOnly = _readOnly;
+    ta.placeholder = _readOnly ? '（尚未填寫 Mission進度）' : 'Mission の進捗・状況を入力…';
 
     // Confluence URL（自身のみ）
     _origConf = row ? (row['Confluence URL自身'] || '').trim() : '';
@@ -1951,6 +1995,7 @@ function startStatusEdit(td, missionId) {
 
     // フォーカス
     requestAnimationFrame(() => {
+      if (_readOnly) { $('remarkModalEditBtn').focus(); return; }
       const focus = opts.focusOn || 'remark';
       if (focus === 'status') {
         const active = $('remarkModalStatus').querySelector('.modal-st-btn.active') ||
@@ -1964,6 +2009,11 @@ function startStatusEdit(td, missionId) {
         t.setSelectionRange(t.value.length, t.value.length);
       }
     });
+  };
+
+  // 表示モーダル（読み取り専用）。他タブの Mission進度 クリックから呼ぶ
+  window.openDisplayModal = function (missionId) {
+    window.openEditModal({ missionId, readOnly: true });
   };
 
   // 後方互換：旧 startRemarkEdit が呼ぶ wrapper
@@ -1980,6 +2030,7 @@ function startStatusEdit(td, missionId) {
 
   // ---- 保存 ----
   async function doSave() {
+    if (_readOnly) return;
     const newRemark = $('remarkModalTa').value;
     const newStatus = selectedStatus();
     const newConf   = confJoined();
@@ -2049,17 +2100,37 @@ function startStatusEdit(td, missionId) {
     setTimeout(() => renderTableC(), 300);
   }
 
+  // 表示モーダル → 「編輯」：Mission進度 タブへ移動し、その行の編集モーダルを開く
+  function goEditInTabC() {
+    const id = _missionId;
+    closeModal();
+    if (!id) return;
+    jumpToMission(id); // Tab C へ切替・フィルタ解除・スクロール
+    setTimeout(() => {
+      const tr = document.querySelector(`#panel-C tr[data-mid="${cssEsc(id)}"]`);
+      if (!tr) return;
+      window.openEditModal({
+        missionId: id,
+        remarkTd: tr.querySelector('td[data-edit="remark"]'),
+        statusTd: tr.querySelector('td[data-edit="status"]'),
+        confTd:   tr.querySelector('td[data-edit="conf"]'),
+        focusOn: 'remark',
+      });
+    }, 420);
+  }
+
   // ---- イベント登録 ----
   document.addEventListener('DOMContentLoaded', () => {
     $('remarkModalSaveBtn').addEventListener('click', doSave);
     $('remarkModalCancelBtn').addEventListener('click', closeModal);
     $('remarkModalCloseBtn').addEventListener('click', closeModal);
+    $('remarkModalEditBtn').addEventListener('click', goEditInTabC);
     $('remarkModalConfAdd').addEventListener('click', () => { addConfRow('').focus(); });
     $('remarkModalOverlay').addEventListener('mousedown', e => { if (e.target === $('remarkModalOverlay')) closeModal(); });
     document.addEventListener('keydown', e => {
       if (!$('remarkModalOverlay').classList.contains('open')) return;
       if (e.key === 'Escape') { e.preventDefault(); closeModal(); }
-      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); doSave(); }
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !_readOnly) { e.preventDefault(); doSave(); }
     });
   });
 })();
@@ -2263,7 +2334,7 @@ function simpleRow(r, opts) {
   if (opts.showRemark !== false) {
     // 一覧性優先で 1 行省略表示。Mission 行はクリックで Mission進度タブの該当へジャンプ
     if (isMission && remark) {
-      h += `<td class="memo memo-clip memo-jump" title="${escapeAttr(remark)}（點擊跳至 Mission進度）" onclick="jumpToMission('${escapeAttr(num)}')">${escapeHtml(remark)}</td>`;
+      h += `<td class="memo memo-clip memo-jump" title="${escapeAttr(remark)}（點擊檢視詳情）" onclick="openDisplayModal('${escapeAttr(num)}')">${escapeHtml(remark)}</td>`;
     } else {
       h += `<td class="memo memo-clip" title="${escapeAttr(remark)}">${escapeHtml(remark)}</td>`;
     }
@@ -2275,12 +2346,8 @@ function simpleRow(r, opts) {
   }
   h += freshnessCell(r['更新日'], opts.editable && isMission ? { editable: true, missionId: num } : null);
   if (opts.showConf) {
-    const url = (r['Confluence URL']||'').trim();
-    if (url) {
-      h += `<td class="conf-icon"><a href="${escapeAttr(url)}" target="_blank" rel="noopener" title="${escapeAttr(url)}"><img src="${escapeAttr(faviconFor(url))}" alt="" onerror="this.onerror=null;this.src='${CONF_FAVICON}'"></a></td>`;
-    } else {
-      h += '<td class="conf-icon"></td>';
-    }
+    // 複数リンク対応（1 アイコン＋件数バッジ・ラベル tooltip）。非編集セルとして描画
+    h += confEditCell(r['Confluence URL'] || '', num, false);
   }
   h += '</tr>';
   return h;
