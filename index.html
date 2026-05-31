@@ -416,22 +416,25 @@
     display: flex; align-items: flex-start; gap: 12px; flex-shrink: 0;
   }
   .remark-modal-header-text { flex: 1; min-width: 0; }
-  .remark-modal-parent {
-    font-size: 10px; color: #9AA0A6; font-weight: 500; margin-bottom: 3px;
+  /* モーダルヘッダー：ISSUE / MISSION 2 段表示 */
+  .remark-modal-meta { display: flex; flex-direction: column; gap: 5px; }
+  .remark-modal-meta-row { display: flex; align-items: baseline; gap: 7px; min-width: 0; }
+  .remark-modal-meta-label {
+    flex-shrink: 0; font-size: 9px; font-weight: 800; letter-spacing: 0.08em;
+    color: #9AA0A6; text-transform: uppercase; padding-top: 1px; width: 48px;
+  }
+  .remark-modal-meta-num {
+    flex-shrink: 0; display: inline-block; padding: 1px 7px; border-radius: 8px;
+    background: #E8EAED; color: #3C4043; font-size: 10px; font-weight: 700;
+  }
+  .remark-modal-meta-name {
+    font-size: 12px; font-weight: 600; color: #202124; line-height: 1.4;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .remark-modal-parent .pm-num {
-    display: inline-block; padding: 1px 5px; border-radius: 6px;
-    background: #F1F3F4; color: #5F6368; font-size: 9px; font-weight: 700; margin-right: 4px;
-  }
-  .remark-modal-id {
-    display: inline-block; padding: 2px 8px; border-radius: 10px;
-    background: #E8EAED; color: #3C4043; font-size: 11px; font-weight: 700; margin-right: 6px; vertical-align: middle;
-  }
-  .remark-modal-name {
-    font-size: 13px; font-weight: 600; color: #202124; line-height: 1.4;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle;
-  }
+  .remark-modal-meta-row.row-issue .remark-modal-meta-num { background: #E8F0FE; color: #1A73E8; }
+  .remark-modal-meta-row.row-issue .remark-modal-meta-name { color: #5F6368; font-weight: 500; font-size: 11px; }
+  .remark-modal-meta-row.row-mission .remark-modal-meta-num { background: #E6F4EA; color: #188038; }
+  .remark-modal-meta-row.row-mission .remark-modal-meta-name { color: #202124; font-size: 13px; }
   .remark-modal-close {
     flex-shrink: 0; width: 28px; height: 28px; border: none; background: none; cursor: pointer;
     border-radius: 50%; font-size: 18px; color: #5F6368; display: flex; align-items: center; justify-content: center;
@@ -596,9 +599,17 @@
 <div class="remark-modal-overlay" id="remarkModalOverlay" role="dialog" aria-modal="true">
   <div class="remark-modal" id="remarkModal">
     <div class="remark-modal-header">
-      <div class="remark-modal-header-text">
-        <div class="remark-modal-parent" id="remarkModalParent"></div>
-        <div><span class="remark-modal-id" id="remarkModalId"></span><span class="remark-modal-name" id="remarkModalName"></span></div>
+      <div class="remark-modal-header-text remark-modal-meta">
+        <div class="remark-modal-meta-row row-issue" id="remarkModalIssueRow">
+          <span class="remark-modal-meta-label">Issue</span>
+          <span class="remark-modal-meta-num" id="remarkModalIssueNum"></span>
+          <span class="remark-modal-meta-name" id="remarkModalIssueName"></span>
+        </div>
+        <div class="remark-modal-meta-row row-mission">
+          <span class="remark-modal-meta-label">Mission</span>
+          <span class="remark-modal-meta-num" id="remarkModalId"></span>
+          <span class="remark-modal-meta-name" id="remarkModalName"></span>
+        </div>
       </div>
       <button class="remark-modal-close" id="remarkModalCloseBtn" title="キャンセル（Esc）" aria-label="閉じる">×</button>
     </div>
@@ -967,7 +978,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.17.1';
+const APP_VERSION = '0.17.2';
 const APP_BUILD = '2026-05-31';
 const APP_NOTE  = 'モーダルに狀態・Mission進度・Confluence URLを統合。狀態/URLセルクリックでもモーダルが開く。親Issueラベル表示。';
 
@@ -1779,12 +1790,9 @@ function startStatusEdit(td, missionId) {
     const parentNum  = row ? (row['親編號'] || '').trim() : '';
     const parentRow  = parentNum ? (window.issueData || []).find(r => (r['編號']||'').trim() === parentNum && !isMissionDatum(r)) : null;
     const parentName = parentRow ? (parentRow['Issue'] || '').trim() : '';
-    const parentEl   = $('remarkModalParent');
-    if (parentNum) {
-      parentEl.innerHTML = `<span class="pm-num">${escapeHtml(parentNum)}</span>${escapeHtml(parentName)}`;
-    } else {
-      parentEl.textContent = '';
-    }
+    $('remarkModalIssueNum').textContent  = parentNum;
+    $('remarkModalIssueName').textContent = parentName;
+    $('remarkModalIssueRow').style.display = parentNum ? '' : 'none';
 
     // Mission 番号 & 名前
     $('remarkModalId').textContent   = _missionId;
