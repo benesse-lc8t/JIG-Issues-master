@@ -1345,9 +1345,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.27.2';
+const APP_VERSION = '0.27.3';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '戰略負責人も複数選択に対応（擔當と同様 / 区切り保存）。トリガーの選択タグに「×」を追加し、個別削除できるように。Apps Script 変更なし。';
+const APP_NOTE  = '戰略負責人の候補を 4 名（小沼和幸・王詩雅・張育菱・陳少琪）に限定（STRATEGIC_LEADS 定数で管理）。擔當は全員のまま。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2167,6 +2167,7 @@ function _setAddKind(kind) {
 // 選択は配列で保持。multi=true で複数選択（擔當）、false で単一（戰略負責人）。
 window._namePickSel = window._namePickSel || {};   // prefix -> [name, ...]
 window._namePickMulti = window._namePickMulti || {}; // prefix -> bool
+window._namePickAllow = window._namePickAllow || {}; // prefix -> [name,...] | null（限定リスト）
 function _namePickerChipData() {
   const names = (typeof collectAuthorNames === 'function') ? collectAuthorNames() : [];
   const deptMap = (typeof buildAuthorDeptMap === 'function') ? buildAuthorDeptMap() : {};
@@ -2222,8 +2223,17 @@ function renderNamePickerChips(prefix, filter) {
   const wrap = document.getElementById(prefix + 'Chips');
   if (!wrap) return;
   const q = (filter || '').trim().toLowerCase();
+  const allow = window._namePickAllow[prefix];
   const all = _namePickerChipData();
-  const list = q ? all.filter(d => d.name.toLowerCase().includes(q)) : all;
+  let base;
+  if (Array.isArray(allow)) {
+    // 限定リストは名前から直接構築（名簿未ロードでも 4 名が必ず出るように）
+    const deptMap = (typeof buildAuthorDeptMap === 'function') ? buildAuthorDeptMap() : {};
+    base = allow.map(n => all.find(d => d.name === n) || (() => { const c = deptChipColor(deptMap[n] || ''); return { name: n, bg: c.bg, fg: c.fg }; })());
+  } else {
+    base = all;
+  }
+  const list = q ? base.filter(d => d.name.toLowerCase().includes(q)) : base;
   const sel = window._namePickSel[prefix] || [];
   if (!list.length) { wrap.innerHTML = '<div class="author-menu-empty">查無符合的姓名</div>'; return; }
   wrap.innerHTML = list.map(d => {
@@ -2271,9 +2281,10 @@ function setupNamePicker(prefix) {
   });
   if (search) search.addEventListener('input', () => renderNamePickerChips(prefix, search.value));
 }
-// val: 文字列（"/" 区切り可）または配列。multi: 複数選択を許可するか
-function resetNamePicker(prefix, val, multi) {
+// val: 文字列（"/" 区切り可）または配列。multi: 複数選択を許可するか。allow: 候補限定リスト（省略で全員）
+function resetNamePicker(prefix, val, multi, allow) {
   window._namePickMulti[prefix] = !!multi;
+  window._namePickAllow[prefix] = Array.isArray(allow) ? allow : null;
   let arr = [];
   if (Array.isArray(val)) arr = val.slice();
   else if (val) arr = String(val).split(/[\/、,，;；]/).map(s => s.trim()).filter(Boolean);
@@ -2321,10 +2332,10 @@ function openAddModal(kind) {
   // テキスト入力リセット
   ['addMName','addIId','addIName','addConf'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
   document.getElementById('addIIdWarn').textContent = '';
-  // 名前ピッカー初期化（擔當・戰略負責人とも複数選択可）
+  // 名前ピッカー初期化（擔當=全員／戰略負責人=4名限定、いずれも複数選択可）
   resetNamePicker('addMOwner', '', true);
-  resetNamePicker('addMLead', '', true);
-  resetNamePicker('addILead', '', true);
+  resetNamePicker('addMLead', '', true, STRATEGIC_LEADS);
+  resetNamePicker('addILead', '', true, STRATEGIC_LEADS);
   _buildAddStatusBtns();
   _setAddKind(kind || 'mission');
   _refreshAddMIdPreview();
@@ -2901,6 +2912,8 @@ function startRemarkEdit(td, missionId) {
 // ===== 記入者チップ & 進度タイムライン（編集モーダル用）=====
 // 記入者の既定値（前回選択が無いときに最初から選ばれる人）。変えるならここ。
 const DEFAULT_AUTHOR = '王詩雅';
+// 戰略負責人 の候補（この 4 名に限定）。名簿（人員タブ）の姓名と一致させること。変えるならここ。
+const STRATEGIC_LEADS = ['小沼和幸', '王詩雅', '張育菱', '陳少琪'];
 // 個々の人名を 擔當/戰略負責人 から分割して取り出す
 function splitPersons(v) {
   return String(v || '').split(/[\/、,，;；]/).map(s => s.trim()).filter(Boolean);
