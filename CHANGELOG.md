@@ -5,6 +5,47 @@
 
 ---
 
+## v0.10.2 — 2026-05-31
+
+**Mission進度タブ・インライン編集の完全動作化 ＋ シート列名確定**
+
+### 変更内容
+
+#### タブ名・色・配置
+- `停滞警報` タブを **`Mission進度`** に改名
+- タブ色を赤（`#EA4335`）に変更
+- タブ順序変更：`Issue & Mission` → `Mission進度` → `會議議程` → `DASHBOARD`
+- `panel-C` の border-top も赤に合わせ変更
+
+#### Mission一覽 列名確定（`Mission進度`）
+- シートの備考列名を `備註` / `事務局備註` から **`Mission進度`**（H列）に統一
+- `index.html` の `OPTIONAL_COLS` に `'Mission進度'` を追加
+- ダッシュボード側の `simpleRow` / `applyLocalEdit` / トースト文言もすべて `Mission進度` に更新
+- `WRITE_FIELDS` のマッピング：`'備註': 'Mission進度'`
+
+#### Apps Script (`setup-sheet.gs`) 改修
+- `SHEET_ID` 定数と `_getSpreadsheet()` ヘルパーを追加（スタンドアロン Web App でも `openById()` で確実にシートを取得）
+- `setupJIG` を非破壊的に改修：既存シートはヘッダ名の rename のみ実施し、データ削除・列追加はしない
+- `RENAME_MAP` で旧列名 → 新列名の自動変換（`事務局備註` / `備註` → `Mission進度`、`Task` / `Issue` → `Mission`）
+- `deleteColumns` コードを削除（誤ってデータ列 I / J を削除するリスクを排除）
+- `getUi().alert()` をすべて `console.log` に置き換え（スタンドアロンコンテキストでハングするため）
+- ステータス・更新日の書式設定をヘッダ名検索ベースに変更（列番号ハードコードをなくす）
+- `diagnoseMissionSheet()` 関数追加：全ヘッダ＋サンプル行を console に出力し、実際のシート構造を診断可能に
+- `fixMissionHeaders()` 関数追加：10列の正確なヘッダを強制設定（A=編號, B=Mission, C=親編號, D=管理頁面, E=戰略負責人, F=擔當, G=狀態, H=Mission進度, I=更新日, J=Confluence URL）
+- `doGet()` に診断情報を追加：`WRITE_FIELDS` / `sheetName` / `headers` / `remarkColIndex` をレスポンスに含め、デプロイ確認が容易に
+- `doPost()` にデバッグログを追加
+
+#### SHEET_WRITE_URL 更新
+- `index.html` の `SHEET_WRITE_URL` を最新デプロイ（バージョン14）の URL に更新
+- これにより `changes: {}` のまま `ok: true` が返り続けていた問題が解消
+
+### 不具合診断の記録（次セッション参考）
+- **`changes: {}`の原因**：`SHEET_WRITE_URL` が旧デプロイ（バージョン3）を指していた。新コードはデプロイされていたが別 URL で、旧コードが呼ばれ続けていた。
+- **対策**：既存デプロイに「新バージョン」を割り当てて URL を維持するか、新デプロイ URL を `SHEET_WRITE_URL` に反映する。
+- **`getActiveSpreadsheet()` が null**：スタンドアロン Web App では使えない。`openById(SHEET_ID)` が必須。
+
+---
+
 ## v0.10.0 — 2026-05-30
 
 **停滯警報タブにインライン編集（書き込み）機能を追加**
