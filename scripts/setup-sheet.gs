@@ -66,7 +66,8 @@ const MISSION_SHEET_FOR_WRITE = 'Mission一覽';
 const WRITE_FIELDS = {
   '狀態':   '狀態',
   '備註':   'Mission進度',
-  '更新日': '更新日'
+  '更新日': '更新日',
+  'Confluence URL': 'Confluence URL'   // 複数 URL は改行区切りで保持
 };
 const ALLOWED_STATUS = new Set(STATUS_VALUES);
 
@@ -101,7 +102,7 @@ function doPost(e) {
     }
     console.log('  parsed payload:', JSON.stringify({
       mission: data.mission, hasStatus: '狀態' in data, hasRemark: '備註' in data,
-      hasDate: '更新日' in data, tokenMatch: data.token === WRITE_TOKEN
+      hasDate: '更新日' in data, hasConf: 'Confluence URL' in data, tokenMatch: data.token === WRITE_TOKEN
     }));
     console.log('  data keys:', JSON.stringify(Object.keys(data)));
     console.log('  備註 value:', JSON.stringify(data['備註']));
@@ -172,6 +173,16 @@ function doPost(e) {
         sheet.getRange(rowIdx, col).setValue(String(data['備註']));
         changes['備註'] = String(data['備註']);
         touchedContent = true;
+      }
+    }
+
+    // Confluence URL（複数 URL は改行区切り）。リンク編集は進捗ではないため 更新日 は自動更新しない。
+    if (Object.prototype.hasOwnProperty.call(data, 'Confluence URL')) {
+      const col = headers.indexOf(WRITE_FIELDS['Confluence URL']) + 1;
+      console.log('  Confluence URL col index:', col);
+      if (col > 0) {
+        sheet.getRange(rowIdx, col).setValue(String(data['Confluence URL']));
+        changes['Confluence URL'] = String(data['Confluence URL']);
       }
     }
 

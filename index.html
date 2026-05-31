@@ -338,10 +338,25 @@
   .simple-table .role-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 700; letter-spacing: 0.03em; margin-right: 3px; white-space: nowrap; }
   .simple-table .role-owner     { background: #FEF7E0; color: #B06000; border: 1px solid #F9AB00; } /* 擔當 = 橙 */
   .simple-table .role-strategic { background: #F3E8FD; color: #7026A6; border: 1px solid #9334E6; } /* 戰略負責人 = 紫 */
-  .simple-table td.conf-icon { text-align: center; padding: 2px 4px; width: 32px; }
-  .simple-table td.conf-icon a { display: inline-block; opacity: 0.85; transition: opacity 0.15s; }
+  .simple-table td.conf-icon { text-align: center; padding: 2px 4px; }
+  .simple-table td.conf-icon a { display: inline-block; opacity: 0.85; transition: opacity 0.15s; margin: 0 2px; }
   .simple-table td.conf-icon a:hover { opacity: 1; }
   .simple-table td.conf-icon img { width: 14px; height: 14px; vertical-align: middle; }
+  .simple-table td.conf-icon .conf-add-hint { color: var(--g-blue); font-weight: 700; opacity: 0.55; }
+  /* Confluence URL 貼り付け編集 UI */
+  .simple-table td.conf-editing { padding: 4px; text-align: left; white-space: normal; }
+  .conf-edit { display: flex; flex-direction: column; gap: 4px; min-width: 220px; }
+  .conf-edit-row { display: flex; align-items: center; gap: 4px; }
+  .conf-edit-row input.inline-edit { flex: 1; font-size: 10px; }
+  .conf-edit-del { border: 1px solid var(--border); background: #fff; color: #80868B; border-radius: 3px; cursor: pointer; font-size: 10px; line-height: 1; padding: 3px 5px; }
+  .conf-edit-del:hover { background: #FCE8E6; color: #C5221F; border-color: #EA4335; }
+  .conf-edit-bar { display: flex; gap: 6px; align-items: center; }
+  .conf-edit-add { border: 1px dashed var(--g-blue); background: var(--g-blue-bg); color: var(--g-blue); border-radius: 3px; cursor: pointer; font-size: 10px; padding: 3px 8px; }
+  .conf-edit-save { border: 1px solid var(--g-blue); background: var(--g-blue); color: #fff; border-radius: 3px; cursor: pointer; font-size: 10px; padding: 3px 10px; margin-left: auto; }
+  .conf-edit-cancel { border: 1px solid var(--border); background: #fff; color: var(--g-grey); border-radius: 3px; cursor: pointer; font-size: 10px; padding: 3px 8px; }
+
+  /* Tab C：ヘッダー行テキストを中央ぞろえ／Mission進度 列を既定で最大化 */
+  #panel-C .simple-table thead th { text-align: center; }
 
   /* 編集可能セル（Mission進度タブ） */
   .simple-table td.cell-editable { cursor: pointer; position: relative; }
@@ -576,16 +591,16 @@
   <table class="simple-table resizable">
     <thead>
       <tr>
-        <th style="width:160px;">親 Issue</th>
-        <th style="width:88px;">編號</th>
-        <th>Mission</th>
-        <th style="min-width:140px;">Mission進度</th>
+        <th style="width:150px;">親 Issue</th>
+        <th style="width:80px;">編號</th>
+        <th style="width:180px;">Mission</th>
+        <th style="width:100%; min-width:240px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
-        <th style="width:34px;">🔗</th>
-        <th style="width:76px;">處</th>
-        <th style="width:90px;">組</th>
-        <th style="width:76px;">擔當</th>
+        <th style="width:44px;">🔗</th>
+        <th style="width:70px;">處</th>
+        <th style="width:80px;">組</th>
+        <th style="width:70px;">擔當</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -782,9 +797,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.12.0';
+const APP_VERSION = '0.13.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'Mission進度タブを記入特化に再設計：列順を Mission→Mission進度→狀態→更新→🔗→處/組/擔當 に変更。説明バナー削除、編集ヒントを繁体字化、編集強調を薄いブルーに。';
+const APP_NOTE  = 'Mission進度タブ：Confluence URL を貼り付け編集（複数 URL・＋ボタン）対応、favicon を URL ドメインから自動導出、ヘッダー中央ぞろえ、Mission進度 列を既定で最大化。※保存有効化には Apps Script の再デプロイが必要。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1025,16 +1040,39 @@ function freshnessCell(dateStr, editOpts) {
 // Confluence セル：管理頁面（ページ名）＋ favicon ＋ リンク
 // pageName は元 "管理頁面" 列の文字列。url が空ならテキストのみ。
 const CONF_FAVICON = 'https://benessetw.atlassian.net/favicon.ico';
+// URL のホスト名から favicon を導出（貼り付けた Confluence サイトに自動追従）。
+// 解析できない場合は既定の Confluence favicon にフォールバック。
+function faviconFor(url) {
+  const u = (url || '').trim();
+  if (!u) return CONF_FAVICON;
+  try { return 'https://' + new URL(u).hostname + '/favicon.ico'; }
+  catch (e) { return CONF_FAVICON; }
+}
+// Confluence URL セルの複数 URL は改行（または空白）区切りで保持する。
+function parseConfUrls(raw) {
+  return String(raw || '').split(/[\n\r]+/).map(s => s.trim()).filter(Boolean);
+}
 function confluenceCell(pageName, url) {
   const name = (pageName || '').trim();
   const u = (url || '').trim();
   if (!name && !u) return '<td class="conf"></td>';
-  const iconHtml = `<img src="${CONF_FAVICON}" alt="Confluence" onerror="this.style.display='none'">`;
+  const iconHtml = `<img src="${escapeAttr(faviconFor(u))}" alt="Confluence" onerror="this.src='${CONF_FAVICON}'">`;
   const text = `<span class="conf-text" title="${escapeAttr(name)}">${escapeHtml(name || 'Confluence 頁面')}</span>`;
   const inner = u
     ? `<a href="${escapeAttr(u)}" target="_blank" rel="noopener" title="${escapeAttr(u)}">${iconHtml}${text}</a>`
     : `${iconHtml}${text}`;
   return `<td class="conf">${inner}</td>`;
+}
+
+// Tab C 専用：Confluence URL セル（複数 URL を favicon リンクで表示。クリックで貼り付け編集）
+function confEditCell(rawUrls, missionId, isMission) {
+  const urls = parseConfUrls(rawUrls);
+  let icons = urls.map(u =>
+    `<a href="${escapeAttr(u)}" target="_blank" rel="noopener" title="${escapeAttr(u)}"><img src="${escapeAttr(faviconFor(u))}" alt="" onerror="this.src='${CONF_FAVICON}'"></a>`
+  ).join('');
+  if (!icons) icons = '<span class="conf-add-hint">＋</span>';
+  if (!isMission) return `<td class="conf-icon">${icons}</td>`;
+  return `<td class="conf-icon cell-editable" data-edit="conf" data-mission="${escapeAttr(missionId)}" title="點擊貼上 Confluence 連結">${icons}</td>`;
 }
 
 // Issue + Task 階層を組み立てる：Issue配下に親編號が一致するTaskを纏める
@@ -1338,6 +1376,7 @@ function applyLocalEdit(missionId, changes) {
   if (changes['狀態']    !== undefined) row['狀態']        = changes['狀態'];
   if (changes['備註']    !== undefined) row['Mission進度'] = changes['備註'];
   if (changes['更新日']  !== undefined) row['更新日']     = changes['更新日'];
+  if (changes['Confluence URL'] !== undefined) row['Confluence URL'] = changes['Confluence URL'];
 }
 
 // セル保存後の見た目フィードバック
@@ -1348,14 +1387,17 @@ function flashSaved(td) {
 
 // ===== インライン編集ハンドラ（Tab C 用、イベント委譲）=====
 function onTabCClick(e) {
+  if (e.target.closest('a')) return; // favicon リンク等のクリックは編集を発火させない
   const td = e.target.closest('td.cell-editable');
   if (!td) return;
   if (td.querySelector('input,select,textarea')) return; // 既に編集中
+  if (td.classList.contains('conf-editing')) return; // conf 編集 UI 表示中
   const editType = td.dataset.edit;
   const missionId = td.dataset.mission;
   if (!missionId) return;
   if (editType === 'status') startStatusEdit(td, missionId);
   else if (editType === 'date') startDateEdit(td, missionId);
+  else if (editType === 'conf') startConfEdit(td, missionId);
   // 備註は dblclick で発火（onTabCDblClick）
 }
 
@@ -1472,6 +1514,80 @@ function startDateEdit(td, missionId) {
   });
 }
 
+// Confluence URL の貼り付け編集（複数 URL・＋ボタンで追加）
+function startConfEdit(td, missionId) {
+  const row = issueData.find(r => (r['編號']||'').trim() === missionId);
+  const currentRaw = row ? (row['Confluence URL'] || '') : '';
+  const urls = parseConfUrls(currentRaw);
+  if (urls.length === 0) urls.push('');
+
+  const box = document.createElement('div');
+  box.className = 'conf-edit';
+  const list = document.createElement('div');
+  list.className = 'conf-edit-list';
+  box.appendChild(list);
+
+  const addRow = (val) => {
+    const r = document.createElement('div');
+    r.className = 'conf-edit-row';
+    const inp = document.createElement('input');
+    inp.type = 'url';
+    inp.className = 'inline-edit';
+    inp.placeholder = '貼上 Confluence 連結…';
+    inp.value = val || '';
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'conf-edit-del';
+    del.textContent = '✕';
+    del.title = '移除此連結';
+    del.addEventListener('click', () => r.remove());
+    r.appendChild(inp); r.appendChild(del);
+    list.appendChild(r);
+    return inp;
+  };
+  urls.forEach(addRow);
+
+  const bar = document.createElement('div');
+  bar.className = 'conf-edit-bar';
+  const addBtn = document.createElement('button');
+  addBtn.type = 'button'; addBtn.className = 'conf-edit-add';
+  addBtn.textContent = '＋ 新增連結';
+  addBtn.addEventListener('click', () => addRow('').focus());
+  const saveBtn = document.createElement('button');
+  saveBtn.type = 'button'; saveBtn.className = 'conf-edit-save';
+  saveBtn.textContent = '儲存';
+  const cancelBtn = document.createElement('button');
+  cancelBtn.type = 'button'; cancelBtn.className = 'conf-edit-cancel';
+  cancelBtn.textContent = '取消';
+  bar.appendChild(addBtn); bar.appendChild(saveBtn); bar.appendChild(cancelBtn);
+  box.appendChild(bar);
+
+  td.classList.add('conf-editing');
+  td.innerHTML = '';
+  td.appendChild(box);
+  const first = list.querySelector('input');
+  if (first) first.focus();
+
+  let committed = false;
+  const restore = () => { td.classList.remove('conf-editing'); renderTableC(); };
+  cancelBtn.addEventListener('click', () => { committed = true; restore(); });
+  saveBtn.addEventListener('click', async () => {
+    if (committed) return;
+    committed = true;
+    const vals = [...list.querySelectorAll('input')].map(i => i.value.trim()).filter(Boolean);
+    const joined = vals.join('\n');
+    if (joined === currentRaw.trim()) { restore(); return; }
+    td.classList.add('cell-saving');
+    box.style.opacity = '0.5';
+    const result = await saveMissionEdit(missionId, { 'Confluence URL': joined });
+    td.classList.remove('cell-saving');
+    if (!result) { box.style.opacity = '1'; committed = false; return; }
+    applyLocalEdit(missionId, result.changes || { 'Confluence URL': joined });
+    toast(`已儲存：${missionId} Confluence 連結（${vals.length}）`, 'success');
+    restore();
+  });
+}
+
 function wireTabCEditing() {
   const panel = document.getElementById('panel-C');
   if (!panel || panel._editWired) return;
@@ -1571,7 +1687,7 @@ function simpleRow(r, opts) {
   if (opts.showConf) {
     const url = (r['Confluence URL']||'').trim();
     if (url) {
-      h += `<td class="conf-icon"><a href="${escapeAttr(url)}" target="_blank" rel="noopener" title="${escapeAttr(url)}"><img src="${CONF_FAVICON}" alt="" onerror="this.style.display=\'none\'"></a></td>`;
+      h += `<td class="conf-icon"><a href="${escapeAttr(url)}" target="_blank" rel="noopener" title="${escapeAttr(url)}"><img src="${escapeAttr(faviconFor(url))}" alt="" onerror="this.src='${CONF_FAVICON}'"></a></td>`;
     } else {
       h += '<td class="conf-icon"></td>';
     }
@@ -1616,13 +1732,8 @@ function missionEditRow(r, opts) {
   }
   // 更新（點擊編輯）
   h += freshnessCell(r['更新日'], isMission ? { editable: true, missionId: num } : null);
-  // 🔗 Confluence
-  const url = (r['Confluence URL']||'').trim();
-  if (url) {
-    h += `<td class="conf-icon"><a href="${escapeAttr(url)}" target="_blank" rel="noopener" title="${escapeAttr(url)}"><img src="${CONF_FAVICON}" alt="" onerror="this.style.display='none'"></a></td>`;
-  } else {
-    h += '<td class="conf-icon"></td>';
-  }
+  // 🔗 Confluence（複数 URL 対応・貼り付け編集可）
+  h += confEditCell(r['Confluence URL'], num, isMission);
   // 處 / 組 / 擔當（継承情報・末尾）
   h += `<td class="dept ${deptColorClass(dept)}">${escapeHtml(dept)}</td>`;
   h += `<td class="dept">${escapeHtml(grp)}</td>`;
@@ -2058,7 +2169,7 @@ function renderTabF() {
     const cls = m.days != null && m.days > 14 ? 'dl-stale' : m.days != null && m.days > 7 ? 'dl-warn' : '';
     const confUrl = (r['Confluence URL']||'').trim();
     const confHtml = confUrl
-      ? `<a href="${escapeAttr(confUrl)}" target="_blank" rel="noopener" title="${escapeAttr(confUrl)}"><img src="${CONF_FAVICON}" alt="" onerror="this.style.display='none'"></a>`
+      ? `<a href="${escapeAttr(confUrl)}" target="_blank" rel="noopener" title="${escapeAttr(confUrl)}"><img src="${escapeAttr(faviconFor(confUrl))}" alt="" onerror="this.src='${CONF_FAVICON}'"></a>`
       : '';
     return `<div class="dash-list-row ${cls}">
       <div class="dl-id" title="${escapeAttr(id)}">${escapeHtml(id)}</div>

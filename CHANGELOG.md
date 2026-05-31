@@ -5,6 +5,22 @@
 
 ---
 
+## v0.13.0 — 2026-05-31
+
+**Mission進度タブ（Tab C）：Confluence 連結の貼り付け編集・favicon 自動化・レイアウト調整**
+
+### 変更内容
+
+1. **favicon を URL ドメインから自動導出**：`faviconFor(url)` を追加し、貼り付けた Confluence サイトの favicon（`https://<host>/favicon.ico`）を自動表示。解析不可時は既定（`benessetw.atlassian.net`）にフォールバック。**利用者の追加入力は不要**
+2. **Confluence URL の貼り付け編集（複数 URL 対応）**：Tab C の 🔗 セルをクリックすると編集 UI が開き、URL を貼り付け／「＋ 新增連結」で複数追加／「✕」で削除可能。複数 URL は**改行区切り**で 1 セルに保存し、各 URL を favicon リンクで表示
+   - フロント：`confEditCell()` / `startConfEdit()` を追加。`applyLocalEdit` に `Confluence URL` を追加。favicon リンクのクリックは編集を発火させないガードを追加
+   - Apps Script（`setup-sheet.gs`）：`WRITE_FIELDS` に `Confluence URL` を追加し、`doPost` で書き込み対応（リンク編集は進捗ではないため `更新日` は自動更新しない）
+   - **⚠ 保存を有効化するには Apps Script の再デプロイが必要**（既存デプロイを「新しいバージョン」で更新し、同じ URL を維持）
+3. **ヘッダー行を中央ぞろえ**：`#panel-C .simple-table thead th { text-align: center; }`
+4. **Mission進度 列を既定で最大化**：Mission に固定幅、`Mission進度` を `width:100%` の貪欲列にして、初期表示でいちばん広く表示
+
+---
+
 ## v0.12.0 — 2026-05-31
 
 **Mission進度タブ（Tab C）を「記入しやすさ」優先に再設計**
