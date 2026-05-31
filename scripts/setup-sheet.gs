@@ -201,9 +201,28 @@ function doPost(e) {
   }
 }
 
-// 動作確認用：ブラウザで URL を直接開くと簡易な OK 応答を返す
+// 診断用：ブラウザで Web App URL を開くと、デプロイ済みコードが実際に見ている
+// WRITE_FIELDS・シートのヘッダ・列インデックスを返す。
 function doGet() {
-  return _writeJson({ ok: true, service: 'JIG Mission write API', version: 1 });
+  try {
+    const ss = _getSpreadsheet();
+    const sheet = ss ? ss.getSheetByName(MISSION_SHEET_FOR_WRITE) : null;
+    const headers = sheet
+      ? sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => String(h).trim())
+      : null;
+    const remarkTarget = WRITE_FIELDS['備註'];
+    const remarkCol    = headers ? headers.indexOf(remarkTarget) : -99;
+    return _writeJson({
+      ok: true,
+      WRITE_FIELDS,
+      sheetName:    MISSION_SHEET_FOR_WRITE,
+      headers,
+      remarkTarget,
+      remarkColIndex: remarkCol,   // -1 なら列が見つかっていない
+    });
+  } catch (err) {
+    return _writeJson({ ok: false, error: String(err.message) });
+  }
 }
 
 function _getSpreadsheet() {
