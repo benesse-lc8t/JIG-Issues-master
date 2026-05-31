@@ -563,6 +563,23 @@
   #remarkModal.read-only .remark-modal-conf-name { background: #F8F9FA; cursor: default; box-shadow: none; border-color: #E8EAED; }
   #remarkModal.read-only .remark-modal-conf-name { font-weight: 600; color: #202124; }
 
+  /* ダイジェストテキストウィンドウ（ホバー時の中央プレビュー・操作不可） */
+  .digest-window {
+    position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0.97);
+    z-index: 850; pointer-events: none; opacity: 0;
+    transition: opacity 0.13s ease-out, transform 0.13s ease-out;
+    width: min(560px, 86vw); max-height: 64vh;
+    background: #fff; border: 1px solid #E8EAED; border-radius: 12px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.28); display: flex; flex-direction: column; overflow: hidden;
+  }
+  .digest-window.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  .digest-window .dw-head { padding: 12px 18px 9px; border-bottom: 1px solid #F1F3F4; display: flex; align-items: baseline; gap: 8px; }
+  .digest-window .dw-id { flex-shrink: 0; background: #E8EAED; color: #3C4043; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9px; }
+  .digest-window .dw-name { font-size: 12px; font-weight: 600; color: #202124; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .digest-window .dw-label { padding: 10px 18px 0; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: #9AA0A6; text-transform: uppercase; }
+  .digest-window .dw-body { padding: 6px 18px 14px; overflow-y: auto; font-size: 14px; line-height: 1.75; color: #202124; white-space: pre-wrap; word-break: break-word; }
+  .digest-window .dw-foot { padding: 8px 18px; border-top: 1px solid #F1F3F4; font-size: 10px; color: #9AA0A6; flex-shrink: 0; }
+
   /* トースト通知 */
   .toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; pointer-events: none; }
   .toast { padding: 10px 16px; border-radius: 6px; font-size: 12px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: toast-in 0.2s ease-out; max-width: 320px; }
@@ -685,6 +702,14 @@
       <button class="remark-modal-edit" id="remarkModalEditBtn" title="切換到 Mission進度 頁面編輯">✎ 編輯</button>
     </div>
   </div>
+</div>
+
+<!-- ダイジェストテキストウィンドウ（Mission進度 セルのホバー時に中央表示・読み取り専用） -->
+<div class="digest-window" id="digestWindow" aria-hidden="true">
+  <div class="dw-head"><span class="dw-id" id="dwId"></span><span class="dw-name" id="dwName"></span></div>
+  <div class="dw-label">Mission進度</div>
+  <div class="dw-body" id="dwBody"></div>
+  <div class="dw-foot">點擊可開啟詳情 · 移開滑鼠關閉</div>
 </div>
 
 <div class="topbar">
@@ -1029,9 +1054,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.20.0';
+const APP_VERSION = '0.21.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '他タブの Confluence セルを複数リンク対応（アイコン＋件数バッジ＋ラベル）。他タブの Mission進度 クリックで読み取り専用「表示モーダル」を表示、編輯ボタンで Mission進度 タブの編集モーダルへ。';
+const APP_NOTE  = 'Mission進度 セルにホバーすると画面中央に大きく本文を表示する「ダイジェストテキストウィンドウ」を追加（約350ms滞留で表示・操作不可・クリックは従来どおり表示モーダル）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1518,7 +1543,7 @@ function renderRow(r, opts) {
   // 11 Mission進度：一覧性優先で 1 行省略表示。Mission 行はクリックで Mission進度タブの該当へジャンプ
   const memoText = r['Mission進度'] || r['事務局備註'] || '';
   if (isMission && memoText) {
-    h += `<td class="memo memo-clip memo-jump" title="${escapeAttr(memoText)}（點擊檢視詳情）" onclick="openDisplayModal('${escapeAttr(num)}')">${escapeHtml(memoText)}</td>`;
+    h += `<td class="memo memo-clip memo-jump" data-mid="${escapeAttr(num)}" title="點擊檢視詳情" onclick="openDisplayModal('${escapeAttr(num)}')">${escapeHtml(memoText)}</td>`;
   } else {
     h += `<td class="memo memo-clip" title="${escapeAttr(memoText)}">${escapeHtml(memoText)}</td>`;
   }
@@ -2139,6 +2164,41 @@ function startRemarkEdit(td, missionId) {
   window._openRemarkFromTd(td, missionId);
 }
 
+// ===== ダイジェストテキストウィンドウ（Mission進度 セルのホバーで中央プレビュー）=====
+(function () {
+  let timer = null;
+  const win  = () => document.getElementById('digestWindow');
+  function showFor(cell) {
+    const mid = cell.dataset.mid;
+    if (!mid) return;
+    const row = issueData.find(r => (r['編號'] || '').trim() === mid);
+    const text = ((row ? (row['Mission進度'] || row['事務局備註'] || '') : '') || cell.textContent || '').trim();
+    if (!text) return;
+    document.getElementById('dwId').textContent   = mid;
+    document.getElementById('dwName').textContent = row ? (row['Issue'] || '').trim() : '';
+    document.getElementById('dwBody').textContent = text;
+    win().classList.add('show');
+  }
+  function hide() { clearTimeout(timer); win().classList.remove('show'); }
+  // モーダル/表示モーダルが開いているときはプレビューを出さない
+  function modalOpen() { return document.getElementById('remarkModalOverlay').classList.contains('open'); }
+  document.addEventListener('mouseover', e => {
+    const cell = e.target.closest && e.target.closest('.memo-jump[data-mid]');
+    if (!cell || modalOpen()) return;
+    clearTimeout(timer);
+    timer = setTimeout(() => { if (!modalOpen()) showFor(cell); }, 350);
+  });
+  document.addEventListener('mouseout', e => {
+    const cell = e.target.closest && e.target.closest('.memo-jump[data-mid]');
+    if (!cell) return;
+    if (e.relatedTarget && cell.contains(e.relatedTarget)) return; // セル内移動は無視
+    hide();
+  });
+  // クリックで表示モーダルを開く際はプレビューを消す。スクロールでも消す
+  document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.memo-jump[data-mid]')) hide(); });
+  window.addEventListener('scroll', hide, true);
+})();
+
 function startDateEdit(td, missionId) {
   const currentRaw = td.dataset.raw || '';
   const currentLabel = td.textContent;
@@ -2334,7 +2394,7 @@ function simpleRow(r, opts) {
   if (opts.showRemark !== false) {
     // 一覧性優先で 1 行省略表示。Mission 行はクリックで Mission進度タブの該当へジャンプ
     if (isMission && remark) {
-      h += `<td class="memo memo-clip memo-jump" title="${escapeAttr(remark)}（點擊檢視詳情）" onclick="openDisplayModal('${escapeAttr(num)}')">${escapeHtml(remark)}</td>`;
+      h += `<td class="memo memo-clip memo-jump" data-mid="${escapeAttr(num)}" title="點擊檢視詳情" onclick="openDisplayModal('${escapeAttr(num)}')">${escapeHtml(remark)}</td>`;
     } else {
       h += `<td class="memo memo-clip" title="${escapeAttr(remark)}">${escapeHtml(remark)}</td>`;
     }
