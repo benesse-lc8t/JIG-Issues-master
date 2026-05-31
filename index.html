@@ -574,7 +574,7 @@
   }
   .remark-modal-author:focus { border-color: var(--g-blue); outline: none; box-shadow: 0 0 0 2px rgba(26,115,232,0.16); }
   /* これまでの記録（タイムライン） */
-  .remark-modal-log { display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; padding-right: 2px; }
+  .remark-modal-log { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; padding-right: 4px; }
   .rm-log-entry { border-left: 3px solid #C7D6F5; padding: 5px 11px; background: #F8FAFD; border-radius: 0 8px 8px 0; }
   .rm-log-entry.rm-log-latest { border-left-color: #4285F4; background: #F0F6FF; }
   .rm-log-meta { display: flex; gap: 8px; align-items: baseline; font-size: 11px; color: #5F6368; margin-bottom: 2px; }
@@ -731,7 +731,7 @@
           <span class="remark-modal-meta-name" id="remarkModalName"></span>
         </div>
       </div>
-      <button class="remark-modal-close" id="remarkModalCloseBtn" title="キャンセル（Esc）" aria-label="閉じる">×</button>
+      <button class="remark-modal-close" id="remarkModalCloseBtn" title="取消（Esc）" aria-label="關閉">×</button>
     </div>
     <div class="remark-modal-body">
       <div class="remark-modal-section">
@@ -739,26 +739,26 @@
         <div class="remark-modal-status" id="remarkModalStatus"></div>
       </div>
       <div class="remark-modal-section" id="remarkModalNewSec">
-        <div class="remark-modal-label">今週の進度（追記）</div>
+        <div class="remark-modal-label">本週進度（新增記錄）</div>
         <div class="remark-modal-author-row">
-          <label class="remark-modal-author-label" for="remarkModalAuthor">記入者</label>
+          <label class="remark-modal-author-label" for="remarkModalAuthor">填寫者</label>
           <select class="remark-modal-author" id="remarkModalAuthor"></select>
         </div>
-        <textarea class="remark-modal-ta" id="remarkModalNew" placeholder="今週の一言。重い詳細・成果物は Confluence リンクへ" rows="3"></textarea>
-      </div>
-      <div class="remark-modal-section" id="remarkModalLogSec">
-        <div class="remark-modal-label">これまでの記録</div>
-        <div class="remark-modal-log" id="remarkModalLog"></div>
+        <textarea class="remark-modal-ta" id="remarkModalNew" placeholder="進度說明" rows="3"></textarea>
       </div>
       <div class="remark-modal-section">
         <div class="remark-modal-label">Confluence URL</div>
         <div class="remark-modal-conf-list" id="remarkModalConfList"></div>
         <button class="remark-modal-conf-add" id="remarkModalConfAdd" type="button">＋ 新增連結</button>
       </div>
-      <div class="remark-modal-hint">Ctrl + Enter で保存　／　Esc でキャンセル</div>
+      <div class="remark-modal-section" id="remarkModalLogSec">
+        <div class="remark-modal-label">歷來記錄</div>
+        <div class="remark-modal-log" id="remarkModalLog"></div>
+      </div>
+      <div class="remark-modal-hint">Ctrl + Enter 儲存　／　Esc 取消</div>
     </div>
     <div class="remark-modal-footer">
-      <button class="remark-modal-cancel" id="remarkModalCancelBtn">キャンセル</button>
+      <button class="remark-modal-cancel" id="remarkModalCancelBtn">取消</button>
       <button class="remark-modal-save" id="remarkModalSaveBtn">儲存</button>
       <button class="remark-modal-edit" id="remarkModalEditBtn" title="切換到 Mission進度 頁面編輯">✎ 編輯</button>
     </div>
@@ -2214,7 +2214,7 @@ function startStatusEdit(td, missionId) {
     if (hasNewLine && snapRemarkTd) flashSaved(snapRemarkTd);
     if (statusChanged && snapStatusTd) flashSaved(snapStatusTd);
 
-    const labels = [hasNewLine && '進度を追記', statusChanged && '狀態', confChanged && 'Confluence URL'].filter(Boolean).join('・');
+    const labels = [hasNewLine && '新增進度', statusChanged && '狀態', confChanged && 'Confluence URL'].filter(Boolean).join('・');
     toast(`已儲存：${snapId}（${labels}）`, 'success');
     setTimeout(() => renderTableC(), 300);
   }
@@ -2277,7 +2277,7 @@ function populateAuthorSelect(row) {
   // 既定：その Mission の擔當 → 前回使った記入者 の順で優先
   const preferred = (row && (row['擔當'] || '').trim()) || localStorage.getItem('jig:lastAuthor') || '';
   if (preferred && !names.includes(preferred)) names.unshift(preferred);
-  sel.innerHTML = '<option value="">（記入者を選択）</option>' +
+  sel.innerHTML = '<option value="">（請選擇填寫者）</option>' +
     names.map(n => `<option value="${escapeAttr(n)}">${escapeHtml(n)}</option>`).join('');
   sel.value = preferred || '';
 }
@@ -2290,7 +2290,7 @@ function renderMissionLog(missionId, currentText) {
     box.innerHTML = entries.map((e, i) => `
       <div class="rm-log-entry${i === 0 ? ' rm-log-latest' : ''}">
         <div class="rm-log-meta">
-          <span class="rm-log-date">${escapeHtml(e.date || '日付なし')}</span>
+          <span class="rm-log-date">${escapeHtml(e.date || '無日期')}</span>
           ${e.author ? `<span class="rm-log-author">${escapeHtml(e.author)}</span>` : ''}
         </div>
         <div class="rm-log-text">${escapeHtml(e.text)}</div>
@@ -2299,11 +2299,11 @@ function renderMissionLog(missionId, currentText) {
     // ログ未蓄積だが現況テキストがある（移行期）→ 旧データを 1 件として表示
     box.innerHTML =
       `<div class="rm-log-entry rm-log-legacy">
-        <div class="rm-log-meta"><span class="rm-log-date">以前の記録</span></div>
+        <div class="rm-log-meta"><span class="rm-log-date">先前記錄</span></div>
         <div class="rm-log-text">${escapeHtml(currentText)}</div>
       </div>`;
   } else {
-    box.innerHTML = '<div class="rm-log-empty">まだ記録はありません。最初の一言を書きましょう。</div>';
+    box.innerHTML = '<div class="rm-log-empty">尚無記錄，先寫下第一筆進度。</div>';
   }
 }
 // 楽観的更新：ローカルの missionLog 先頭へ追記（保存応答の logEntry から）
