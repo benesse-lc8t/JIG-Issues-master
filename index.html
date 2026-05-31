@@ -40,6 +40,8 @@
     /* Structural */
     --border:  #DADCE0;
     --font:    'Roboto', 'Noto Sans TC', 'Microsoft JhengHei', 'PingFang TC', 'Source Han Sans TC', sans-serif;
+    /* CJK 主体のテキスト（編集モーダルの記入者・進度・ログ）用。繁体字を素直に表示 */
+    --font-cjk: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', 'Source Han Sans TC', sans-serif;
     --hdr-bg:  #F8F9FA;
     --sec-bg:  #F1F3F4;
     --mtg-bg:  #FFFFFF;
@@ -489,6 +491,14 @@
   .remark-modal-ta:focus { border-color: var(--g-blue); box-shadow: 0 0 0 3px rgba(26,115,232,0.18); }
   /* Confluence URL セクション */
   .remark-modal-conf-list { display: flex; flex-direction: column; gap: 10px; }
+  /* Confluence セクション：折りたたみトグル（多リンク時にログを隠さない） */
+  .remark-modal-conf-toggle {
+    align-self: flex-start; border: none; background: none; cursor: pointer;
+    font-size: 11px; font-weight: 600; color: var(--g-blue); padding: 2px 0; margin-top: 2px;
+    display: none; /* リンクが少ないときは出さない（JS が制御） */
+  }
+  .remark-modal-conf-toggle:hover { text-decoration: underline; }
+  .remark-modal-conf-list.collapsed { max-height: 0; overflow: hidden; gap: 0; }
   .remark-modal-conf-row { display: flex; flex-direction: column; gap: 3px; }
   .remark-modal-conf-inputline { display: flex; align-items: center; gap: 6px; }
   /* リンク名入力（任意・手書きラベル）。空欄時は URL 自動抽出をプレースホルダ表示 */
@@ -560,6 +570,7 @@
   #remarkModal.read-only .remark-modal-hint { display: none; }
   #remarkModal.read-only .remark-modal-edit { display: inline-block; }
   #remarkModal.read-only .modal-st-btn { pointer-events: none; }
+  #remarkModal.read-only .author-chip { pointer-events: none; }
   #remarkModal.read-only .remark-modal-ta,
   #remarkModal.read-only .remark-modal-conf-inp,
   #remarkModal.read-only .remark-modal-conf-name { background: #F8F9FA; cursor: default; box-shadow: none; border-color: #E8EAED; }
@@ -567,26 +578,34 @@
   /* 読み取り時は「今週の進度」入力欄を隠す（タイムラインだけ見せる） */
   #remarkModal.read-only #remarkModalNewSec { display: none; }
 
-  /* 今週の進度：記入者プルダウン */
-  .remark-modal-author-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-  .remark-modal-author-label { font-size: 11px; color: #5F6368; white-space: nowrap; }
-  .remark-modal-author {
-    flex: 1; padding: 7px 9px; border: 1px solid #DADCE0; border-radius: 8px;
-    font-size: 13px; font-family: inherit; background: #fff; color: #202124;
+  /* 今週の進度：記入者チップ選択 */
+  .remark-modal-author-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+  .remark-modal-author-label { font-size: 11px; color: #5F6368; white-space: nowrap; padding-top: 6px; }
+  .remark-modal-author-chips {
+    flex: 1; display: flex; flex-wrap: wrap; gap: 5px;
+    max-height: 92px; overflow-y: auto; padding: 2px;
   }
-  .remark-modal-author:focus { border-color: var(--g-blue); outline: none; box-shadow: 0 0 0 2px rgba(26,115,232,0.16); }
+  .author-chip {
+    font-family: var(--font-cjk); font-size: 12px; font-weight: 600; cursor: pointer;
+    padding: 3px 11px; border-radius: 13px; border: 1.5px solid transparent;
+    background: var(--chip-bg, #F1F3F4); color: var(--chip-fg, #5F6368);
+    transition: all 0.12s; opacity: 0.62; white-space: nowrap;
+  }
+  .author-chip:hover { opacity: 0.85; }
+  .author-chip.active { opacity: 1; border-color: currentColor; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
   /* これまでの記録（タイムライン） */
   .remark-modal-log { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; padding-right: 4px; }
   .rm-log-entry { border-left: 3px solid #C7D6F5; padding: 5px 11px; background: #F8FAFD; border-radius: 0 8px 8px 0; }
   .rm-log-entry.rm-log-latest { border-left-color: #4285F4; background: #F0F6FF; }
   .rm-log-meta { display: flex; gap: 8px; align-items: baseline; font-size: 11px; color: #5F6368; margin-bottom: 2px; }
   .rm-log-date { font-weight: 600; color: #3C4043; }
-  .rm-log-author { color: #1A73E8; font-weight: 600; }
-  .rm-log-text { font-size: 12px; color: #3C4043; white-space: pre-wrap; line-height: 1.45; word-break: break-word; }
+  .rm-log-author { color: #1A73E8; font-weight: 600; font-family: var(--font-cjk); }
+  .rm-log-text { font-family: var(--font-cjk); font-size: 12px; color: #3C4043; white-space: pre-wrap; line-height: 1.5; word-break: break-word; }
   .rm-log-entry.rm-log-legacy { border-left-color: #DADCE0; background: #FafafA; }
   .rm-log-entry.rm-log-legacy .rm-log-date { color: #9AA0A6; font-style: italic; font-weight: 500; }
   .rm-log-empty { font-size: 12px; color: #9AA0A6; padding: 8px 2px; }
-  /* 進度説明のプレースホルダ：薄く・小さめ */
+  /* 進度入力欄：CJK フォント・少し低め（一行運用） */
+  #remarkModalNew { font-family: var(--font-cjk); min-height: 84px; font-size: 13px; line-height: 1.55; }
   #remarkModalNew::placeholder { color: #BCC0C6; font-size: 12px; }
 
   /* ダイジェストテキストウィンドウ（ホバー時の中央プレビュー・操作不可） */
@@ -745,14 +764,15 @@
       <div class="remark-modal-section" id="remarkModalNewSec">
         <div class="remark-modal-label">本週進度（新增記錄）</div>
         <div class="remark-modal-author-row">
-          <label class="remark-modal-author-label" for="remarkModalAuthor">填寫者</label>
-          <select class="remark-modal-author" id="remarkModalAuthor"></select>
+          <span class="remark-modal-author-label">填寫者</span>
+          <div class="remark-modal-author-chips" id="remarkModalAuthor" role="listbox" aria-label="填寫者"></div>
         </div>
         <textarea class="remark-modal-ta" id="remarkModalNew" placeholder="進度說明" rows="3"></textarea>
       </div>
       <div class="remark-modal-section">
         <div class="remark-modal-label">Confluence URL</div>
         <div class="remark-modal-conf-list" id="remarkModalConfList"></div>
+        <button class="remark-modal-conf-toggle" id="remarkModalConfToggle" type="button"></button>
         <button class="remark-modal-conf-add" id="remarkModalConfAdd" type="button">＋ 新增連結</button>
       </div>
       <div class="remark-modal-section" id="remarkModalLogSec">
@@ -1130,9 +1150,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.24.1';
+const APP_VERSION = '0.24.2';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '進度ログの微調整：日時の文字化け（シリアル値）を変換、既存 Mission進度 をログへ移行表示、ログ本文を小さめに、進度說明プレースホルダを薄く、フォント統一、狀態カラーをモーダル上縁に差し色。';
+const APP_NOTE  = '編集モーダル UI 改善：記入者を組カラーのチップで選択（同組を隣接）、Confluence が多いと折りたたみ（ログを隠さない）、記入者・進度・ログのフォントを Noto Sans TC に統一。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2042,15 +2062,43 @@ function startStatusEdit(td, missionId) {
     return inp;
   }
 
+  const CONF_COLLAPSE_THRESHOLD = 3; // これを超えたら初期折りたたみ（下のログを隠さない）
   function buildConfList(raw) {
     const list = $('remarkModalConfList');
     list.innerHTML = '';
     const entries = parseConfEntries(raw);
     if (!entries.length && _readOnly) {
       list.innerHTML = '<div class="remark-modal-conf-none">（無連結）</div>';
+      applyConfCollapse(0);
       return;
     }
     (entries.length ? entries : [{ label: '', url: '' }]).forEach(addConfRow);
+    applyConfCollapse(entries.length);
+  }
+  // リンクが多いときは初期で畳み、トグルで展開（ログを埋もれさせない）
+  function applyConfCollapse(count) {
+    const list = $('remarkModalConfList');
+    const toggle = $('remarkModalConfToggle');
+    const add = $('remarkModalConfAdd');
+    if (count > CONF_COLLAPSE_THRESHOLD) {
+      list.classList.add('collapsed');
+      toggle.style.display = 'inline-block';
+      toggle.textContent = `▸ 展開 ${count} 個連結`;
+      if (add) add.style.display = 'none'; // 畳んでいる間は追加ボタンを隠す
+    } else {
+      list.classList.remove('collapsed');
+      toggle.style.display = 'none';
+      if (add) add.style.display = _readOnly ? 'none' : '';
+    }
+  }
+  function toggleConfList() {
+    const list = $('remarkModalConfList');
+    const toggle = $('remarkModalConfToggle');
+    const add = $('remarkModalConfAdd');
+    const collapsed = list.classList.toggle('collapsed');
+    const count = list.querySelectorAll('.remark-modal-conf-row').length;
+    toggle.textContent = collapsed ? `▸ 展開 ${count} 個連結` : '▾ 收合連結';
+    if (add) add.style.display = (collapsed || _readOnly) ? 'none' : '';
   }
 
   // ---- open / close ----
@@ -2149,7 +2197,7 @@ function startStatusEdit(td, missionId) {
     const newLine   = $('remarkModalNew').value.trim();
     const newStatus = selectedStatus();
     const newConf   = confJoined();
-    const author    = ($('remarkModalAuthor').value || '').trim();
+    const author    = (selectedAuthorName() || '').trim();
 
     const hasNewLine    = newLine !== '';
     const statusChanged = newStatus !== _origStatus;
@@ -2251,6 +2299,7 @@ function startStatusEdit(td, missionId) {
     $('remarkModalCloseBtn').addEventListener('click', closeModal);
     $('remarkModalEditBtn').addEventListener('click', goEditInTabC);
     $('remarkModalConfAdd').addEventListener('click', () => { addConfRow('').focus(); });
+    $('remarkModalConfToggle').addEventListener('click', toggleConfList);
     $('remarkModalOverlay').addEventListener('mousedown', e => { if (e.target === $('remarkModalOverlay')) closeModal(); });
     document.addEventListener('keydown', e => {
       if (!$('remarkModalOverlay').classList.contains('open')) return;
@@ -2264,28 +2313,70 @@ function startRemarkEdit(td, missionId) {
   window._openRemarkFromTd(td, missionId);
 }
 
-// ===== 記入者プルダウン & 進度タイムライン（編集モーダル用）=====
-// 記入者候補：issueData の 擔當 / 戰略負責人 から重複なく集める
+// ===== 記入者チップ & 進度タイムライン（編集モーダル用）=====
+// 個々の人名を 擔當/戰略負責人 から分割して取り出す
+function splitPersons(v) {
+  return String(v || '').split(/[\/、,，;；]/).map(s => s.trim()).filter(Boolean);
+}
+// 人名 → 所属組コード（最頻出の組）。チップ配色に使う
+function buildAuthorGroupMap() {
+  const tally = {}; // name → { grpCode: count }
+  (issueData || []).forEach(r => {
+    const grp = (r['組'] || '').trim();
+    const def = GROUP_DEF[grp];
+    const code = def ? def.key : '';
+    [...splitPersons(r['擔當']), ...splitPersons(r['戰略負責人'])].forEach(n => {
+      tally[n] = tally[n] || {};
+      tally[n][code] = (tally[n][code] || 0) + 1;
+    });
+  });
+  const map = {};
+  Object.keys(tally).forEach(n => {
+    map[n] = Object.entries(tally[n]).sort((a, b) => b[1] - a[1])[0][0] || '';
+  });
+  return map;
+}
+// 記入者候補（重複なし・名前順）
 function collectAuthorNames() {
   const set = new Set();
   (issueData || []).forEach(r => {
-    ['擔當', '戰略負責人'].forEach(k => {
-      const v = (r[k] || '').trim();
-      if (v) v.split(/[\/、,，;；]/).forEach(x => { const t = x.trim(); if (t) set.add(t); });
+    [...splitPersons(r['擔當']), ...splitPersons(r['戰略負責人'])].forEach(n => set.add(n));
+  });
+  return [...set].sort((a, b) => a.localeCompare(b, 'zh-Hant'));
+}
+let _selectedAuthor = '';
+function selectedAuthorName() { return _selectedAuthor; }
+// 記入者を「組カラーのチップ」で表示・選択
+function populateAuthorSelect(row) {
+  const box = document.getElementById('remarkModalAuthor');
+  if (!box) return;
+  const names = collectAuthorNames();
+  const grpMap = buildAuthorGroupMap();
+  const preferred = (row && splitPersons(row['擔當'])[0]) || localStorage.getItem('jig:lastAuthor') || '';
+  if (preferred && !names.includes(preferred)) names.unshift(preferred);
+  _selectedAuthor = preferred || '';
+  // 同じ組を隣接させて探しやすく（組コード順 → 名前順）
+  const ORDER = ['com','L','Z','M','C','X','S','IP',''];
+  names.sort((a, b) => {
+    const ga = ORDER.indexOf(grpMap[a] || ''), gb = ORDER.indexOf(grpMap[b] || '');
+    return ga !== gb ? ga - gb : a.localeCompare(b, 'zh-Hant');
+  });
+  box.innerHTML = names.map(n => {
+    const code = grpMap[n] || '';
+    const bg = code ? `var(--${code}-bg)` : '#F1F3F4';
+    const fg = code ? `var(--${code}-fg)` : '#5F6368';
+    const active = n === _selectedAuthor ? ' active' : '';
+    return `<button type="button" class="author-chip${active}" data-name="${escapeAttr(n)}"
+      style="--chip-bg:${bg};--chip-fg:${fg}">${escapeHtml(n)}</button>`;
+  }).join('');
+  box.querySelectorAll('.author-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (document.getElementById('remarkModal').classList.contains('read-only')) return;
+      _selectedAuthor = chip.dataset.name;
+      box.querySelectorAll('.author-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
     });
   });
-  return [...set].sort();
-}
-function populateAuthorSelect(row) {
-  const sel = document.getElementById('remarkModalAuthor');
-  if (!sel) return;
-  const names = collectAuthorNames();
-  // 既定：その Mission の擔當 → 前回使った記入者 の順で優先
-  const preferred = (row && (row['擔當'] || '').trim()) || localStorage.getItem('jig:lastAuthor') || '';
-  if (preferred && !names.includes(preferred)) names.unshift(preferred);
-  sel.innerHTML = '<option value="">（請選擇填寫者）</option>' +
-    names.map(n => `<option value="${escapeAttr(n)}">${escapeHtml(n)}</option>`).join('');
-  sel.value = preferred || '';
 }
 // タイムライン描画：window.missionLog[id] を新しい順に。無ければ現況テキストを移行表示
 function renderMissionLog(missionId, currentText) {
