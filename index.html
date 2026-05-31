@@ -1310,9 +1310,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.26.0';
+const APP_VERSION = '0.26.1';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'ダッシュボードから Issue／Mission を追加可能に（Tab A の「＋ 新增」）。Mission は親 Issue 配下に編號を自動採番、Issue は編號手動＋重複チェック。最小フォーム・詳細は Confluence へ。Apps Script は append アクションを追加（同一 URL での再公開が必要）。';
+const APP_NOTE  = '追加機能の重大バグ修正：append が数式列（親編號等の ARRAYFORMULA）を #REF! で壊し既存 Mission が消える問題を解消。数式列には書かず数式に算出させる方式に変更。※Apps Script の再公開が必要。';
 
 // ===== Tab switch =====
 function show(id, e) {

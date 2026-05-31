@@ -294,18 +294,39 @@ function doPost(e) {
 
 // ===== 行 append 系ヘルパー（新規 Issue / Mission 追加）=====
 
-// ヘッダ名で列を特定し、その列にだけ値を入れた 1 行を append する。
-// 列順の決め打ちをしない（実際のシート列構成に追従）。
+// ヘッダ名で列を特定して 1 行を追加する。
+// 重要：`親編號` や `Confluence URL` などが**数式（ARRAYFORMULA 等）で自動算出**される
+// 設計のシートがある。数式列に値を書くと #REF! でその列全体が壊れるため、
+// (1) まずアンカー列（編號）だけ書いて数式に算出させ、
+// (2) 数式で埋まった列／既に値がある列はスキップし、空の手入力列にだけ書く。
 function _appendByHeaders(sheet, valueMap) {
   const lastCol = sheet.getLastColumn();
   const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => String(h).trim());
-  const row = new Array(lastCol).fill('');
-  Object.keys(valueMap).forEach(k => {
-    const ci = headers.indexOf(k);
-    if (ci >= 0) row[ci] = valueMap[k];
+  const colOf = name => headers.indexOf(name); // 0-based, -1 = 無し
+  const targetRow = sheet.getLastRow() + 1;
+
+  // (1) アンカー（編號）を先に書く → 数式列（親編號等）が自動で埋まる
+  const idCol = colOf('編號');
+  if (idCol >= 0 && valueMap['編號'] != null) {
+    sheet.getRange(targetRow, idCol + 1).setValue(valueMap['編號']);
+  }
+  SpreadsheetApp.flush();
+
+  // (2) 残りの値は「数式由来／自動算出済み」の列を避けて書く
+  const skipped = [];
+  Object.keys(valueMap).forEach(name => {
+    if (name === '編號') return;
+    const ci = colOf(name);
+    if (ci < 0) return;
+    const cell = sheet.getRange(targetRow, ci + 1);
+    const hasFormula = !!cell.getFormula();                 // 数式アンカー
+    const autoFilled = String(cell.getValue()).trim() !== ''; // 数式スピルで既に埋まった
+    if (hasFormula || autoFilled) { skipped.push(name); return; }
+    cell.setValue(valueMap[name]);
   });
-  sheet.appendRow(row);
-  return { row: sheet.getLastRow(), headers };
+  SpreadsheetApp.flush();
+  if (skipped.length) console.log('  _appendByHeaders skipped formula/auto cols:', skipped.join(','));
+  return { row: targetRow, headers };
 }
 
 // 親編號配下の次の Mission 編號（親編號-M{n}）を採番する。
