@@ -954,10 +954,20 @@
           <label>Issue 名稱<span class="req">*</span></label>
           <input type="text" class="add-inp" id="addIName" placeholder="例：BCL註冊用戶擴大" maxlength="120">
         </div>
+        <div class="add-field" style="margin-top:12px;">
+          <label>組</label>
+          <select class="add-sel" id="addIGroup"><option value="">— 先選擇處 —</option></select>
+        </div>
         <div class="add-row2" style="margin-top:12px;">
           <div class="add-field">
-            <label>組</label>
-            <select class="add-sel" id="addIGroup"><option value="">— 先選擇處 —</option></select>
+            <label>擔當</label>
+            <div class="np-wrap">
+              <button type="button" class="author-trigger np-trigger is-placeholder" id="addIOwnerTrigger" data-placeholder="選擇擔當（可複選）"></button>
+              <div class="author-menu np-menu" id="addIOwnerMenu">
+                <input type="text" class="author-menu-search" id="addIOwnerSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
+                <div class="author-menu-chips" id="addIOwnerChips"></div>
+              </div>
+            </div>
           </div>
           <div class="add-field">
             <label>戰略負責人</label>
@@ -1353,9 +1363,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.28.1';
+const APP_VERSION = '0.28.2';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '編集の not_found 修正：更新時の編號列をヘッダ名で特定（Issue主檔は編號が C 列のため A 列決め打ちで not_found になっていた）。※Apps Script 再公開が必要（codeVersion=edit2）。';
+const APP_NOTE  = 'Issue にも擔當チップを追加（追加・編集とも複数選択可）。編號列のヘッダ特定（not_found 修正）込み。※Apps Script 再公開が必要（codeVersion=edit3）。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2389,6 +2399,7 @@ function openAddModal(kind) {
   // 名前ピッカー初期化（擔當=全員／戰略負責人=4名限定、いずれも複数選択可）
   resetNamePicker('addMOwner', '', true);
   resetNamePicker('addMLead', '', true, STRATEGIC_LEADS);
+  resetNamePicker('addIOwner', '', true);
   resetNamePicker('addILead', '', true, STRATEGIC_LEADS);
   _buildAddStatusBtns('');
   _setAddKind(kind || 'mission');
@@ -2423,6 +2434,7 @@ function openEditEntryModal(kind, id) {
     _populateAddIGroups((row['處'] || '').trim());
     document.getElementById('addIGroup').value = (row['組'] || '').trim();
     document.getElementById('addIName').value = (row['Issue'] || '').trim();
+    resetNamePicker('addIOwner', row['擔當'] || '', true);
     resetNamePicker('addILead', row['戰略負責人'] || '', true, STRATEGIC_LEADS);
   }
   const sb = document.getElementById('addModalSaveBtn');
@@ -2469,7 +2481,7 @@ async function _submitAdd() {
       payload = {
         token: WRITE_TOKEN, action: 'updateIssue', '編號': _editId,
         'Issue': name, '處': document.getElementById('addIDept').value, '組': document.getElementById('addIGroup').value,
-        '戰略負責人': namePickValue('addILead'), '狀態': status, 'Confluence URL': conf
+        '擔當': namePickValue('addIOwner'), '戰略負責人': namePickValue('addILead'), '狀態': status, 'Confluence URL': conf
       };
     } else {
       const id = document.getElementById('addIId').value.trim();
@@ -2478,7 +2490,7 @@ async function _submitAdd() {
       payload = {
         token: WRITE_TOKEN, action: 'addIssue', '編號': id, 'Issue': name,
         '處': document.getElementById('addIDept').value, '組': document.getElementById('addIGroup').value,
-        '戰略負責人': namePickValue('addILead'), '狀態': status, 'Confluence URL': conf
+        '擔當': namePickValue('addIOwner'), '戰略負責人': namePickValue('addILead'), '狀態': status, 'Confluence URL': conf
       };
     }
   }
@@ -2520,7 +2532,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('addMParent')?.addEventListener('change', _refreshAddMIdPreview);
   document.getElementById('addIDept')?.addEventListener('change', e => _populateAddIGroups(e.target.value));
   document.getElementById('addIId')?.addEventListener('input', _checkIssueIdDup);
-  ['addMOwner', 'addMLead', 'addILead'].forEach(setupNamePicker);
+  ['addMOwner', 'addMLead', 'addIOwner', 'addILead'].forEach(setupNamePicker);
   document.getElementById('addModalSaveBtn')?.addEventListener('click', _submitAdd);
   document.getElementById('addModalCancelBtn')?.addEventListener('click', closeAddModal);
   document.getElementById('addModalCloseBtn')?.addEventListener('click', closeAddModal);

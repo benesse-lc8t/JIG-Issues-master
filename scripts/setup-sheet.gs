@@ -36,7 +36,7 @@
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 // 再公開が反映されたか確認するための目印。doGet が返す。変更のたびに上げる。
-const CODE_VERSION = 'gs-2026-05-31-edit2';
+const CODE_VERSION = 'gs-2026-05-31-edit3';
 
 const STATUS_VALUES = ['未開始', '策劃中', '需確認', '進行中', '結案'];
 const STATUS_COLORS = {
@@ -480,6 +480,7 @@ function _handleAddIssue(ss, data) {
     'Issue': name,
     '處': String(data['處'] || ''),
     '組': String(data['組'] || ''),
+    '擔當': String(data['擔當'] || ''),
     '戰略負責人': String(data['戰略負責人'] || ''),
     '狀態': status,
     '更新日': new Date(),
