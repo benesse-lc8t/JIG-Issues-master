@@ -1187,9 +1187,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.25.1';
+const APP_VERSION = '0.25.2';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '記入者チップを小型化（スクロール低減）。總管理の色をグレー→ピンクに変更（グレーは真に不明な部門のみ）。既定の記入者を名簿のフルネームに解決し、略称（例「育菱」）が重複チップとして末尾に追加される不具合を修正。';
+const APP_NOTE  = '記入者の既定値を「王詩雅」に変更（前回選択があればそれを優先）。名前解決を双方向マッチに拡張。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2417,6 +2417,8 @@ function startRemarkEdit(td, missionId) {
 }
 
 // ===== 記入者チップ & 進度タイムライン（編集モーダル用）=====
+// 記入者の既定値（前回選択が無いときに最初から選ばれる人）。変えるならここ。
+const DEFAULT_AUTHOR = '王詩雅';
 // 個々の人名を 擔當/戰略負責人 から分割して取り出す
 function splitPersons(v) {
   return String(v || '').split(/[\/、,，;；]/).map(s => s.trim()).filter(Boolean);
@@ -2462,7 +2464,8 @@ function resolveRosterName(raw, names) {
   if (!raw) return '';
   const list = names || collectAuthorNames();
   if (list.includes(raw)) return raw;
-  const hit = list.find(n => n.endsWith(raw)) || list.find(n => n.includes(raw));
+  const hit = list.find(n => n.endsWith(raw)) || list.find(n => n.includes(raw))
+           || list.find(n => raw.endsWith(n)) || list.find(n => raw.includes(n));
   return hit || raw;
 }
 let _selectedAuthor = '';
@@ -2533,7 +2536,8 @@ function populateAuthorSelect(row) {
   const pm = window.personMap || {};
   const names = collectAuthorNames();
   const deptMap = buildAuthorDeptMap();
-  const rawPref = (row && splitPersons(row['擔當'])[0]) || localStorage.getItem('jig:lastAuthor') || '';
+  // 既定の記入者：前回選択（localStorage）→ 既定値 DEFAULT_AUTHOR の順
+  const rawPref = localStorage.getItem('jig:lastAuthor') || DEFAULT_AUTHOR;
   let preferred = resolveRosterName(rawPref, names);
   if (preferred && !names.includes(preferred)) {
     // 名簿運用時は名簿に無い名前で幽霊チップを作らない。フォールバック時のみ先頭に補う
