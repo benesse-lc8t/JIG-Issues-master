@@ -243,6 +243,9 @@
   /* Update freshness (更新日) */
   .upd { text-align: center; font-size: 10px; font-weight: 500; color: var(--g-grey); white-space: nowrap; }
   .upd .upd-time { font-size: 9px; color: #80868B; opacity: 0.85; }
+  .upd .upd-rel { display: block; font-size: 9px; color: #80868B; opacity: 0.9; margin-top: 1px; }
+  .upd-warn .upd-rel { color: var(--g-yellow-fg); }
+  .upd-stale .upd-rel { color: var(--g-red-fg); }
   .upd-warn  { background: var(--g-yellow-bg); color: var(--g-yellow-fg); }
   .upd-stale { background: var(--g-red-bg);    color: var(--g-red-fg); }
 
@@ -800,9 +803,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.15.0';
+const APP_VERSION = '0.15.1';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '更新日を相対表示（今天/◯天前）から実際の日時表示に変更。時刻を持つ値は HH:mm を併記。相対表現はツールチップへ。';
+const APP_NOTE  = '更新セルに相対表現（◯天前）を 2 行目で復活。編集直後は応答に時刻が無くてもクライアント時刻で補完し時刻が消えないように。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1032,18 +1035,16 @@ function freshnessCell(dateStr, editOpts) {
     else if (days > 7) cls = 'upd-warn';
     relTitle = days <= 0 ? '今天' : `${days} 天前`;
     rawIso = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-    // 実際の日時を表示（時刻を持つ値のみ HH:mm を併記）
+    // 実際の日時を表示（時刻を持つ値のみ HH:mm を併記）＋ 相対表現（◯天前）を 2 行目に小さく併記
     const hasTime = (d.getHours() || d.getMinutes() || d.getSeconds());
     const timeHtml = hasTime ? ` <span class="upd-time">${pad(d.getHours())}:${pad(d.getMinutes())}</span>` : '';
-    display = `${rawIso}${timeHtml}`;
+    display = `${rawIso}${timeHtml}<span class="upd-rel">${relTitle}</span>`;
   }
   if (editOpts && editOpts.editable) {
     return `<td class="upd ${cls} cell-editable" data-edit="date" data-mission="${escapeAttr(editOpts.missionId)}" data-raw="${escapeAttr(rawIso)}" title="點擊編輯日期（${escapeAttr(v||'未設定')}）">${display}</td>`;
   }
   // 自動記録モード：手入力不可。編集（狀態 / Mission進度 / 連結）時に自動でその日時が入る。
-  const title = (editOpts && editOpts.auto)
-    ? `編輯時自動記錄（無需手動輸入）${relTitle ? '・' + relTitle : ''}`
-    : relTitle;
+  const title = (editOpts && editOpts.auto) ? '編輯時自動記錄（無需手動輸入）' : (v || '');
   return `<td class="upd ${cls}" title="${escapeAttr(title)}">${display}</td>`;
 }
 
@@ -1382,13 +1383,25 @@ async function saveMissionEdit(missionId, fields) {
   }
 }
 
+// 編集の応答に時刻が無い場合（Apps Script 未再デプロイ時など）でも、
+// 編集はたった今行われたものなのでクライアント時刻で時刻を補完する。
+function ensureEditTimestamp(v) {
+  const s = String(v || '').trim();
+  if (/\d{1,2}:\d{2}/.test(s)) return s; // 既に時刻あり
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const ymd = s && /^\d{4}[-\/.]/.test(s) ? s.replace(/[\/.]/g,'-').slice(0,10)
+            : `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  return `${ymd} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 // 編集後にローカル issueData を同期更新
 function applyLocalEdit(missionId, changes) {
   const row = issueData.find(r => (r['編號']||'').trim() === missionId);
   if (!row) return;
   if (changes['狀態']    !== undefined) row['狀態']        = changes['狀態'];
   if (changes['備註']    !== undefined) row['Mission進度'] = changes['備註'];
-  if (changes['更新日']  !== undefined) row['更新日']     = changes['更新日'];
+  if (changes['更新日']  !== undefined) row['更新日']     = ensureEditTimestamp(changes['更新日']);
   if (changes['Confluence URL'] !== undefined) {
     const own = changes['Confluence URL'];
     row['Confluence URL自身'] = own;
