@@ -345,9 +345,9 @@
 
   /* 編集可能セル（Mission進度タブ） */
   .simple-table td.cell-editable { cursor: pointer; position: relative; }
-  .simple-table td.cell-editable:hover { background: #FFF9DB !important; outline: 1px solid #F9AB00; outline-offset: -1px; }
+  .simple-table td.cell-editable:hover { background: #E8F0FE !important; outline: 1px solid var(--g-blue); outline-offset: -1px; }
   .simple-table td.cell-editable::after { content: '✎'; position: absolute; top: 1px; right: 2px; font-size: 8px; color: transparent; }
-  .simple-table td.cell-editable:hover::after { color: #F9AB00; }
+  .simple-table td.cell-editable:hover::after { color: var(--g-blue); }
   .simple-table td.cell-saving { background: #E8F0FE !important; outline: 1px solid var(--g-blue); pointer-events: none; }
   .simple-table td.cell-saved  { background: #E6F4EA !important; transition: background 0.3s; }
   .simple-table select.inline-edit, .simple-table textarea.inline-edit, .simple-table input.inline-edit {
@@ -548,9 +548,6 @@
 
 <!-- ===== C：Mission進度（Mission 専用・インライン編集対応） ===== -->
 <div class="panel" id="panel-C">
-  <div style="padding:6px 14px; background:#FEF7E0; border-bottom:1px solid #F9AB00; font-size:10px; color:#B06000;">
-    💡 <b>狀態</b> セルをクリック ／ <b>Mission進度</b> セルをダブルクリック ／ <b>更新</b> セルをクリックで編集できます（保存は Sheet に即反映）
-  </div>
   <div class="ctrl-bar">
     <select id="filterDeptC"><option value="">處：全部</option></select>
     <select id="filterGroupC"><option value="">組：全部</option></select>
@@ -582,13 +579,13 @@
         <th style="width:160px;">親 Issue</th>
         <th style="width:88px;">編號</th>
         <th>Mission</th>
-        <th style="width:76px;">處</th>
-        <th style="width:90px;">組</th>
-        <th style="width:76px;">擔當</th>
-        <th style="min-width:120px;">Mission進度</th>
+        <th style="min-width:140px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
         <th style="width:56px;">更新</th>
         <th style="width:34px;">🔗</th>
+        <th style="width:76px;">處</th>
+        <th style="width:90px;">組</th>
+        <th style="width:76px;">擔當</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -785,9 +782,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.11.1';
+const APP_VERSION = '0.12.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '調整した列幅を localStorage に保存し、再訪時に復元。各タブに「↔ 重置欄寬」リセットボタンを追加。';
+const APP_NOTE  = 'Mission進度タブを記入特化に再設計：列順を Mission→Mission進度→狀態→更新→🔗→處/組/擔當 に変更。説明バナー削除、編集ヒントを繁体字化、編集強調を薄いブルーに。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1020,7 +1017,7 @@ function freshnessCell(dateStr, editOpts) {
     label = '';
   }
   if (editOpts && editOpts.editable) {
-    return `<td class="upd ${cls} cell-editable" data-edit="date" data-mission="${escapeAttr(editOpts.missionId)}" data-raw="${escapeAttr(rawIso)}" title="クリックで日付編集（${escapeAttr(v||'未設定')}）">${escapeHtml(label)}</td>`;
+    return `<td class="upd ${cls} cell-editable" data-edit="date" data-mission="${escapeAttr(editOpts.missionId)}" data-raw="${escapeAttr(rawIso)}" title="點擊編輯日期（${escapeAttr(v||'未設定')}）">${escapeHtml(label)}</td>`;
   }
   return `<td class="upd ${cls}" title="${escapeHtml(v)}">${escapeHtml(label)}</td>`;
 }
@@ -1560,13 +1557,13 @@ function simpleRow(r, opts) {
   }
   if (opts.showRemark !== false) {
     if (opts.editable && isMission) {
-      h += `<td class="memo cell-editable" data-edit="remark" data-mission="${escapeAttr(num)}" title="ダブルクリックで編集">${escapeHtml(remark)}</td>`;
+      h += `<td class="memo cell-editable" data-edit="remark" data-mission="${escapeAttr(num)}" title="雙擊編輯">${escapeHtml(remark)}</td>`;
     } else {
       h += `<td class="memo">${escapeHtml(remark)}</td>`;
     }
   }
   if (opts.editable && isMission) {
-    h += `<td class="st cell-editable" data-edit="status" data-mission="${escapeAttr(num)}" data-current="${escapeAttr((r['狀態']||'').trim())}" title="クリックで変更">${statusBadge(r['狀態'], isMission)}</td>`;
+    h += `<td class="st cell-editable" data-edit="status" data-mission="${escapeAttr(num)}" data-current="${escapeAttr((r['狀態']||'').trim())}" title="點擊變更">${statusBadge(r['狀態'], isMission)}</td>`;
   } else {
     h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;
   }
@@ -1579,6 +1576,57 @@ function simpleRow(r, opts) {
       h += '<td class="conf-icon"></td>';
     }
   }
+  h += '</tr>';
+  return h;
+}
+
+// ===== Tab C（Mission進度）専用の行レンダラ =====
+// 記入しやすさ優先で列順を変更：親Issue / 編號 / Mission / Mission進度 / 狀態 / 更新 / 🔗 / 處 / 組 / 擔當
+// （Mission進度・狀態・更新の編集列を Mission 直後にまとめ、継承情報の 處/組/擔當 は末尾へ）
+function missionEditRow(r, opts) {
+  opts = opts || {};
+  const isMission = ((r['種別']||'Issue') === 'Mission' || (r['種別']||'') === 'Task');
+  const num = (r['編號']||'').trim();
+  const dept = (r['處']||'').trim();
+  const grp = (r['組']||'').trim();
+  const owner = (r['擔當']||'').trim();
+  const remark = (r['Mission進度'] || r['事務局備註'] || '').trim();
+  const cls = opts.rowClass || '';
+  let h = `<tr${cls ? ` class="${cls}"` : ''}>`;
+  // 親 Issue（直前と同じ親なら空白）
+  if (opts.parent && opts.parent.show) {
+    h += `<td class="parent-cell" title="${escapeAttr((opts.parent.num + ' ' + opts.parent.name).trim())}"><span class="pc-num">${escapeHtml(opts.parent.num)}</span><span class="pc-name">${escapeHtml(opts.parent.name)}</span></td>`;
+  } else {
+    h += '<td class="parent-cell-cont"></td>';
+  }
+  // 編號 / Mission
+  h += `<td class="num">${escapeHtml(num)}</td>`;
+  h += `<td class="lbl">${escapeHtml(r['Issue']||'')}</td>`;
+  // Mission進度（雙擊編輯）
+  if (isMission) {
+    h += `<td class="memo cell-editable" data-edit="remark" data-mission="${escapeAttr(num)}" title="雙擊編輯">${escapeHtml(remark)}</td>`;
+  } else {
+    h += `<td class="memo">${escapeHtml(remark)}</td>`;
+  }
+  // 狀態（點擊變更）
+  if (isMission) {
+    h += `<td class="st cell-editable" data-edit="status" data-mission="${escapeAttr(num)}" data-current="${escapeAttr((r['狀態']||'').trim())}" title="點擊變更">${statusBadge(r['狀態'], isMission)}</td>`;
+  } else {
+    h += `<td class="st">${statusBadge(r['狀態'], isMission)}</td>`;
+  }
+  // 更新（點擊編輯）
+  h += freshnessCell(r['更新日'], isMission ? { editable: true, missionId: num } : null);
+  // 🔗 Confluence
+  const url = (r['Confluence URL']||'').trim();
+  if (url) {
+    h += `<td class="conf-icon"><a href="${escapeAttr(url)}" target="_blank" rel="noopener" title="${escapeAttr(url)}"><img src="${CONF_FAVICON}" alt="" onerror="this.style.display='none'"></a></td>`;
+  } else {
+    h += '<td class="conf-icon"></td>';
+  }
+  // 處 / 組 / 擔當（継承情報・末尾）
+  h += `<td class="dept ${deptColorClass(dept)}">${escapeHtml(dept)}</td>`;
+  h += `<td class="dept">${escapeHtml(grp)}</td>`;
+  h += `<td class="dept">${escapeHtml(owner)}</td>`;
   h += '</tr>';
   return h;
 }
@@ -1833,7 +1881,7 @@ function renderTableC() {
                    : days != null && days > 7  ? 'stalled-yellow'
                    : '';
     const parent = makeParentInfo(r, issueMap, prevParent);
-    html += simpleRow(r, { ownerField: '擔當', parent, rowClass, showGroup: true, showConf: true, editable: true });
+    html += missionEditRow(r, { parent, rowClass });
     prevParent = parent.num;
   });
   if (!html) html = `<tr><td colspan="10" style="text-align:center; padding:30px; color:#999;">符合條件的 Mission 沒有</td></tr>`;
