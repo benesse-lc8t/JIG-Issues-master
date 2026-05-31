@@ -203,7 +203,7 @@ function doPost(e) {
       console.log('  更新日 col index:', col);
       if (col > 0) {
         sheet.getRange(rowIdx, col).setValue(updValue);
-        changes['更新日'] = Utilities.formatDate(updValue, Session.getScriptTimeZone() || 'Asia/Taipei', 'yyyy-MM-dd');
+        changes['更新日'] = Utilities.formatDate(updValue, Session.getScriptTimeZone() || 'Asia/Taipei', 'yyyy-MM-dd HH:mm');
       }
     }
 

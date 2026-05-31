@@ -242,6 +242,7 @@
 
   /* Update freshness (更新日) */
   .upd { text-align: center; font-size: 10px; font-weight: 500; color: var(--g-grey); white-space: nowrap; }
+  .upd .upd-time { font-size: 9px; color: #80868B; opacity: 0.85; }
   .upd-warn  { background: var(--g-yellow-bg); color: var(--g-yellow-fg); }
   .upd-stale { background: var(--g-red-bg);    color: var(--g-red-fg); }
 
@@ -508,7 +509,7 @@
     <th class="mtg-col" style="width:70px;">會議時間</th>
     <th style="width:74px;">狀態</th>
     <th style="min-width:140px;">Mission進度</th>
-    <th style="width:56px;">更新</th>
+    <th style="width:104px;">更新</th>
   </tr>
 </thead>
 <tbody>
@@ -555,7 +556,7 @@
         <th style="width:76px;">擔當</th>
         <th style="min-width:120px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
-        <th style="width:56px;">更新</th>
+        <th style="width:104px;">更新</th>
         <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
       </tr>
     </thead>
@@ -598,7 +599,7 @@
         <th style="width:180px;">Mission</th>
         <th style="width:100%; min-width:240px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
-        <th style="width:56px;">更新</th>
+        <th style="width:104px;">更新</th>
         <th style="width:44px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
         <th style="width:70px;">處</th>
         <th style="width:80px;">組</th>
@@ -655,7 +656,7 @@
         <th style="width:110px;">角色</th>
         <th style="min-width:140px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
-        <th style="width:56px;">更新</th>
+        <th style="width:104px;">更新</th>
         <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
       </tr>
     </thead>
@@ -709,7 +710,7 @@
         <th style="width:110px;">角色</th>
         <th style="min-width:140px;">Mission進度</th>
         <th style="width:80px;">狀態</th>
-        <th style="width:56px;">更新</th>
+        <th style="width:104px;">更新</th>
         <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
       </tr>
     </thead>
@@ -799,9 +800,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.14.0';
+const APP_VERSION = '0.15.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '更新日を自動記録に変更（手入力不可）。狀態 / Mission進度 / Confluence 連結を編集すると、その行の更新日が自動でその日に更新される。';
+const APP_NOTE  = '更新日を相対表示（今天/◯天前）から実際の日時表示に変更。時刻を持つ値は HH:mm を併記。相対表現はツールチップへ。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -978,15 +979,16 @@ function parseDateLoose(v) {
   v = String(v).trim();
   if (!v) return null;
   let m;
-  // YYYY-MM-DD / YYYY/MM/DD（時刻が後ろに付いても可）
-  m = v.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
-  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
-  // M/D/YYYY または D/M/YYYY（Sheets ピッカーの既定出力）
-  m = v.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);
+  // YYYY-MM-DD / YYYY/MM/DD（時刻 HH:mm[:ss] が後ろに付いても可）
+  m = v.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3], +(m[4]||0), +(m[5]||0), +(m[6]||0));
+  // M/D/YYYY または D/M/YYYY（Sheets ピッカーの既定出力。時刻が後ろに付いても可）
+  m = v.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
   if (m) {
     const a = +m[1], b = +m[2], y = +m[3];
+    const hh = +(m[4]||0), mi = +(m[5]||0), ss = +(m[6]||0);
     // 先頭が 12 超 → D/M/YYYY、それ以外は M/D/YYYY と仮定
-    return (a > 12) ? new Date(y, b-1, a) : new Date(y, a-1, b);
+    return (a > 12) ? new Date(y, b-1, a, hh, mi, ss) : new Date(y, a-1, b, hh, mi, ss);
   }
   // YYYY年M月D日 / YYYY年MM月DD日
   m = v.match(/^(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/);
@@ -1009,7 +1011,8 @@ function freshnessCell(dateStr, editOpts) {
   const v = (dateStr || '').toString().trim();
   // 編集可能セルの場合、ISO 形式の raw 値を data-raw に詰める
   let rawIso = '';
-  let label = '';
+  let display = '';   // セルに表示する実際の日時
+  let relTitle = '';  // ツールチップ用の相対表現（◯天前）
   let cls = 'upd-fresh';
   if (v) {
     const d = parseDateLoose(v);
@@ -1020,25 +1023,28 @@ function freshnessCell(dateStr, editOpts) {
         : '"';
       return `<td class="upd${editAttr} title="解析できず：${escapeAttr(v)}">${escapeHtml(v)}</td>`;
     }
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    d.setHours(0,0,0,0);
-    const days = Math.floor((today - d) / 86400000);
+    const pad = n => String(n).padStart(2,'0');
+    // 停滞色は日単位で判定（時刻は無視）
+    const d0 = new Date(d); d0.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const days = Math.floor((today - d0) / 86400000);
     if (days > 14) cls = 'upd-stale';
     else if (days > 7) cls = 'upd-warn';
-    label = days <= 0 ? '今天' : `${days} 天前`;
-    const mm = String(d.getMonth()+1).padStart(2,'0');
-    const dd = String(d.getDate()).padStart(2,'0');
-    rawIso = `${d.getFullYear()}-${mm}-${dd}`;
-  } else {
-    label = '';
+    relTitle = days <= 0 ? '今天' : `${days} 天前`;
+    rawIso = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    // 実際の日時を表示（時刻を持つ値のみ HH:mm を併記）
+    const hasTime = (d.getHours() || d.getMinutes() || d.getSeconds());
+    const timeHtml = hasTime ? ` <span class="upd-time">${pad(d.getHours())}:${pad(d.getMinutes())}</span>` : '';
+    display = `${rawIso}${timeHtml}`;
   }
   if (editOpts && editOpts.editable) {
-    return `<td class="upd ${cls} cell-editable" data-edit="date" data-mission="${escapeAttr(editOpts.missionId)}" data-raw="${escapeAttr(rawIso)}" title="點擊編輯日期（${escapeAttr(v||'未設定')}）">${escapeHtml(label)}</td>`;
+    return `<td class="upd ${cls} cell-editable" data-edit="date" data-mission="${escapeAttr(editOpts.missionId)}" data-raw="${escapeAttr(rawIso)}" title="點擊編輯日期（${escapeAttr(v||'未設定')}）">${display}</td>`;
   }
-  // 自動記録モード：手入力不可。編集（狀態 / Mission進度 / 連結）時に自動でその日付が入る。
-  const title = (editOpts && editOpts.auto) ? '編輯時自動記錄（無需手動輸入）' : escapeAttr(v);
-  return `<td class="upd ${cls}" title="${title}">${escapeHtml(label)}</td>`;
+  // 自動記録モード：手入力不可。編集（狀態 / Mission進度 / 連結）時に自動でその日時が入る。
+  const title = (editOpts && editOpts.auto)
+    ? `編輯時自動記錄（無需手動輸入）${relTitle ? '・' + relTitle : ''}`
+    : relTitle;
+  return `<td class="upd ${cls}" title="${escapeAttr(title)}">${display}</td>`;
 }
 
 // Confluence セル：管理頁面（ページ名）＋ favicon ＋ リンク
