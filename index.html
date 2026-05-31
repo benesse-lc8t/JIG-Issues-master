@@ -424,6 +424,10 @@
     align-items: center; justify-content: center;
   }
   .remark-modal-overlay.open { display: flex; }
+  /* モーダル表示中は背景ページのスクロールを止める（ホイールの裏抜け防止）*/
+  body.modal-open { overflow: hidden; }
+  /* オーバーレイ上のホイールはページへ伝播させない */
+  .remark-modal-overlay { overscroll-behavior: contain; }
   .remark-modal {
     background: #fff; border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.22);
     width: min(680px, 94vw); max-height: 90vh; display: flex; flex-direction: column;
@@ -463,7 +467,7 @@
   }
   .remark-modal-close:hover { background: #F1F3F4; }
   .remark-modal-body {
-    padding: 14px 20px 12px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;
+    padding: 14px 20px 12px; flex: 1; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 14px;
   }
   .remark-modal-section { display: flex; flex-direction: column; gap: 5px; }
   .remark-modal-label { font-size: 10px; font-weight: 700; color: #5F6368; letter-spacing: 0.06em; text-transform: uppercase; }
@@ -1187,9 +1191,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.25.2';
+const APP_VERSION = '0.25.3';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '記入者の既定値を「王詩雅」に変更（前回選択があればそれを優先）。名前解決を双方向マッチに拡張。';
+const APP_NOTE  = '編集モーダル表示中は背景ページのスクロールをロック（ホイールの裏抜け防止）。モーダル内スクロールの連鎖も抑止。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -2194,6 +2198,7 @@ function startStatusEdit(td, missionId) {
   // ---- open / close ----
   function closeModal() {
     $('remarkModalOverlay').classList.remove('open');
+    document.body.classList.remove('modal-open');
     $('remarkModal').classList.remove('read-only');
     _readOnly = false;
     _remarkTd = _statusTd = _confTd = _missionId = null;
@@ -2245,6 +2250,7 @@ function startStatusEdit(td, missionId) {
     $('remarkModalSaveBtn').classList.remove('saving');
     $('remarkModalSaveBtn').textContent = '儲存';
     $('remarkModalOverlay').classList.add('open');
+    document.body.classList.add('modal-open');
 
     // フォーカス
     requestAnimationFrame(() => {
