@@ -152,10 +152,11 @@ Issue 共-2 …
 
 ## 9. 開発運用メモ
 
-- 作業ブランチ：`claude/laughing-knuth-Ml437`（指定があれば変更）
+- 作業ブランチ：`claude/keen-einstein-9NcDI`（指定があれば変更）
 - main への push は明示指示があれば fast-forward で実施
 - 変更時は本ファイルの該当節を更新し、判断の整合を保つ
 - 重要な方針変更があれば、本ファイル末尾の「変更履歴」に追記
+- バージョンは `index.html` 冒頭の `APP_VERSION` と右上バッジで管理。変更ごとに上げて CHANGELOG.md に追記する運用。
 
 ### Apps Script デプロイの注意点（重要）
 
@@ -166,8 +167,37 @@ Issue 共-2 …
 - `getActiveSpreadsheet()` は**スタンドアロン Web App では使えない**（null を返す）。`SpreadsheetApp.openById(SHEET_ID)` を使うこと。`setup-sheet.gs` の先頭の `SHEET_ID` 定数を正しいスプレッドシート ID に設定しておく。
 - `SpreadsheetApp.getUi().alert()` はスタンドアロン実行コンテキストでは**ハングする**（例外をスローしない）。`console.log` に置き換えること。
 
+## 10. 次セッションへの引継ぎ（2026-05-31 時点）
+
+新しいセッションを始めたら、まず本ファイルと `CHANGELOG.md` を読むこと。以下が現状サマリ。
+
+### 現在の状態
+- **最新版：v0.22.1**（`index.html` 冒頭 `APP_VERSION` と右上バッジで確認）
+- 作業ブランチ：`claude/keen-einstein-9NcDI`。**毎回コミット＆ `main` にも push 済み**（明示指示で main へ反映する運用が定着）。
+- 直近の大きな作業テーマは **Mission進度タブ（Tab C）の編集 UX 刷新** と **Confluence リンク表示の整理**。詳細は CHANGELOG v0.16〜v0.22。
+
+### この期間で入った主な機能（UI/UX）
+- **統合編集モーダル**：Mission進度セルのダブルクリック（または狀態/🔗セルのクリック）で、狀態・Mission進度・Confluence URL を 1 つのモーダルで編集。Ctrl+Enter 保存／Esc キャンセル。ヘッダーに ISSUE / MISSION を 2 段表示。
+- **楽観的更新＋伸びるバー**：保存は約6秒かかるため、入力値を即時反映しバックグラウンド保存。セルが左→右に満ち色が変化（約5秒）。
+- **Confluence リンク**：1 セルに複数 URL を `名前|URL`（改行区切り）で保持（名前なしは URL のみ＝後方互換）。`parseConfEntries()`/`serializeConfEntries()`/`confLabel()`/`confEntryLabel()` が中核。一覧はアイコンのみ＋件数バッジ、複数はクリックで「Confluence 連結」モーダル、単一は直接リンク。ヘッダーは favicon（`conf-th-icon`）。
+- **表示モーダル（読み取り専用）**：他タブ（Issue&Mission/D/E）の Mission進度セルクリックで、編集モーダルを `readOnly` 再利用で表示。✎編輯ボタンで Tab C の編集モーダルへ遷移。
+- **ダイジェストテキストウィンドウ**：Mission進度セルのホバーで画面中央に本文を大表示（約350ms、操作不可、`pointer-events:none`）。
+- **列幅リサイズ**：localStorage 永続（キー `jig:colw:panel-X`）＋リセットボタン。
+
+### 未完の TODO（重要）
+1. **Apps Script の再デプロイが未実施**。`scripts/setup-sheet.gs` 側に「Confluence URL 編集時も `更新日` を自動更新」「応答 JSON の `更新日` に時刻 `HH:mm` を含める」の対応がコード済みだが、デプロイされていない。
+   - 再デプロイ手順は §9「Apps Script デプロイの注意点」。**既存デプロイを『新しいバージョン』で更新**して同じ URL を維持すること（新規デプロイは URL が変わり `index.html` の `SHEET_WRITE_URL` 更新が必要）。
+   - 暫定対応として `index.html` 側に `ensureEditTimestamp()` があり、応答に時刻が無くてもクライアント時刻で補完している（再デプロイすれば不要）。
+2. **スプレッドシートの `更新日` 列の書式**を「日時」にすると、シート上でも時刻まで見える（任意）。
+3. Confluence リンクの**手書きラベル**は実装済み（v0.19.0）。さらに別カラム管理にしたい等の要望が出たら検討。
+
+### よく使う識別子
+- `SHEET_ID`（setup-sheet.gs 先頭）／`WRITE_TOKEN = 'JIG-WRITE-TBBS-2026'`／`SHEET_WRITE_URL`（index.html）。
+- Apps Script `WRITE_FIELDS`：`{狀態, 備註→Mission進度, 更新日, Confluence URL}`。
+
 ## 変更履歴
 
+- 2026-05-31 (v0.16〜v0.22): **Tab C 編集 UX 刷新と Confluence 表示整理**。統合編集モーダル（狀態/Mission進度/Confluence URL）、楽観的更新＋伸びるバー、複数 Confluence リンク対応（`名前|URL` 形式・件数バッジ・リンク一覧モーダル・favicon ヘッダー）、読み取り専用「表示モーダル」、ホバーの「ダイジェストテキストウィンドウ」、列幅リサイズ永続化を導入。詳細は CHANGELOG.md。**Apps Script 再デプロイは未実施（§10 TODO 参照）**。
 - 2026-05-29: 初版作成。ツール本来の目的（進捗報告会議への転換、Issue常時可視化、逃げ場のなさを可視化で実現）と設計判断のフィルターを明文化。
 - 2026-05-30: データモデル確定（ステータス3段階／事務局備考／最終更新日／種別・親編號）。役割分担を明文化：**ステータス・事務局備考の入力者は事務局**、本人はConfluenceの現況更新のみ。Confluenceは**1組1ページ・A型（State型＋履歴ログ別欄）**で確定。雛形は事務局が用意。「詰まり」はステータスから外し、事務局備考と最終更新日経過で代替。
 - 2026-05-30 (v0.5.0): Tab A から `區分` `軸` を撤去（情報過多）。**Task を別シート `Task一覽` に分離**（編集負荷低減）。親 Issue からの列継承で Task シートの記入項目を最小化。CLAUDE.md §2「Confluence が詳細の入口」は維持しつつ、Task 自体の運用ハブはダッシュボード側に置く（柔軟運用）。
