@@ -535,7 +535,7 @@
   .my-link:hover { text-decoration: underline; }
   /* 我的：階層テーブル */
   .my-wrap { padding: 10px 12px 40px; max-width: none; }
-  table.my-table { width: 100%; border-collapse: collapse; font-size: var(--fs-xs); table-layout: fixed; }
+  table.my-table { width: max-content; min-width: 100%; border-collapse: collapse; font-size: var(--fs-xs); table-layout: fixed; }
   .my-table th { position: sticky; top: 0; z-index: 2; background: #1A73E8; color: #fff; padding: 4px 6px; text-align: center; font-weight: var(--fw-bold); border: 1px solid #1665D8; font-size: var(--fs-sm); white-space: nowrap; }
   .my-table th .ios-sw { margin-left: 5px; }
   .my-table td { padding: 3px 8px; border: 1px solid #E6EAF0; vertical-align: middle; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -549,9 +549,9 @@
   .my-table tr.my-row td.my-col-mission { background: #E5EEFB; }
   /* ヘッダートグルによるレベル表示切替（mission を隠すと配下 task も隠す） */
   .my-table.hide-issue   tr.my-row-issue { display: none; }
-  .my-table.hide-mission tr.my-row-mission,
-  .my-table.hide-mission tr.my-row-task { display: none; }
+  .my-table.hide-mission tr.my-row-mission { display: none; } /* Mission を隠しても配下 Task は残す */
   .my-table.hide-task    tr.my-row-task { display: none; }
+  .my-table.only-dri tr.my-row:not(.my-mine) { display: none; } /* ⑤ 自分が DRI の行のみ */
   /* 名前・狀態チップは表内で約 70% サイズ */
   .my-table .person-chip { font-size: 7px; padding: 0 5px; border-radius: 7px; margin: 1px 2px 1px 0; line-height: 1.6; }
   .my-table .st-badge { font-size: 7px; padding: 1px 6px; line-height: 1.4; }
@@ -571,12 +571,12 @@
   .my-c-no { font-size: var(--fs-2xs); color: #34507A; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .my-c-name { cursor: pointer; }
   /* iPhone 風スライドスイッチ（小・ヘッダーのレベル表示切替） */
-  .ios-sw { position: relative; display: inline-block; width: 24px; height: 13px; vertical-align: middle; }
+  .ios-sw { position: relative; display: inline-block; width: 17px; height: 10px; vertical-align: middle; }
   .ios-sw input { opacity: 0; width: 0; height: 0; position: absolute; }
-  .ios-sw .ios-track { position: absolute; inset: 0; background: rgba(255,255,255,.35); border-radius: 99px; transition: background .2s; cursor: pointer; }
-  .ios-sw .ios-track::before { content: ''; position: absolute; left: 1.5px; top: 1.5px; width: 10px; height: 10px; background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
-  .ios-sw input:checked + .ios-track { background: #34A853; }
-  .ios-sw input:checked + .ios-track::before { transform: translateX(11px); }
+  .ios-sw .ios-track { position: absolute; inset: 0; background: rgba(255,255,255,.45); border-radius: 99px; transition: background .2s; cursor: pointer; }
+  .ios-sw .ios-track::before { content: ''; position: absolute; left: 1.5px; top: 1.5px; width: 7px; height: 7px; background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+  .ios-sw input:checked + .ios-track { background: #fff; }
+  .ios-sw input:checked + .ios-track::before { transform: translateX(7px); background: #1A73E8; }
   .my-c-name.my-name:hover, .my-task-name:hover { color: var(--g-blue); text-decoration: underline; }
   .my-c-st, .my-c-link, .my-c-date, .my-c-folder { white-space: nowrap; text-align: center; }
   .my-c-comment { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; color: #3C4043; }
@@ -595,6 +595,23 @@
   .my-who-np .np-trigger { width: 100%; min-height: 26px; padding: 3px 9px; font-size: var(--fs-sm); }
   /* 各行セル編集用の浮遊ピッカー（固定配置で任意位置に出す） */
   .my-cell-pop { position: fixed; left: 0; top: 0; right: auto; width: 240px; z-index: 60; }
+  /* ⑥ NO.列は省略しない（全文表示） */
+  .my-table td.my-c-no { overflow: visible; text-overflow: clip; }
+  /* ① DRI ピッカーのチップを約70%／② メニューを横にも広げて全員見えるように */
+  .my-who-np .np-tag { font-size: 7px; padding: 0 5px 0 7px; line-height: 1.7; }
+  .my-who-np .np-x { font-size: 9px; }
+  #myWhoPickMenu { right: auto; width: min(760px, 92vw); }
+  #myWhoPickChips .author-chip { font-size: 7px; padding: 1px 6px; }
+  /* ⑦ 列幅リサイズ用ハンドル */
+  .my-table th { position: sticky; }
+  .my-col-rz { position: absolute; top: 0; right: -3px; width: 7px; height: 100%; cursor: col-resize; z-index: 4; }
+  .ctrl-bar .my-reset-col { padding: 3px 9px; font-size: 9px; border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer; color: var(--g-grey); }
+  .ctrl-bar .my-reset-col:hover { background: #F5F5F7; color: #1D1D1F; }
+  /* ⑤ Only my DRI スライド（明るい ctrl-bar 用の配色） */
+  .my-slide { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+  .ctrl-bar .ios-sw .ios-track { background: #C7CCD1; }
+  .ctrl-bar .ios-sw input:checked + .ios-track { background: #1A73E8; }
+  .ctrl-bar .ios-sw input:checked + .ios-track::before { background: #fff; }
   /* DRI 名前セレクター（チップ） */
   .my-who-chips { display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center; flex: 1; min-width: 0; }
   .my-who-chip { font-size: var(--fs-2xs); padding: 2px 9px; border-radius: 9px; cursor: pointer; border: 1px solid transparent; user-select: none; line-height: 1.6; white-space: nowrap; }
@@ -1326,19 +1343,21 @@
   <div class="ctrl-bar">
     <span class="my-who-label">DRI</span>
     <span class="np-wrap my-who-np" id="myWhoPickWrap">
-      <button type="button" class="author-trigger np-trigger is-placeholder" id="myWhoPickTrigger" data-placeholder="選擇你的名字"></button>
+      <button type="button" class="author-trigger np-trigger is-placeholder" id="myWhoPickTrigger" data-placeholder="Select name"></button>
       <div class="author-menu np-menu" id="myWhoPickMenu">
         <input type="text" class="author-menu-search" id="myWhoPickSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
         <div class="author-menu-chips" id="myWhoPickChips"></div>
       </div>
     </span>
     <span class="ctrl-sep"></span>
-    <label><input type="checkbox" id="myShowAll">看全部</label>
-    <label><input type="checkbox" id="myShowClosed">顯示結案/凍結/中止</label>
+    <label class="my-slide"><span>Only my DRI</span><span class="ios-sw"><input type="checkbox" id="myOnlyDri"><span class="ios-track"></span></span></label>
+    <label><input type="checkbox" id="myShowAll">Show all</label>
+    <label><input type="checkbox" id="myShowClosed">Show closed</label>
+    <button type="button" class="my-reset-col" id="myResetCol">Reset columns</button>
     <span class="ctrl-count" id="myCount"></span>
   </div>
   <div class="my-wrap" id="myWrap">
-    <div class="my-empty">請先在上方選擇你的 DRI 名字，以顯示與你相關的 Issue／Mission／Task。</div>
+    <div class="my-empty">Select your DRI name above to see your Issues / Missions / Tasks.</div>
   </div>
   <!-- 各行のDRI/協作/戰略組擔當セル編集用：共有チップピッカー（モーダルと同仕様） -->
   <div class="author-menu np-menu my-cell-pop" id="myCellMenu">
@@ -1696,7 +1715,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.39.0';
+const APP_VERSION = '0.40.0';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
@@ -4670,6 +4689,25 @@ function renderTabF() {
 
 // ===== 我的（名前起点メイン画面・2026-06-01 リデザイン P2）=====
 const MY_WHO_KEY = 'jig:myWho';
+// ⑦ 列幅（px・12列）。保存/デフォルト/リサイズ配線。
+const MY_COLW_KEY = 'jig:myColW';
+const MY_COLW_DEF = [92, 200, 200, 200, 40, 46, 92, 78, 230, 92, 96, 74];
+function _myColW() { try { const a = JSON.parse(localStorage.getItem(MY_COLW_KEY)); if (Array.isArray(a) && a.length === 12) return a; } catch (e) {} return MY_COLW_DEF.slice(); }
+function _mySaveColW(a) { localStorage.setItem(MY_COLW_KEY, JSON.stringify(a)); }
+function _myWireColResize() {
+  const tbl = document.querySelector('#myWrap table.my-table');
+  if (!tbl) return;
+  const cols = tbl.querySelectorAll('colgroup col');
+  tbl.querySelectorAll('th .my-col-rz').forEach((h, i) => {
+    h.addEventListener('mousedown', (ev) => {
+      ev.preventDefault(); ev.stopPropagation();
+      const w0 = cols[i].getBoundingClientRect().width, x0 = ev.clientX, arr = _myColW();
+      const mm = (e) => { const nw = Math.max(34, w0 + (e.clientX - x0)); cols[i].style.width = nw + 'px'; arr[i] = Math.round(nw); };
+      const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); _mySaveColW(arr); };
+      document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
+    });
+  });
+}
 function _myTodayStr() { const d = new Date(), p = x => String(x).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
 function _myNameMatch(field, who) {
   if (!field || !who) return false;
@@ -4678,11 +4716,11 @@ function _myNameMatch(field, who) {
 }
 function _myLastHtml(dateStr) {
   const d = parseDateLoose(dateStr);
-  if (!d) return '<span class="my-last">尚未記入</span>';
+  if (!d) return '<span class="my-last">未記入</span>';
   const days = Math.floor((Date.now() - d.getTime()) / 86400000);
   const cls = days > 14 ? ' stale' : (days > 7 ? ' warn' : '');
-  const txt = days <= 0 ? '今天' : `${days} 天前`;
-  return `<span class="my-last${cls}">上次：${txt}</span>`;
+  const txt = days <= 0 ? '今天' : (days === 1 ? '昨天' : `${days}天前`); // ⑨ 漢字の相対表示
+  return `<span class="my-last${cls}">${txt}</span>`;
 }
 function _myStatusGridHtml() {
   return '<span class="my-st-grid">' + STATUS_ORDER.map(v =>
@@ -4761,7 +4799,7 @@ function renderMyView() {
   const showClosed = !!document.getElementById('myShowClosed')?.checked;
   const countEl = document.getElementById('myCount');
   if (!who && !showAll) {
-    wrap.innerHTML = '<div class="my-empty">請先在上方點選你的 DRI 名字，顯示「你負責（含上下層）」的項目；或勾選「看全部」總覽。</div>';
+    wrap.innerHTML = '<div class="my-empty">Select your DRI name above to show your items (with up/down context), or turn on “Show all”.</div>';
     if (countEl) countEl.textContent = '';
     _myWire();
     return;
@@ -4805,7 +4843,7 @@ function renderMyView() {
     if (issueRelevant && !showClosed && isClosed(iss['狀態']) && !issMine && mBlocks.length === 0) return;
 
     // Issue 行
-    rows += `<tr class="my-row my-row-issue" data-kind="issue" data-id="${escapeAttr(inum)}">`
+    rows += `<tr class="my-row my-row-issue${issMine ? ' my-mine' : ''}" data-kind="issue" data-id="${escapeAttr(inum)}">`
       + `<td class="my-c-no">${_myDispNo(ii, null, null)}</td>`
       + `<td class="my-c-name my-c-issue my-name my-col-issue" data-kind="issue" data-id="${escapeAttr(inum)}" title="點擊：定義／編輯">${issMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(iss['Issue'] || '')}<span class="my-add my-add-m" data-id="${escapeAttr(inum)}" title="在此 Issue 下新增 Mission">＋M</span></td>`
       + `<td></td><td></td>`
@@ -4823,7 +4861,7 @@ function renderMyView() {
     mBlocks.forEach(mb => {
       const mid = (mb.m['編號'] || '').trim();
       const mn = +((String(mid).match(/-M(\d+)/) || [])[1]) || 0;
-      rows += `<tr class="my-row my-row-mission" data-kind="mission" data-id="${escapeAttr(mid)}">`
+      rows += `<tr class="my-row my-row-mission${mb.mMine ? ' my-mine' : ''}" data-kind="mission" data-id="${escapeAttr(mid)}">`
         + `<td class="my-c-no">${_myDispNo(ii, mn, null)}</td>`
         + `<td class="my-col-issue"></td>`
         + `<td class="my-c-name my-c-mission my-name my-col-mission" data-kind="mission" data-id="${escapeAttr(mid)}" title="點擊：定義／編輯">${mb.mMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(mb.m['Mission'] || mb.m['Issue'] || '')}<span class="my-add my-add-t" data-id="${escapeAttr(mid)}" title="在此 Mission 下新增 Task">＋T</span></td>`
@@ -4841,7 +4879,7 @@ function renderMyView() {
       mb.tRows.forEach(tr => {
         const tid = (tr.t['編號'] || '').trim();
         const tn = +((String(tid).match(/-[KT](\d+)/) || [])[1]) || 0;
-        rows += `<tr class="my-row my-row-task" data-kind="task" data-id="${escapeAttr(tid)}">`
+        rows += `<tr class="my-row my-row-task${tr.tMine ? ' my-mine' : ''}" data-kind="task" data-id="${escapeAttr(tid)}">`
           + `<td class="my-c-no">${_myDispNo(ii, mn, tn)}</td>`
           + `<td class="my-col-issue"></td><td class="my-col-mission"></td>`
           + `<td class="my-c-name my-c-task my-task-name" data-id="${escapeAttr(tid)}" title="點兩下可改名稱">${tr.tMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(tr.t['Task'] || '')}</td>`
@@ -4859,20 +4897,20 @@ function renderMyView() {
     });
   });
 
-  if (!rows) rows = `<tr><td colspan="12" class="my-empty">沒有符合的項目${showAll ? '' : '（試試勾選「看全部」）'}。</td></tr>`;
+  if (!rows) rows = `<tr><td colspan="12" class="my-empty">No matching items${showAll ? '' : ' (try “Show all”)'}.</td></tr>`;
   const LV = window._myLevelShow;
-  const tcls = 'my-table' + (LV.issue === false ? ' hide-issue' : '') + (LV.mission === false ? ' hide-mission' : '') + (LV.task === false ? ' hide-task' : '');
+  const onlyDri = !!document.getElementById('myOnlyDri')?.checked;
+  const tcls = 'my-table' + (LV.issue === false ? ' hide-issue' : '') + (LV.mission === false ? ' hide-mission' : '') + (LV.task === false ? ' hide-task' : '') + (onlyDri ? ' only-dri' : '');
+  const rz = '<span class="my-col-rz"></span>';
+  const cols = _myColW().map(w => `<col style="width:${w}px">`).join('');
   wrap.innerHTML = `<table class="${tcls}">`
-    + `<colgroup>`
-    + `<col style="width:58px"><col style="width:15%"><col style="width:15%"><col style="width:15%">`
-    + `<col style="width:38px"><col style="width:42px"><col style="width:76px"><col style="width:66px">`
-    + `<col style="width:19%"><col style="width:76px"><col style="width:84px"><col style="width:62px">`
-    + `</colgroup>`
+    + `<colgroup>${cols}</colgroup>`
     + `<thead><tr>`
-    + `<th>NO.</th><th>Issue${_mySwHtml('issue')}</th><th>Mission${_mySwHtml('mission')}</th><th>Task${_mySwHtml('task')}</th><th>Link</th><th>folder</th>`
-    + `<th>DRI</th><th>狀態</th><th>狀態紀錄</th><th>協作</th><th>戰略組擔當</th><th>記錄日</th>`
+    + `<th>NO.${rz}</th><th>Issue${_mySwHtml('issue')}${rz}</th><th>Mission${_mySwHtml('mission')}${rz}</th><th>Task${_mySwHtml('task')}${rz}</th><th>Link${rz}</th><th>folder${rz}</th>`
+    + `<th>DRI${rz}</th><th>Status${rz}</th><th>Progress${rz}</th><th>Collaborator${rz}</th><th>Supporter${rz}</th><th>Updated${rz}</th>`
     + `</tr></thead><tbody>${rows}</tbody></table>`;
-  if (countEl) countEl.textContent = showAll ? `全部 ${totalCount} 列` : `你負責 ${mineCount}（含上下層 ${totalCount} 列）`;
+  if (countEl) countEl.textContent = showAll ? `All ${totalCount}` : (onlyDri ? `My DRI ${mineCount}` : `DRI ${mineCount} (with context ${totalCount})`);
+  _myWireColResize();
   _myWire();
 }
 
@@ -5036,6 +5074,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (cs) cs.addEventListener('input', () => renderNamePickerChips('myCell', cs.value));
   document.getElementById('myShowClosed')?.addEventListener('change', renderMyView);
   document.getElementById('myShowAll')?.addEventListener('change', renderMyView);
+  document.getElementById('myOnlyDri')?.addEventListener('change', renderMyView);
+  document.getElementById('myResetCol')?.addEventListener('click', () => { localStorage.removeItem(MY_COLW_KEY); renderMyView(); });
   // 外側クリックでセル用ピッカーを閉じる→（変更があれば）再描画
   document.addEventListener('mousedown', (e) => {
     const pop = document.getElementById('myCellMenu');
