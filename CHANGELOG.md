@@ -5,6 +5,22 @@
 
 ---
 
+## v0.36.0 — 2026-06-01
+
+**[リデザイン P2] 名前起点メイン画面「我的」を新設**（詳細は `REDESIGN-PLAN.md` §4.1）
+
+「你是誰？」で自分の名前を選ぶと、自分に関わる Issue／Mission／Task が出る個人ビュー。タブの先頭・既定表示に。
+
+- **DRI 上段（我負責）／協作 下段（我協作）**：自分が DRI（戰略負責人/擔當/Task DRI）の項目を Issue→Mission→Task の3層ツリーで上段に、協作（Task の協作欄に名前）を下段に。
+- **インライン記入（ノーストレス）**：狀態はバッジクリックで7状態グリッド→即保存。Mission の「本週進度」は一行入力→記入（進度ログへ追記）。Task は進度を直接インライン編集。各 Mission 下に「＋ 新增 Task」。
+- **空白の可視化**：各行に「上次：N 天前」（>7日 橙・>14日 赤）。
+- **定義の常時表示**：Issue定義／Mission定義 をカード内に表示（カスケード健全性＝D8）。
+- **Task一覽（3層目）読込**：`loadTasksLayer()`→`window.tasksByParent`。汎用 POST `_postWrite`（addTask/updateTask）。
+- **7状態の表示統一**：`構想中/策劃中/待審核/進行中/結案/凍結/中止` の色を追加、旧 `未開始→構想中`・`需確認→待審核`・`完成→結案` を表示時に読み替え（`normalizeStatus`）。`statusBadge` 全体に適用。
+- 旧 `Task一覽`＝Mission 別名フォールバックを**廃止**（Task一覽 は3層目の実体になったため）。
+- 名前選択は localStorage 永続（`jig:myWho`）。既存タブ（A/B/C/F・詩雅/育菱・管理）は不変。
+- ⚠️ Task の追加/編集・定義列表示には **Apps Script 再公開（cascade1）＋ setupJIG** が前提（P1 参照）。未実施でも Issue/Mission の表示・狀態/進度記入は動作。
+
 ## [リデザイン P1] Apps Script データモデル拡張 — 2026-06-01
 
 **3層カスケード（Issue→Mission→Task）と7状態の器をバックエンドに用意**（詳細は `REDESIGN-PLAN.md`）。

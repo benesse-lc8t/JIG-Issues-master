@@ -273,6 +273,11 @@
   .st-進行中 { background: #4285F4; color: #fff; }
   .st-結案   { background: #34A853; color: #fff; }
   .st-完成   { background: #34A853; color: #fff; } /* 互換：旧ラベル */
+  /* 2026-06-01 リデザイン：7状態の新ラベル色 */
+  .st-構想中 { background: #9AA0A6; color: #fff; }
+  .st-待審核 { background: #F9AB00; color: #202124; }
+  .st-凍結   { background: #BDC1C6; color: #202124; }
+  .st-中止   { background: #D93025; color: #fff; }
   /* 空欄時は行種別バッジで埋める（欠落ではなく未評価と分かる） */
   .st-type   { display: inline-block; padding: 1px 6px; border-radius: 10px; font-weight: 700; font-size: 9px; line-height: 1.35; letter-spacing: 0.05em; }
   .st-type-issue { background: #E6F4EA; color: #137333; border: 1px dashed #34A853; }
@@ -476,6 +481,58 @@
   .conf-edit-row input.inline-edit { flex: 1; font-size: 10px; }
   .conf-edit-del { border: 1px solid var(--border); background: #fff; color: #80868B; border-radius: 3px; cursor: pointer; font-size: 10px; line-height: 1; padding: 3px 5px; }
   .conf-edit-del:hover { background: #FCE8E6; color: #C5221F; border-color: #EA4335; }
+
+  /* ===== 我的（名前起点メイン画面・2026-06-01 リデザイン P2）===== */
+  #panel-My.active { border-top: 3px solid #1A73E8; }
+  .my-wrap { padding: 14px 16px 40px; max-width: 1040px; margin: 0 auto; }
+  .my-who-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .my-who-bar .my-who-label { font-size: var(--fs-lg); font-weight: var(--fw-bold); color: #202124; }
+  .my-who-bar select { padding: 6px 12px; font-size: var(--fs-base); border: 1px solid var(--border); border-radius: 8px; background: #fff; font-family: inherit; min-width: 160px; }
+  .my-who-bar label { font-size: var(--fs-sm); color: #5F6368; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+  .my-empty { color: #80868B; font-size: var(--fs-base); padding: 30px 6px; text-align: center; }
+  .my-sec-head { display: flex; align-items: center; gap: 8px; margin: 18px 0 8px; font-size: var(--fs-h); font-weight: var(--fw-bold); }
+  .my-sec-dri  { color: #1A73E8; }
+  .my-sec-collab { color: #B06000; }
+  .my-sec-head .my-sec-count { font-size: var(--fs-sm); font-weight: var(--fw-semibold); background: #F1F3F4; color: #5F6368; border-radius: 9px; padding: 1px 9px; }
+  /* Issue ブロック */
+  .my-issue { border: 1px solid var(--border); border-radius: var(--radius-card); margin-bottom: 12px; overflow: hidden; background: #fff; box-shadow: var(--shadow-sm); }
+  .my-issue-head { padding: 8px 12px; background: #F8F9FB; border-bottom: 1px solid var(--hairline); }
+  .my-issue-num { font-size: var(--fs-xs); color: #80868B; font-weight: var(--fw-semibold); }
+  .my-issue-name { font-size: var(--fs-lg); font-weight: var(--fw-bold); color: #202124; margin-left: 6px; }
+  .my-def { font-size: var(--fs-xs); color: #5F6368; margin-top: 3px; line-height: 1.5; background: #FEF7E0; border-left: 3px solid #F9AB00; padding: 3px 8px; border-radius: 0 6px 6px 0; }
+  .my-def .my-def-tag { font-weight: var(--fw-bold); color: #B06000; margin-right: 5px; }
+  /* Mission カード */
+  .my-mission { border-top: 1px solid var(--hairline); padding: 8px 12px 8px 18px; }
+  .my-mission:first-child { border-top: none; }
+  .my-mrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .my-mnum { font-size: var(--fs-2xs); color: #9AA0A6; }
+  .my-mname { font-size: var(--fs-base); font-weight: var(--fw-semibold); color: #202124; }
+  .my-mine-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #1A73E8; margin-right: 2px; vertical-align: middle; }
+  .my-progress-line { display: flex; align-items: center; gap: 6px; margin-top: 5px; padding-left: 2px; }
+  .my-progress-line input { flex: 1; min-width: 120px; padding: 4px 8px; font-size: var(--fs-sm); border: 1px solid var(--border); border-radius: 6px; font-family: inherit; }
+  .my-progress-line input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+  .my-save-btn { border: 1px solid var(--g-blue); background: var(--g-blue); color: #fff; border-radius: 6px; font-size: var(--fs-xs); padding: 4px 12px; cursor: pointer; white-space: nowrap; }
+  .my-save-btn:hover { filter: brightness(1.08); }
+  .my-save-btn:disabled { opacity: 0.6; cursor: default; }
+  .my-last { font-size: var(--fs-2xs); color: #9AA0A6; white-space: nowrap; }
+  .my-last.warn { color: #B06000; } .my-last.stale { color: #C5221F; font-weight: var(--fw-bold); }
+  .my-st-pick { cursor: pointer; }
+  .my-st-grid { display: inline-flex; flex-wrap: wrap; gap: 3px; }
+  .my-st-grid .my-st-opt { font-size: var(--fs-2xs); padding: 2px 7px; border-radius: 9px; border: 1px solid var(--border); background: #fff; cursor: pointer; color: #3C4043; }
+  .my-st-grid .my-st-opt:hover { background: #E8F0FE; border-color: var(--g-blue); }
+  /* Task 行 */
+  .my-tasks { margin-top: 6px; padding-left: 14px; border-left: 2px dashed #E0E3E7; }
+  .my-task { display: flex; align-items: center; gap: 7px; padding: 3px 0; flex-wrap: wrap; }
+  .my-task .my-tnum { font-size: var(--fs-2xs); color: #BDC1C6; min-width: 18px; }
+  .my-task .my-tname { font-size: var(--fs-sm); color: #3C4043; }
+  .my-task .my-tprog { flex: 1; min-width: 100px; padding: 3px 7px; font-size: var(--fs-xs); border: 1px solid transparent; border-radius: 5px; background: #F5F6F8; font-family: inherit; }
+  .my-task .my-tprog:hover { border-color: var(--border); background: #fff; }
+  .my-task .my-tprog:focus { outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 2px var(--accent-bg); }
+  .my-addtask { font-size: var(--fs-2xs); color: var(--g-blue); cursor: pointer; padding: 3px 0 0 14px; display: inline-block; }
+  .my-addtask:hover { text-decoration: underline; }
+  .my-chip-row { display: inline-flex; gap: 3px; flex-wrap: wrap; }
+  .my-link { font-size: var(--fs-2xs); color: var(--g-blue); text-decoration: none; margin-left: 4px; }
+  .my-link:hover { text-decoration: underline; }
   .conf-edit-bar { display: flex; gap: 6px; align-items: center; }
   .conf-edit-add { border: 1px dashed var(--g-blue); background: var(--g-blue-bg); color: var(--g-blue); border-radius: 3px; cursor: pointer; font-size: 10px; padding: 3px 8px; }
   .conf-edit-save { border: 1px solid var(--g-blue); background: var(--g-blue); color: #fff; border-radius: 3px; cursor: pointer; font-size: 10px; padding: 3px 10px; margin-left: auto; }
@@ -1183,14 +1240,29 @@
 
 <div class="tabs">
   <div class="tab-thumb" id="tabThumb"></div>
-  <div class="tab active" onclick="show('A',event)">Issue &amp; Mission</div>
+  <div class="tab active" onclick="show('My',event)">我的</div>
+  <div class="tab" onclick="show('A',event)">Issue &amp; Mission</div>
   <div class="tab" onclick="show('C',event)">Mission進度</div>
   <div class="tab" onclick="show('B',event)">會議議程</div>
   <div class="tab" onclick="show('F',event)">DASHBOARD</div>
 </div>
 
+<!-- ===== My：我的（名前起点メイン画面・2026-06-01 リデザイン P2） ===== -->
+<div class="panel active" id="panel-My">
+  <div class="ctrl-bar">
+    <span class="my-who-label">你是誰？</span>
+    <select id="myWho"><option value="">— 請選擇你的名字 —</option></select>
+    <span class="ctrl-sep"></span>
+    <label><input type="checkbox" id="myShowClosed">顯示已結案／凍結／中止</label>
+    <span class="ctrl-count" id="myCount"></span>
+  </div>
+  <div class="my-wrap" id="myWrap">
+    <div class="my-empty">請先在上方選擇你的名字，以顯示與你相關的 Issue／Mission／Task。</div>
+  </div>
+</div>
+
 <!-- ===== A ===== -->
-<div class="panel active" id="panel-A">
+<div class="panel" id="panel-A">
 <div class="ctrl-bar" id="ctrlBarA">
   <input type="search" id="searchA" placeholder="🔍 搜尋 Issue / Mission / 擔當 / 組..." autocomplete="off">
   <select id="filterDeptA"><option value="">處：全部</option></select>
@@ -1538,9 +1610,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.35.0';
-const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'タイポグラフィのトークン体系を導入（:root に --fs-* 8段階／--fw-* 4種）。主要パーツ（本文・表セル・見出し・タブ・チップ・モーダル本文）を変数参照へ。CJK 逆効果の本文 300 は 400 に復帰。Apps Script 変更なし。';
+const APP_VERSION = '0.36.0';
+const APP_BUILD = '2026-06-01';
+const APP_NOTE  = 'リデザイン P2：名前起点メイン画面「我的」を新設（DRI 上段／協作 下段、Issue→Mission→Task の3層、狀態クリック編集・本週進度/Task進度のインライン記入・＋Task）。Task一覽（3層目）読込、7状態（構想中/策劃中/待審核/進行中/結案/凍結/中止）と旧ラベルの表示読み替え、Issue定義/Mission定義 表示。※Task の追加/編集は Apps Script 再公開＋setupJIG が前提。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1621,8 +1693,20 @@ const GROUP_DEF = {
 const AXIS_CLASS = { 'O':'ax-O','N':'ax-N','CV':'ax-CV','I':'ax-I','P':'ax-P' };
 const COLS = ['區分','軸','編號','Issue','Issue短縮','處','組','戰略負責人','管理頁面','確認會議','會議時間'];
 // 拡張列：Sheet に存在すれば読み込む。欠けていてもエラーにせず空文字とする。
-const OPTIONAL_COLS = ['種別','親編號','擔當','Confluence URL','狀態','事務局備註','Mission進度','更新日'];
-const STATUS_VALUES = new Set(['未開始','策劃中','需確認','進行中','結案','完成']); // '完成' は旧ラベル互換
+const OPTIONAL_COLS = ['種別','親編號','擔當','Confluence URL','狀態','事務局備註','Mission進度','更新日','Issue定義','Mission定義'];
+// ===== 状態（2026-06-01 リデザイン P2：Mission/Task は7状態）=====
+// 表示順（ピッカー・凡例の並び）。Issue は7状態を付けない（粗く運用）。
+const STATUS_ORDER = ['構想中','策劃中','待審核','進行中','結案','凍結','中止'];
+// 終了系（既定で畳む・振り返り可）
+const CLOSED_STATES = new Set(['結案','凍結','中止','完成']);
+// 旧ラベル → 新ラベルの表示読み替え（データ移行を待たずに表示を新体系へ）
+const STATUS_NORMALIZE = { '未開始':'構想中', '需確認':'待審核', '完成':'結案' };
+function normalizeStatus(s) {
+  const v = (s || '').trim();
+  return STATUS_NORMALIZE[v] || v;
+}
+// 妥当な状態の集合（新7状態＋旧ラベル互換）。バッジの class 判定に使う。
+const STATUS_VALUES = new Set([...STATUS_ORDER, '未開始','需確認','完成']);
 
 let issueData = [];   // array of row objects
 let shortNameMap = {}; // 編號 → Issue短縮（從內建 B/C/D 標籤擷取，作為雲端資料缺漏時的補值）
@@ -1636,9 +1720,9 @@ let shortNameMap = {}; // 編號 → Issue短縮（從內建 B/C/D 標籤擷取�
 // 若 SHEET_ID 留空，則沿用 HTML 內建的 A 主檔資料（從前的行為）。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 const SHEET_NAME = 'Issue主檔';
-// Mission シート名（v0.7.0〜）。後方互換のため旧名「Task一覽」もフォールバックで読む。
 const MISSION_SHEET_NAME = 'Mission一覽';
-const TASK_SHEET_NAME    = 'Task一覽'; // legacy 名（Phase 2 で完全に Mission へ移行予定）
+// 2026-06-01 リデザイン：Task一覽 は「3層目（Task）の実体」タブ（旧 Mission 別名としての用途は廃止）
+const TASK_SHEET_NAME    = 'Task一覽';
 const LOG_SHEET_NAME     = 'Mission進度ログ'; // 追記専用ログ（本人の週次進度・CLAUDE.md §1.5）
 
 // 編集 API（Mission進度タブのインライン編集に使用）
@@ -1656,14 +1740,10 @@ function sheetCsvUrls() {
   const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1`;
   return [`${base}&sheet=${encodeURIComponent(SHEET_NAME)}`, base];
 }
-// Mission シートを優先、無ければ旧 Task シートを試す
 function missionSheetCsvUrls() {
   if (!SHEET_ID) return [];
   const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1`;
-  return [
-    `${base}&sheet=${encodeURIComponent(MISSION_SHEET_NAME)}`,
-    `${base}&sheet=${encodeURIComponent(TASK_SHEET_NAME)}`,
-  ];
+  return [`${base}&sheet=${encodeURIComponent(MISSION_SHEET_NAME)}`];
 }
 function sheetEditUrl() {
   return SHEET_ID ? `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit` : '';
@@ -1758,7 +1838,7 @@ function harvestShortNames() {
 // 狀態バッジHTML
 // 空欄時は行種別バッジ（ISSUE / TASK）で埋めて「未評価」と分かるようにする
 function statusBadge(s, isMission) {
-  const v = (s || '').trim();
+  const v = normalizeStatus(s);  // 旧ラベルは新体系へ読み替えて表示
   if (!v) {
     return isMission
       ? '<span class="st-type st-type-mission">MISSION</span>'
@@ -4492,9 +4572,282 @@ function renderTabF() {
   }
 }
 
+// ===== 我的（名前起点メイン画面・2026-06-01 リデザイン P2）=====
+const MY_WHO_KEY = 'jig:myWho';
+function _myTodayStr() { const d = new Date(), p = x => String(x).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
+function _myNameMatch(field, who) {
+  if (!field || !who) return false;
+  return splitPersons(field).map(s => s.trim()).filter(Boolean)
+    .some(n => n === who || n.includes(who) || who.includes(n));
+}
+function _myLastHtml(dateStr) {
+  const d = parseDateLoose(dateStr);
+  if (!d) return '<span class="my-last">尚未記入</span>';
+  const days = Math.floor((Date.now() - d.getTime()) / 86400000);
+  const cls = days > 14 ? ' stale' : (days > 7 ? ' warn' : '');
+  const txt = days <= 0 ? '今天' : `${days} 天前`;
+  return `<span class="my-last${cls}">上次：${txt}</span>`;
+}
+function _myStatusGridHtml() {
+  return '<span class="my-st-grid">' + STATUS_ORDER.map(v =>
+    `<span class="my-st-opt" data-v="${escapeHtml(v)}">${escapeHtml(v)}</span>`).join('') + '</span>';
+}
+function populateMyWho() {
+  const sel = document.getElementById('myWho');
+  if (!sel) return;
+  let names = [];
+  const pm = window.personMap || {};
+  const keys = Object.keys(pm);
+  if (keys.length) {
+    names = keys.sort((a, b) => {
+      const oa = +(pm[a].order || 0), ob = +(pm[b].order || 0);
+      if (oa !== ob) return oa - ob;
+      return String(pm[a].dept || '').localeCompare(String(pm[b].dept || '')) || a.localeCompare(b);
+    });
+  } else {
+    names = (typeof collectAuthorNames === 'function' ? collectAuthorNames() : []);
+  }
+  const cur = sel.value || localStorage.getItem(MY_WHO_KEY) || '';
+  sel.innerHTML = '<option value="">— 請選擇你的名字 —</option>' +
+    names.map(n => `<option value="${escapeHtml(n)}"${n === cur ? ' selected' : ''}>${escapeHtml(n)}</option>`).join('');
+  if (cur && names.includes(cur)) sel.value = cur;
+}
+// Mission 1件の HTML（タスクは showTasks のものを含める）
+function _myMissionHtml(m, who, taskList) {
+  const mid = (m['編號'] || '').trim();
+  const mine = _myNameMatch(m['戰略負責人'], who) || _myNameMatch(m['擔當'], who);
+  const def = (m['Mission定義'] || '').trim();
+  const conf = (m['Confluence URL'] || '').trim();
+  const confLink = conf ? ` <a class="my-link" href="${escapeHtml(conf.split(/[\n,]/)[0].split('|').pop().trim())}" target="_blank" rel="noopener">Confluence ↗</a>` : '';
+  let h = `<div class="my-mission" data-mid="${escapeHtml(mid)}">`;
+  h += `<div class="my-mrow">`;
+  h += `<span class="my-mnum">${escapeHtml(mid)}</span>`;
+  h += `<span class="my-mname">${mine ? '<span class="my-mine-dot" title="你負責"></span>' : ''}${escapeHtml(m['Mission'] || m['Issue'] || '')}</span>`;
+  h += `<span class="my-st-pick" data-kind="mission" data-id="${escapeHtml(mid)}" title="點擊變更狀態">${statusBadge(m['狀態'], true)}</span>`;
+  h += _myLastHtml(m['更新日']) + confLink;
+  h += `</div>`;
+  if (def) h += `<div class="my-def"><span class="my-def-tag">Mission定義</span>${escapeHtml(def)}</div>`;
+  // 本週進度（一行・短文）: 保存で Mission進度ログへ追記
+  h += `<div class="my-progress-line">`;
+  h += `<input type="text" class="my-mprog-input" maxlength="120" placeholder="本週進度（一行）…重的內容請貼 Confluence 連結">`;
+  h += `<button class="my-save-btn my-save-mprog" data-id="${escapeHtml(mid)}">記入</button>`;
+  h += `</div>`;
+  // tasks
+  if (taskList && taskList.length) {
+    h += `<div class="my-tasks">`;
+    taskList.forEach(t => { h += _myTaskHtml(t, who); });
+    h += `</div>`;
+  }
+  h += `<span class="my-addtask" data-mid="${escapeHtml(mid)}">＋ 新增 Task</span>`;
+  h += `</div>`;
+  return h;
+}
+function _myTaskHtml(t, who) {
+  const tid = (t['編號'] || '').trim();
+  const mine = _myNameMatch(t['DRI'], who);
+  const n = (tid.match(/-K(\d+)$/) || [])[1] || '';
+  let h = `<div class="my-task" data-tid="${escapeHtml(tid)}">`;
+  h += `<span class="my-tnum">${n ? 'K' + n : ''}</span>`;
+  h += `<span class="my-tname">${mine ? '<span class="my-mine-dot" title="你負責"></span>' : ''}${escapeHtml(t['Task'] || '')}</span>`;
+  h += `<span class="my-st-pick" data-kind="task" data-id="${escapeHtml(tid)}" title="點擊變更狀態">${statusBadge(t['狀態'], true)}</span>`;
+  h += `<input type="text" class="my-tprog" data-id="${escapeHtml(tid)}" maxlength="120" value="${escapeHtml(t['進度'] || '')}" placeholder="進度（一行）…">`;
+  h += _myLastHtml(t['更新日']);
+  h += `</div>`;
+  return h;
+}
+function renderMyView() {
+  const wrap = document.getElementById('myWrap');
+  if (!wrap) return;
+  populateMyWho();
+  const who = (document.getElementById('myWho') || {}).value || '';
+  const showClosed = !!document.getElementById('myShowClosed')?.checked;
+  const countEl = document.getElementById('myCount');
+  if (!who) {
+    wrap.innerHTML = '<div class="my-empty">請先在上方選擇你的名字，以顯示與你相關的 Issue／Mission／Task。</div>';
+    if (countEl) countEl.textContent = '';
+    _myWire();
+    return;
+  }
+  const tasksByParent = window.tasksByParent || {};
+  const isClosed = s => CLOSED_STATES.has(normalizeStatus(s));
+  const issues = issueData.filter(r => (r['種別'] || 'Issue') !== 'Mission');
+  const missionsByParent = {};
+  issueData.filter(r => r['種別'] === 'Mission').forEach(m => {
+    const p = (m['親編號'] || '').trim();
+    (missionsByParent[p] = missionsByParent[p] || []).push(m);
+  });
+  const missionById = {};
+  issueData.filter(r => r['種別'] === 'Mission').forEach(m => { missionById[(m['編號'] || '').trim()] = m; });
+
+  // ---- DRI セクション（我負責）----
+  let driHtml = '', driCount = 0;
+  issues.forEach(iss => {
+    const inum = (iss['編號'] || '').trim();
+    const issDri = _myNameMatch(iss['戰略負責人'], who) || _myNameMatch(iss['擔當'], who);
+    const missions = (missionsByParent[inum] || []);
+    const relMissions = [];
+    missions.forEach(m => {
+      const mid = (m['編號'] || '').trim();
+      const allTasks = (tasksByParent[mid] || []);
+      const mDri = _myNameMatch(m['戰略負責人'], who) || _myNameMatch(m['擔當'], who);
+      const driTasks = allTasks.filter(t => _myNameMatch(t['DRI'], who));
+      const include = issDri || mDri || driTasks.length > 0;
+      if (!include) return;
+      if (!showClosed && isClosed(m['狀態']) && !mDri && !issDri && driTasks.length === 0) return;
+      // 表示するタスク：自分が DRI のタスク（issue/mission DRI のときは全タスク）
+      let shownTasks = (issDri || mDri) ? allTasks : driTasks;
+      if (!showClosed) shownTasks = shownTasks.filter(t => !isClosed(t['狀態']));
+      relMissions.push({ m, tasks: shownTasks });
+    });
+    const showIssue = issDri || relMissions.length > 0;
+    if (!showIssue) return;
+    if (!showClosed && isClosed(iss['狀態']) && !issDri && relMissions.length === 0) return;
+    driCount++;
+    const idef = (iss['Issue定義'] || '').trim();
+    driHtml += `<div class="my-issue"><div class="my-issue-head">`;
+    driHtml += `<span class="my-issue-num">${escapeHtml(inum)}</span><span class="my-issue-name">${escapeHtml(iss['Issue'] || '')}</span>`;
+    if (idef) driHtml += `<div class="my-def"><span class="my-def-tag">Issue定義</span>${escapeHtml(idef)}</div>`;
+    driHtml += `</div>`;
+    if (!relMissions.length) {
+      driHtml += `<div class="my-mission"><span class="my-mnum" style="color:#BDC1C6">（此 Issue 下尚無你負責的 Mission）</span></div>`;
+    }
+    relMissions.forEach(rm => { driHtml += _myMissionHtml(rm.m, who, rm.tasks); });
+    driHtml += `</div>`;
+  });
+
+  // ---- 協作セクション（我協作：協作タスク）----
+  let collabHtml = '', collabCount = 0;
+  const collabByMission = {};
+  Object.keys(tasksByParent).forEach(mid => {
+    tasksByParent[mid].forEach(t => {
+      if (_myNameMatch(t['協作'], who) && !_myNameMatch(t['DRI'], who)) {
+        if (!showClosed && isClosed(t['狀態'])) return;
+        (collabByMission[mid] = collabByMission[mid] || []).push(t);
+      }
+    });
+  });
+  Object.keys(collabByMission).forEach(mid => {
+    const m = missionById[mid];
+    const iss = m ? issues.find(i => (i['編號'] || '').trim() === (m['親編號'] || '').trim()) : null;
+    collabHtml += `<div class="my-issue"><div class="my-issue-head">`;
+    collabHtml += `<span class="my-issue-num">${escapeHtml(mid)}</span><span class="my-issue-name">${escapeHtml((m && (m['Mission'] || m['Issue'])) || mid)}</span>`;
+    if (iss) collabHtml += `<div class="my-def" style="background:#E8F0FE;border-left-color:#1A73E8"><span class="my-def-tag" style="color:#1967D2">所屬 Issue</span>${escapeHtml(iss['Issue'] || '')}</div>`;
+    collabHtml += `</div><div class="my-mission"><div class="my-tasks">`;
+    collabByMission[mid].forEach(t => { collabHtml += _myTaskHtml(t, who); collabCount++; });
+    collabHtml += `</div></div></div>`;
+  });
+
+  let html = '';
+  html += `<div class="my-sec-head my-sec-dri">我負責（DRI）<span class="my-sec-count">${driCount}</span></div>`;
+  html += driHtml || '<div class="my-empty">目前沒有你負責的項目。</div>';
+  html += `<div class="my-sec-head my-sec-collab">我協作<span class="my-sec-count">${collabCount}</span></div>`;
+  html += collabHtml || '<div class="my-empty">目前沒有你協作的 Task。</div>';
+  wrap.innerHTML = html;
+  if (countEl) countEl.textContent = `負責 ${driCount} ・ 協作 ${collabCount}`;
+  _myWire();
+}
+// イベント委譲（一度だけ配線）
+function _myWire() {
+  const wrap = document.getElementById('myWrap');
+  if (!wrap || wrap._myWired) return;
+  wrap._myWired = true;
+  wrap.addEventListener('click', async (e) => {
+    const opt = e.target.closest('.my-st-opt');
+    if (opt) {
+      const pick = opt.closest('.my-st-pick');
+      await _mySetStatus(pick.dataset.kind, pick.dataset.id, opt.dataset.v);
+      return;
+    }
+    const pick = e.target.closest('.my-st-pick');
+    if (pick && !pick.querySelector('.my-st-grid')) {
+      pick.dataset.prev = pick.innerHTML;
+      pick.innerHTML = _myStatusGridHtml();
+      return;
+    }
+    const sb = e.target.closest('.my-save-mprog');
+    if (sb) { await _mySaveMissionProg(sb); return; }
+    const at = e.target.closest('.my-addtask');
+    if (at) { await _myAddTask(at.dataset.mid); return; }
+  });
+  wrap.addEventListener('change', async (e) => {
+    const tp = e.target.closest('.my-tprog');
+    if (tp) await _mySaveTaskProg(tp.dataset.id, tp.value, tp);
+  });
+}
+async function _mySetStatus(kind, id, val) {
+  if (kind === 'mission') {
+    const r = await saveMissionEdit(id, { '狀態': val });
+    if (r) {
+      const m = issueData.find(x => x['種別'] === 'Mission' && (x['編號'] || '').trim() === id);
+      if (m) { m['狀態'] = val; m['更新日'] = _myTodayStr(); }
+      toast(`已更新狀態：${val}`, 'success');
+    }
+  } else {
+    const r = await _postWrite({ action: 'updateTask', '編號': id, '狀態': val });
+    if (r) {
+      const t = _myFindTask(id);
+      if (t) { t['狀態'] = val; t['更新日'] = _myTodayStr(); }
+      toast(`已更新狀態：${val}`, 'success');
+    }
+  }
+  renderMyView();
+}
+async function _mySaveMissionProg(btn) {
+  const id = btn.dataset.id;
+  const inp = btn.closest('.my-progress-line').querySelector('.my-mprog-input');
+  const text = (inp.value || '').trim();
+  if (!text) { toast('請先輸入本週進度', 'error'); return; }
+  btn.disabled = true; btn.textContent = '記入中…';
+  const r = await saveMissionEdit(id, { '備註': text });
+  if (r) {
+    const m = issueData.find(x => x['種別'] === 'Mission' && (x['編號'] || '').trim() === id);
+    if (m) { m['Mission進度'] = text; m['更新日'] = _myTodayStr(); }
+    const who = (document.getElementById('myWho') || {}).value || '';
+    (window.missionLog[id] = window.missionLog[id] || []).unshift({ date: _myTodayStr(), author: who, text });
+    toast('已記入本週進度', 'success');
+    renderMyView();
+  } else { btn.disabled = false; btn.textContent = '記入'; }
+}
+async function _mySaveTaskProg(id, text, inp) {
+  text = (text || '').trim();
+  if (inp) inp.disabled = true;
+  const r = await _postWrite({ action: 'updateTask', '編號': id, '進度': text });
+  if (r) {
+    const t = _myFindTask(id);
+    if (t) { t['進度'] = text; t['更新日'] = _myTodayStr(); }
+    toast('已更新 Task 進度', 'success');
+  }
+  if (inp) inp.disabled = false;
+}
+async function _myAddTask(mid) {
+  const name = (window.prompt('新增 Task（一行）。重的內容請貼 Confluence 連結：', '') || '').trim();
+  if (!name) return;
+  const who = (document.getElementById('myWho') || {}).value || '';
+  const r = await _postWrite({ action: 'addTask', '親編號': mid, 'Task': name, 'DRI': who, '狀態': '構想中' });
+  if (r) {
+    toast(`已新增 Task：${r['編號'] || ''}`, 'success');
+    await loadTasksLayer();
+    renderMyView();
+  }
+}
+function _myFindTask(id) {
+  const m = window.tasksByParent || {};
+  for (const p of Object.keys(m)) {
+    const t = m[p].find(x => (x['編號'] || '').trim() === id);
+    if (t) return t;
+  }
+  return null;
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const sel = document.getElementById('myWho');
+  if (sel) sel.addEventListener('change', () => { localStorage.setItem(MY_WHO_KEY, sel.value || ''); renderMyView(); });
+  document.getElementById('myShowClosed')?.addEventListener('change', renderMyView);
+});
+
 function renderAll() {
   _personDeptMap = buildPersonDeptMap(); // 人物チップ配色キャッシュを更新
   renderAnnounceBoard();                 // お知らせボード
+  renderMyView();                        // 我的（名前起点メイン画面）
   renderTableA();
   renderTableB();
   renderTableC();
@@ -4562,7 +4915,6 @@ async function loadMissionsAndMerge(issues) {
   const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1`;
   const tries = [
     { name: MISSION_SHEET_NAME, url: `${base}&sheet=${encodeURIComponent(MISSION_SHEET_NAME)}` },
-    { name: TASK_SHEET_NAME,    url: `${base}&sheet=${encodeURIComponent(TASK_SHEET_NAME)}` },
   ];
   window._missionLoadDebug = []; // 後でユーザに見せる為のログ
   for (const t of tries) {
@@ -4596,7 +4948,7 @@ async function loadMissionsAndMerge(issues) {
         continue;
       }
       const idx = {};
-      ['編號','Mission','Task','Issue','親編號','擔當','戰略負責人','狀態','Mission進度','事務局備註','更新日','Confluence URL']
+      ['編號','Mission','Task','Issue','親編號','擔當','戰略負責人','狀態','Mission進度','事務局備註','更新日','Confluence URL','Mission定義']
         .forEach(c => { idx[c] = headers.indexOf(c); });
       const issueByNum = new Map();
       issues.forEach(r => issueByNum.set((r['編號']||'').trim(), r));
@@ -4635,6 +4987,7 @@ async function loadMissionsAndMerge(issues) {
           '狀態':        get('狀態'),
           'Mission進度': get('Mission進度'),
           '事務局備註':  get('事務局備註'),
+          'Mission定義': get('Mission定義'),
           '更新日':      get('更新日'),
         });
       }
@@ -4715,6 +5068,68 @@ async function loadMissionLog() {
   }
 }
 
+// ===== Task一覽（3層目）を読み込む（2026-06-01 リデザイン P2）=====
+// window.tasksByParent = { 親Mission編號: [ {編號,Task,親編號,DRI,協作,狀態,進度,更新日,連結}, ... ] }
+window.tasksByParent = window.tasksByParent || {};
+async function loadTasksLayer() {
+  window.tasksByParent = {};
+  if (!SHEET_ID) return;
+  const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1`;
+  const url = `${base}&sheet=${encodeURIComponent(TASK_SHEET_NAME)}`;
+  try {
+    const res = await fetch(url + '&_=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return;
+    const csv = await res.text();
+    if (!csv || csv.trim().startsWith('<')) return; // シート未作成など
+    const wb = XLSX.read(csv, { type: 'string' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+    if (rows.length < 2) return;
+    const headers = rows[0].map(h => String(h).trim());
+    // Task シート判定：'Task' と '親編號' が無ければ別シートが返ったとみなしスキップ
+    if (headers.indexOf('親編號') < 0 || headers.indexOf('Task') < 0) return;
+    const want = ['編號','Task','親編號','DRI','協作','狀態','進度','更新日','連結'];
+    const ci = {}; want.forEach(c => ci[c] = headers.indexOf(c));
+    const map = {};
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r.every(v => v === '' || v == null)) continue;
+      const get = c => ci[c] >= 0 ? String(r[ci[c]] ?? '').trim() : '';
+      const num = get('編號'), parent = get('親編號');
+      const content = get('Task');
+      if (!num && !content) continue;
+      const obj = { '編號':num, 'Task':content, '親編號':parent, 'DRI':get('DRI'),
+        '協作':get('協作'), '狀態':get('狀態'), '進度':get('進度'),
+        '更新日':get('更新日'), '連結':get('連結'), '_i':i };
+      (map[parent] = map[parent] || []).push(obj);
+    }
+    // 編號順に整列（親編號-K{n} の n 昇順）
+    Object.keys(map).forEach(p => map[p].sort((a,b) => {
+      const na = (a['編號'].match(/-K(\d+)$/)||[])[1], nb = (b['編號'].match(/-K(\d+)$/)||[])[1];
+      if (na != null && nb != null) return (+na) - (+nb);
+      return a._i - b._i;
+    }));
+    window.tasksByParent = map;
+  } catch (e) {
+    console.warn('[tasksLayer] 読込失敗', e);
+  }
+}
+
+// ===== 汎用 POST（addTask/updateTask 等。saveMissionEdit と違い mission 必須チェック無し）=====
+async function _postWrite(payload) {
+  if (!SHEET_WRITE_URL) { toast('編輯功能未設定：請管理員設定 Web App URL', 'error'); return null; }
+  try {
+    const res = await fetch(SHEET_WRITE_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ token: WRITE_TOKEN }, payload)), redirect: 'follow',
+    });
+    const text = await res.text();
+    let data; try { data = JSON.parse(text); } catch (_) { data = { ok:false, error:'bad_response', raw:text }; }
+    if (!data.ok) { toast(`儲存失敗：${data.error || 'unknown'}`, 'error'); console.warn('[postWrite]', data, payload); return null; }
+    return data;
+  } catch (e) { toast(`網路錯誤：${e.message}`, 'error'); return null; }
+}
+
 // ===== 從 Google 試算表載入（唯一資料來源）=====
 async function loadFromSheet() {
   const urls = sheetCsvUrls();
@@ -4741,6 +5156,7 @@ async function loadFromSheet() {
       fillShortNames(data);
       issueData = data;
       await loadMissionLog();   // 追記ログを取得（モーダルのタイムライン用）
+      await loadTasksLayer();   // Task一覽（3層目）を取得（我的画面用）
       await loadPersonMaster(); // 人員マスタ（記入者チップの名前・色）
       await loadPersonalMemos(); // 個人備註（詩雅/育菱の私的メモ）
       await loadAnnounce();      // 公告（お知らせボード）
