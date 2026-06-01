@@ -535,7 +535,7 @@
   .my-link:hover { text-decoration: underline; }
   /* 我的：階層テーブル */
   .my-wrap { padding: 10px 12px 40px; max-width: none; }
-  table.my-table { width: max-content; min-width: 100%; border-collapse: collapse; font-size: var(--fs-xs); table-layout: fixed; }
+  table.my-table { width: 100%; border-collapse: collapse; font-size: var(--fs-xs); table-layout: fixed; }
   .my-table th { position: sticky; top: 0; z-index: 2; background: #1A73E8; color: #fff; padding: 4px 6px; text-align: center; font-weight: var(--fw-bold); border: 1px solid #1665D8; font-size: var(--fs-sm); white-space: nowrap; }
   .my-table th .ios-sw { margin-left: 5px; }
   .my-table td { padding: 3px 8px; border: 1px solid #E6EAF0; vertical-align: middle; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -548,9 +548,10 @@
   .my-table tr.my-row td.my-col-issue   { background: #C8DAF4; }
   .my-table tr.my-row td.my-col-mission { background: #E5EEFB; }
   /* ヘッダートグルによるレベル表示切替（mission を隠すと配下 task も隠す） */
-  .my-table.hide-issue   tr.my-row-issue { display: none; }
-  .my-table.hide-mission tr.my-row-mission { display: none; } /* Mission を隠しても配下 Task は残す */
-  .my-table.hide-task    tr.my-row-task { display: none; }
+  /* レベルトグル OFF → その層の行を隠し、かつ列ごと消す（① 列ごと非表示） */
+  .my-table.hide-issue   tr.my-row-issue,   .my-table.hide-issue   col:nth-child(2), .my-table.hide-issue   th:nth-child(2), .my-table.hide-issue   td:nth-child(2) { display: none; }
+  .my-table.hide-mission tr.my-row-mission, .my-table.hide-mission col:nth-child(3), .my-table.hide-mission th:nth-child(3), .my-table.hide-mission td:nth-child(3) { display: none; } /* 配下 Task は残す */
+  .my-table.hide-task    tr.my-row-task,    .my-table.hide-task    col:nth-child(4), .my-table.hide-task    th:nth-child(4), .my-table.hide-task    td:nth-child(4) { display: none; }
   .my-table.only-dri tr.my-row:not(.my-mine) { display: none; } /* ⑤ 自分が DRI の行のみ */
   /* 名前・狀態チップは表内で約 70% サイズ */
   .my-table .person-chip { font-size: 7px; padding: 0 5px; border-radius: 7px; margin: 1px 2px 1px 0; line-height: 1.6; }
@@ -598,8 +599,8 @@
   /* ⑥ NO.列は省略しない（全文表示） */
   .my-table td.my-c-no { overflow: visible; text-overflow: clip; }
   /* ① DRI ピッカーのチップを約70%／② メニューを横にも広げて全員見えるように */
-  .my-who-np .np-tag { font-size: 7px; padding: 0 5px 0 7px; line-height: 1.7; }
-  .my-who-np .np-x { font-size: 9px; }
+  #myWhoPickTrigger .np-tag { font-size: 7px; padding: 0 4px 0 6px; line-height: 1.6; }
+  #myWhoPickTrigger .np-x { font-size: 8px; margin-left: 2px; }
   #myWhoPickMenu { right: auto; width: min(760px, 92vw); }
   #myWhoPickChips .author-chip { font-size: 7px; padding: 1px 6px; }
   /* ⑦ 列幅リサイズ用ハンドル */
@@ -1351,8 +1352,8 @@
     </span>
     <span class="ctrl-sep"></span>
     <label class="my-slide"><span>Only my DRI</span><span class="ios-sw"><input type="checkbox" id="myOnlyDri"><span class="ios-track"></span></span></label>
-    <label><input type="checkbox" id="myShowAll">Show all</label>
-    <label><input type="checkbox" id="myShowClosed">Show closed</label>
+    <label class="my-slide"><span>Show all</span><span class="ios-sw"><input type="checkbox" id="myShowAll"><span class="ios-track"></span></span></label>
+    <label class="my-slide"><span>Show closed</span><span class="ios-sw"><input type="checkbox" id="myShowClosed"><span class="ios-track"></span></span></label>
     <button type="button" class="my-reset-col" id="myResetCol">Reset columns</button>
     <span class="ctrl-count" id="myCount"></span>
   </div>
@@ -1715,7 +1716,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.40.0';
+const APP_VERSION = '0.40.1';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
@@ -4701,9 +4702,13 @@ function _myWireColResize() {
   tbl.querySelectorAll('th .my-col-rz').forEach((h, i) => {
     h.addEventListener('mousedown', (ev) => {
       ev.preventDefault(); ev.stopPropagation();
-      const w0 = cols[i].getBoundingClientRect().width, x0 = ev.clientX, arr = _myColW();
-      const mm = (e) => { const nw = Math.max(34, w0 + (e.clientX - x0)); cols[i].style.width = nw + 'px'; arr[i] = Math.round(nw); };
-      const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); _mySaveColW(arr); };
+      // <col> は箱を持たず getBoundingClientRect が 0 を返すため、th の実幅を基準にする
+      const th = h.closest('th');
+      const w0 = th ? th.getBoundingClientRect().width : 80;
+      const x0 = ev.clientX, arr = _myColW();
+      document.body.style.userSelect = 'none';
+      const mm = (e) => { const nw = Math.max(34, w0 + (e.clientX - x0)); if (cols[i]) cols[i].style.width = nw + 'px'; arr[i] = Math.round(nw); };
+      const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); document.body.style.userSelect = ''; _mySaveColW(arr); };
       document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
     });
   });
@@ -5073,8 +5078,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const cs = document.getElementById('myCellSearch');
   if (cs) cs.addEventListener('input', () => renderNamePickerChips('myCell', cs.value));
   document.getElementById('myShowClosed')?.addEventListener('change', renderMyView);
-  document.getElementById('myShowAll')?.addEventListener('change', renderMyView);
-  document.getElementById('myOnlyDri')?.addEventListener('change', renderMyView);
+  document.getElementById('myShowAll')?.addEventListener('change', (e) => {
+    if (e.target.checked) { const o = document.getElementById('myOnlyDri'); if (o) o.checked = false; } // Show all と Only my DRI は排他
+    renderMyView();
+  });
+  document.getElementById('myOnlyDri')?.addEventListener('change', (e) => {
+    if (e.target.checked) { const a = document.getElementById('myShowAll'); if (a) a.checked = false; } // ④ Only my DRI ON で Show all を OFF
+    renderMyView();
+  });
   document.getElementById('myResetCol')?.addEventListener('click', () => { localStorage.removeItem(MY_COLW_KEY); renderMyView(); });
   // 外側クリックでセル用ピッカーを閉じる→（変更があれば）再描画
   document.addEventListener('mousedown', (e) => {
