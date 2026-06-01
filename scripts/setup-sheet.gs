@@ -435,7 +435,8 @@ function _handleAddMission(ss, data) {
     '擔當': String(data['擔當'] || ''),
     '狀態': status,
     '更新日': new Date(),
-    'Confluence URL': String(data['Confluence URL'] || '')
+    'Confluence URL': String(data['Confluence URL'] || ''),
+    'Mission定義': String(data['Mission定義'] || '')
   };
   const r = _appendByHeaders(sheet, vmap);
   SpreadsheetApp.flush();
@@ -556,7 +557,7 @@ function _handleUpdate(ss, data, sheetName) {
   const vmap = {};
   // Issue/Mission/Task で使い得るフィールドを一括許容（対象シートに無い列は colOf=-1 でスキップ）
   ['Issue', 'Mission', 'Task', '擔當', '戰略負責人', 'DRI', '協作', '處', '組',
-   '狀態', 'Confluence URL', '連結', '進度', 'Issue定義', 'Mission定義'].forEach(k => {
+   '狀態', 'Confluence URL', '連結', '進度', 'Issue定義', 'Mission定義', '事務局備註'].forEach(k => {
     if (Object.prototype.hasOwnProperty.call(data, k)) vmap[k] = String(data[k]);
   });
   vmap['更新日'] = new Date();
@@ -670,7 +671,8 @@ function _handleAddIssue(ss, data) {
     '戰略負責人': String(data['戰略負責人'] || ''),
     '狀態': status,
     '更新日': new Date(),
-    'Confluence URL': String(data['Confluence URL'] || '')
+    'Confluence URL': String(data['Confluence URL'] || ''),
+    'Issue定義': String(data['Issue定義'] || '')
   };
   const r = _appendByHeaders(sheet, vmap);
   SpreadsheetApp.flush();
