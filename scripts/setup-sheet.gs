@@ -1087,47 +1087,103 @@ function colToLetter(c) {
 // =====================================================================
 const DUMMY_MARK = '〔範例〕'; // Mission進度 / 進度 の先頭に付与（clear の目印）
 
-const DUMMY_DATA = [
-  { parent: '戰略-1', mission: 'BCL收集戰略-綁定理由&LP', lead: '張育菱', owner: '張育菱', status: '進行中',
-    def: '讓 BCL 名單以低成本可複製方式增加，並確保綁定理由清晰、LP 轉換順暢。', age: 2,
-    tasks: [
-      { name: '綁定計劃', dri: '陳少琪', collab: '王詩雅', status: '策劃中', prog: '盤點現有綁定誘因，彙整 3 個方案', age: 3 },
-      { name: 'LP A/B 測試設計', dri: '竹下友梨', collab: '', status: '構想中', prog: '定義假設與 KPI（綁定率）', age: 6 },
-      { name: '0歲前後名單比率分析', dri: '阿比留華', collab: '張育菱', status: '待審核', prog: '初版分析待詩雅確認', age: 9 },
+// Issue が無い部門用の範例 Issue（無ければ seedJIGDummy が作成。事務局備註に DUMMY_MARK）
+const DUMMY_ISSUES_FALLBACK = {
+  '財務-1':   { name: '財務數據可視化與內控強化', dept: '財務',   group: '9.財務',     def: '統一前提的損益/預算/現金流數據架構，支援經營決策。' },
+  '總管理-1': { name: '營運基盤與跨部門協調強化', dept: '總管理', group: '10.統籌整合', def: '建構共同節奏與文化定著，整合電商×CS×倉庫×配送端對端節奏。' },
+};
+
+// 1 組 = 1 Mission（lead=處長＝戰略組擔當・擔當=組代表）、組員 = 各 1 Task の DRI。全 51 名を網羅。
+// n=姓名 / t=Task / s=狀態 / a=更新日(何日前) / p=進度 / c=協作
+const DUMMY_GROUPS = [
+  { issue: '戰略-1', mission: '經營戰略組：BCL/LC8T 推進', lead: '小沼和幸', status: '進行中', age: 1,
+    def: '彙整全公司 KPI，推動 BCL 新客招募與 LC8T 行銷自動化，並協調跨部門策略。',
+    members: [
+      { n:'小沼和幸', t:'TBBS 事業結構改革推進', s:'進行中', a:1, p:'年度方針與資源分配' },
+      { n:'王詩雅', t:'事業 KPI 儀表板與異常檢測', s:'進行中', a:3, p:'財務儀表板建置中', c:'傅貞甄' },
+      { n:'張育菱', t:'BCL 低成本獲取×LC8T 自動化', s:'進行中', a:1, p:'名單品質提升中' },
+      { n:'陳少琪', t:'LBCL 活動與 LINE OA 維運', s:'策劃中', a:4, p:'每週接觸節奏設計' },
+      { n:'阿比留華', t:'LC8T 數據洞察與 LTV 假設', s:'構想中', a:8, p:'資料導出顧客需求' },
+      { n:'竹下友梨', t:'戰略議題轉事業企劃', s:'待審核', a:6, p:'論點×假設草案待審' },
     ] },
-  { parent: '整合-2', mission: 'AWRT WEB再行銷對象抽取·自動發信', lead: '劉靜芸', owner: '陳筱昀', status: '進行中',
-    def: '從 WEB 行為抽取高潛力再行銷對象，建立自動發信流程以提升轉換。', age: 1,
-    tasks: [
-      { name: '再行銷對象抽取邏輯', dri: '鍾明雯', collab: '白如雪', status: '進行中', prog: 'GA4 事件條件草案完成', age: 2 },
-      { name: '自動發信腳本（n8n）', dri: '陳思嘉', collab: '戴詠', status: '策劃中', prog: '等待 n8n 節點權限', age: 5 },
-      { name: '素材 A/B 切角開發', dri: '陳思嘉', collab: '', status: '構想中', prog: '家長痛點×品牌價值 5 切角', age: 12 },
+  { issue: '學習-1', mission: '學習商品開發組：商品開發與品質', lead: '江美齡', status: '進行中', age: 4,
+    def: '學習套組開發與品質管理，經營數位學習網與 YouTube，推進 IP 異業合作。',
+    members: [
+      { n:'陳瓊芳', t:'新數位平台×實體最小範疇定義', s:'策劃中', a:5, p:'連動核心體驗規格' },
+      { n:'于安平', t:'教材企劃與教具選品判準', s:'進行中', a:2, p:'跨媒材製作流程管控' },
+      { n:'陳勝朋', t:'AI 影音流程與 2027 新站準備', s:'進行中', a:3, p:'自動字幕剪輯測試', c:'曹舒涵' },
+      { n:'陳乃菁', t:'套組多媒體設計對齊教育價值', s:'待審核', a:8, p:'初稿待處長確認' },
     ] },
-  { parent: '學習-1', mission: 'YOUTUBE 內容強化與訂閱擴大', lead: '江美齡', owner: '陳勝朋', status: '策劃中',
-    def: '以 AI 輔助提升影音產能，強化各事業導流並擴大訂閱者。', age: 4,
-    tasks: [
-      { name: 'AI 影音剪輯流程導入', dri: '陳勝朋', collab: '', status: '進行中', prog: '測試自動字幕與剪輯', age: 3 },
-      { name: '套組內容對齊教育價值', dri: '陳乃菁', collab: '陳瓊芳', status: '待審核', prog: '初稿待江處長確認', age: 8 },
+  { issue: '授權-1', mission: '品牌授權策略組：IP 價值最大化', lead: '江美齡', status: '進行中', age: 6,
+    def: '維護品牌形象並極大化 IP 價值，拓展商品/空間/活動授權業務。',
+    members: [
+      { n:'謝惠琪', t:'新規開發清單與提案管線', s:'策劃中', a:6, p:'優先順位方法建構' },
+      { n:'劉玉珊', t:'夢想樂園第二店舗選址談判', s:'進行中', a:2, p:'合作條件評估中' },
+      { n:'陳伊柔', t:'招商×企劃價值說明框架', s:'構想中', a:12, p:'可複用提案套件' },
+      { n:'陳怡如', t:'二次使用授權流程標準化', s:'進行中', a:4, p:'平台成果追蹤節奏' },
     ] },
-  { parent: '舞台劇-1', mission: '舞台劇會員制度與回流機制', lead: '江美齡', owner: '沈美君', status: '構想中',
-    def: '建立 LINE 分眾的回流觀劇機制（年 2〜3 場），提升黏著與回購。', age: 16,
-    tasks: [
-      { name: '會員卡持續運作機制', dri: '藍靜儀', collab: '', status: '構想中', prog: '盤點現有會員資料', age: 16 },
-      { name: '廣宣發稿節奏優化', dri: '林欣亭', collab: '', status: '凍結', prog: '暫緩至下季', age: 30 },
+  { issue: '舞台劇-1', mission: '表演活動組：舞台劇事業成長', lead: '江美齡', status: '構想中', age: 16,
+    def: '統籌舞台劇製作與行銷，建立會員回流機制與現場商品營運。',
+    members: [
+      { n:'沈美君', t:'舞台劇會員制度設計', s:'構想中', a:16, p:'LINE 分眾年 2〜3 場' },
+      { n:'藍靜儀', t:'現場商品開發與選品打法', s:'進行中', a:3, p:'小批量也成立' },
+      { n:'林欣亭', t:'廣宣發稿節奏優化', s:'凍結', a:30, p:'暫緩至下季' },
     ] },
-  { parent: 'CX-1', mission: 'ACTS 產品系列定期發信自動化', lead: '鮑慧芬', owner: '賴純美', status: '進行中',
-    def: '超過 1000 推播的自動化，依「商品×月齡×訊號」決定最佳發信時機。', age: 1,
-    tasks: [
-      { name: '推播時機判斷規則', dri: '郭姿伶', collab: '賴純美', status: '進行中', prog: '0-7 歲分齡規則 v1', age: 2 },
-      { name: '1000+ 推播技術確認', dri: '戴詠', collab: '白如雪', status: '待審核', prog: '壓測結果待審', age: 7 },
-      { name: '成效回饋循環', dri: '賴純美', collab: '', status: '構想中', prog: '', age: 20 },
+  { issue: '整合-2', mission: '數位行銷組：AWRT 與廣告優化', lead: '劉靜芸', status: '進行中', age: 2,
+    def: '數位通路全方位經營，整合社群/KOL，運用 AI 與數據優化投放與轉換。',
+    members: [
+      { n:'陳筱昀', t:'全通路×預算配分計畫', s:'進行中', a:2, p:'官網/蝦皮/SNS 整合' },
+      { n:'鍾明雯', t:'GA4 分析與 KOL 素材流程', s:'進行中', a:3, p:'學習價值敘事架構', c:'白如雪' },
+      { n:'陳思嘉', t:'廣告素材 A/B 與蝦皮合作', s:'策劃中', a:5, p:'多切角素材開發', c:'戴詠' },
+      { n:'曹舒涵', t:'LINE 貼圖變現×Threads 經營', s:'構想中', a:10, p:'導流變現流程' },
     ] },
-  { parent: '資訊-1', mission: '端對端系統整合（訂單→金流→發票→物流→CS）', lead: '白如雪', owner: '戴詠', status: '策劃中',
-    def: '建立跨系統數據流與 API 標準，確保資料可關聯、可追蹤、可擴展。', age: 3,
-    tasks: [
-      { name: 'API/Webhook 連接標準', dri: '戴詠', collab: '', status: '進行中', prog: '草擬連接規格', age: 2 },
-      { name: 'SQL 效能優化與備份', dri: '吳家慶', collab: '', status: '進行中', prog: '索引調校中', age: 4 },
-      { name: 'IT Help Desk SOP', dri: '吳昌儒', collab: '', status: '構想中', prog: '新人上手中', age: 11 },
-      { name: '舊報表 ETL 汰換', dri: '吳家慶', collab: '', status: '中止', prog: '改由新平台取代', age: 40 },
+  { issue: '整合-5', mission: '通路整合組：官方通路 LTV 經營', lead: '劉靜芸', status: '進行中', age: 3,
+    def: '官方自營通路營運與內容策劃，優化體驗路徑提升回購與忠誠。',
+    members: [
+      { n:'周宜柔', t:'會員轉換 LTV 引擎×Mirafeel', s:'進行中', a:2, p:'年度目標 166 萬' },
+      { n:'郭怡梅', t:'Super8 自動旅程×會員制度', s:'策劃中', a:5, p:'DB 成長與 LTV' },
+      { n:'張菀庭', t:'Mirafeel 尿布行銷與成效追蹤', s:'進行中', a:3, p:'會員分級回購旅程' },
+      { n:'鍾佳臻', t:'顧客成長模型與支付評估', s:'構想中', a:11, p:'回購/升級/跨店' },
+      { n:'李佳霖', t:'跨平台導流×跨境商品', s:'進行中', a:4, p:'社群×APP×LINE 串聯' },
+    ] },
+  { issue: 'CX-1', mission: 'LTV 戰略組：ACTS 自動化', lead: '鮑慧芬', status: '進行中', age: 1,
+    def: '制定 LTV 策略，運用 CRM 標籤與 ibo 自動化精準分眾並產出高潛名單。',
+    members: [
+      { n:'賴純美', t:'ibo 自動化×高潛名單產出', s:'進行中', a:2, p:'目標去電≥300/月', c:'郭姿伶' },
+      { n:'郭姿伶', t:'0-7 歲分齡推播策略', s:'待審核', a:7, p:'分齡內容推播設計' },
+    ] },
+  { issue: 'CX-2', mission: 'CS 戰略組：電話銷售與顧客關係', lead: '鮑慧芬', status: '進行中', age: 2,
+    def: '第一線顧客溝通與高潛名單外撥銷售，提升成交率並回饋名單品質。',
+    members: [
+      { n:'鄭心怡', t:'可預測銷售管理系統', s:'進行中', a:2, p:'目標→每日行動→成交' },
+      { n:'張秀美', t:'電話銷售與帳款回收', s:'進行中', a:3, p:'訂單處理中' },
+      { n:'傅暄',   t:'訂單處理與行政作業', s:'策劃中', a:5, p:'流程整理中' },
+      { n:'黃秋如', t:'售後諮詢與教材推薦', s:'進行中', a:4, p:'主動挖掘需求' },
+      { n:'嚴雅怡', t:'客訴處理與情緒安撫', s:'進行中', a:3, p:'疑難排解' },
+      { n:'莊雅涵', t:'Shopee 聊聊客服×售後', s:'構想中', a:9, p:'配送/資料修改' },
+      { n:'張金葵', t:'客戶服務與商品推廣', s:'進行中', a:6, p:'' },
+      { n:'黃鈺茹', t:'電銷與售後滿意度', s:'進行中', a:2, p:'抱怨處理' },
+      { n:'許世芬', t:'Email 諮詢回覆×推廣', s:'策劃中', a:8, p:'信箱諮詢' },
+    ] },
+  { issue: '財務-1', mission: '財務組：可視化與內控', lead: '中智玄', status: '進行中', age: 2,
+    def: '營運資金管理、預算差異分析與帳務合規，編製管理報表。',
+    members: [
+      { n:'傅貞甄', t:'月結→預算差異→儀表板一條龍', s:'進行中', a:2, p:'損益即時可視化' },
+      { n:'許珮珊', t:'多平台銷售報表標準化', s:'進行中', a:4, p:'收益調整表流程' },
+    ] },
+  { issue: '資訊-1', mission: '資訊組：系統整合與資安', lead: '白如雪', status: '策劃中', age: 3,
+    def: '系統管理維護與資安監控，端對端整合與數據流通能力建構。',
+    members: [
+      { n:'吳家慶', t:'SQL 效能優化與備份', s:'進行中', a:3, p:'索引調校中' },
+      { n:'戴詠',   t:'端對端整合 API/Webhook 標準', s:'進行中', a:2, p:'連接規格草擬', c:'陳思嘉' },
+      { n:'吳昌儒', t:'IT Help Desk 與資安', s:'構想中', a:11, p:'新人上手' },
+    ] },
+  { issue: '總管理-1', mission: '統籌整合組：營運基盤', lead: '范巧惠', status: '進行中', age: 3,
+    def: '人事/總務/法務/物流日常運作，導入 AI 提升行政效率。',
+    members: [
+      { n:'鄧宏毅', t:'一頁談判摘要×合約標準化', s:'進行中', a:3, p:'爭點/風險格式化' },
+      { n:'蔡品媛', t:'AIC 學習路徑×福委會互動', s:'策劃中', a:6, p:'角色情境分流' },
+      { n:'林昀萱', t:'入庫數據防呆×倉儲協調', s:'進行中', a:4, p:'核檢機制建立' },
     ] },
 ];
 
@@ -1142,6 +1198,8 @@ function seedJIGDummy() {
   if (!ss) { console.log('[seed] SHEET_ID 未設定'); return; }
   const mSheet = ss.getSheetByName(MISSION_SHEET_FOR_WRITE);
   if (!mSheet) { console.log('[seed] Mission一覽 が無い。先に setupJIG を実行'); return; }
+  const issueSheet = ss.getSheetByName(ISSUE_SHEET_FOR_WRITE);
+  if (!issueSheet) { console.log('[seed] Issue主檔 が無い'); return; }
   let tSheet = ss.getSheetByName(TASK_SHEET_NAME);
   if (!tSheet) {
     tSheet = ss.insertSheet(TASK_SHEET_NAME);
@@ -1149,55 +1207,67 @@ function seedJIGDummy() {
     Object.keys(TASK_COL_WIDTHS).forEach(k => tSheet.setColumnWidth(Number(k), TASK_COL_WIDTHS[k]));
     tSheet.setFrozenRows(1);
   }
-  // 親 Issue の存在チェック用
-  const issueSheet = ss.getSheetByName(ISSUE_SHEET_FOR_WRITE);
+  // 既存 Issue 編號の集合
   const issueIds = new Set();
-  if (issueSheet && issueSheet.getLastRow() >= 2) {
+  if (issueSheet.getLastRow() >= 2) {
     const ih = issueSheet.getRange(1, 1, 1, issueSheet.getLastColumn()).getValues()[0].map(h => String(h).trim());
     const ic = ih.indexOf('編號');
     if (ic >= 0) issueSheet.getRange(2, ic + 1, issueSheet.getLastRow() - 1, 1).getValues().forEach(r => issueIds.add(String(r[0]).trim()));
   }
+  // Issue が無い部門は範例 Issue を作成
+  let iCount = 0;
+  Object.keys(DUMMY_ISSUES_FALLBACK).forEach(id => {
+    if (issueIds.has(id)) return;
+    const fb = DUMMY_ISSUES_FALLBACK[id];
+    _appendByHeaders(issueSheet, {
+      '編號': id, 'Issue': fb.name, '處': fb.dept, '組': fb.group, '狀態': '進行中',
+      '事務局備註': DUMMY_MARK + '範例 Issue', '更新日': _dummyDate(3), 'Issue定義': fb.def || ''
+    });
+    issueIds.add(id); iCount++;
+  });
+
   let mCount = 0, tCount = 0, skipped = [];
-  DUMMY_DATA.forEach(d => {
-    if (issueIds.size && !issueIds.has(d.parent)) { skipped.push(d.parent); return; }
-    const missionId = _nextMissionId(mSheet, d.parent);
+  DUMMY_GROUPS.forEach(g => {
+    if (!issueIds.has(g.issue)) { skipped.push(g.issue); return; }
+    const owner = (g.members[0] && g.members[0].n) || '';
+    const missionId = _nextMissionId(mSheet, g.issue);
     _appendByHeaders(mSheet, {
-      '編號': missionId, 'Mission': d.mission, '親編號': d.parent,
-      '戰略負責人': d.lead || '', '擔當': d.owner || '', '狀態': d.status || '構想中',
-      'Mission進度': DUMMY_MARK + (d.def ? d.def.slice(0, 40) : ''), '更新日': _dummyDate(d.age),
-      'Confluence URL': '', 'Mission定義': d.def || ''
+      '編號': missionId, 'Mission': g.mission, '親編號': g.issue,
+      '戰略負責人': g.lead || '', '擔當': owner, '狀態': g.status || '進行中',
+      'Mission進度': DUMMY_MARK + (g.def ? g.def.slice(0, 30) : ''), '更新日': _dummyDate(g.age),
+      'Confluence URL': '', 'Mission定義': g.def || ''
     });
     mCount++;
-    (d.tasks || []).forEach(t => {
+    (g.members || []).forEach(mem => {
       const taskId = _nextTaskId(tSheet, missionId);
       _appendByHeaders(tSheet, {
-        '編號': taskId, 'Task': t.name, '親編號': missionId,
-        'DRI': t.dri || '', '協作': t.collab || '', '狀態': t.status || '構想中',
-        '進度': DUMMY_MARK + (t.prog || ''), '更新日': _dummyDate(t.age), '連結': ''
+        '編號': taskId, 'Task': mem.t || (mem.n + ' 的任務'), '親編號': missionId,
+        'DRI': mem.n || '', '協作': mem.c || '', '狀態': mem.s || '構想中',
+        '進度': DUMMY_MARK + (mem.p || ''), '更新日': _dummyDate(mem.a), '連結': ''
       });
       tCount++;
     });
   });
   SpreadsheetApp.flush();
-  console.log(`[seed] 完了：Mission ${mCount} 件 / Task ${tCount} 件を投入。` + (skipped.length ? ` 親不在でスキップ: ${skipped.join(',')}` : ''));
+  console.log(`[seed] 完了：範例 Issue ${iCount} / Mission ${mCount} / Task ${tCount} 件を投入。` + (skipped.length ? ` 親不在でスキップ: ${skipped.join(',')}` : ''));
 }
 
 function clearJIGDummy() {
   const ss = _getSpreadsheet();
   if (!ss) return;
   let removed = 0;
-  [[MISSION_SHEET_FOR_WRITE, 'Mission進度'], [TASK_SHEET_NAME, '進度']].forEach(([name, col]) => {
+  // [シート名, 目印列]：その列が DUMMY_MARK で始まる行を削除
+  [[MISSION_SHEET_FOR_WRITE, 'Mission進度'], [TASK_SHEET_NAME, '進度'], [ISSUE_SHEET_FOR_WRITE, '事務局備註']].forEach(([name, col]) => {
     const sh = ss.getSheetByName(name);
     if (!sh || sh.getLastRow() < 2) return;
     const headers = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(h => String(h).trim());
     const ci = headers.indexOf(col);
     if (ci < 0) return;
     const vals = sh.getRange(2, ci + 1, sh.getLastRow() - 1, 1).getValues();
-    // 下から削除（行ズレ防止）
-    for (let i = vals.length - 1; i >= 0; i--) {
+    for (let i = vals.length - 1; i >= 0; i--) { // 下から削除（行ズレ防止）
       if (String(vals[i][0] || '').indexOf(DUMMY_MARK) === 0) { sh.deleteRow(i + 2); removed++; }
     }
   });
   SpreadsheetApp.flush();
-  console.log(`[clearDummy] ${removed} 行を削除（〔範例〕で始まる進度の行）`);
+  console.log(`[clearDummy] ${removed} 行を削除（〔範例〕で始まる行）`);
 }
