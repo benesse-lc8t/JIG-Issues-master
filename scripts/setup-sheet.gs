@@ -1193,6 +1193,34 @@ function _dummyDate(age) {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
+// 高速一括追加：行（{ヘッダ名:値} の配列）を列ごとに 1 回ずつ setValues で書く。
+// ARRAYFORMULA 列（親編號 等の自動算出）はスキップ。flush は最後に 1 回だけ（タイムアウト回避）。
+function _bulkAppend(sheet, rows) {
+  if (!rows || !rows.length) return;
+  const lastCol = sheet.getLastColumn();
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => String(h).trim());
+  const start = sheet.getLastRow() + 1;
+  const n = rows.length;
+  // ARRAYFORMULA 列の検出（2 行目の数式を見る）。これらは編號から自動算出されるので書かない。
+  const isArrayF = {};
+  if (sheet.getLastRow() >= 2) {
+    const f = sheet.getRange(2, 1, 1, lastCol).getFormulas()[0];
+    for (let c = 0; c < lastCol; c++) isArrayF[c] = /^=\s*ARRAYFORMULA/i.test(String(f[c] || ''));
+  }
+  headers.forEach((h, c) => {
+    if (!h || isArrayF[c]) return;
+    let any = false;
+    const colVals = rows.map(r => {
+      const v = Object.prototype.hasOwnProperty.call(r, h) ? r[h] : '';
+      if (v !== '' && v != null) any = true;
+      return [v];
+    });
+    if (!any && h !== '編號') return; // 全空列はスキップ（編號は必ず書く）
+    sheet.getRange(start, c + 1, n, 1).setValues(colVals);
+  });
+  try { SpreadsheetApp.flush(); } catch (e) { console.log('[bulkAppend] flush warn:', String(e && e.message || e)); }
+}
+
 function seedJIGDummy() {
   const ss = _getSpreadsheet();
   if (!ss) { console.log('[seed] SHEET_ID 未設定'); return; }
@@ -1207,7 +1235,7 @@ function seedJIGDummy() {
     Object.keys(TASK_COL_WIDTHS).forEach(k => tSheet.setColumnWidth(Number(k), TASK_COL_WIDTHS[k]));
     tSheet.setFrozenRows(1);
   }
-  // 既存 Issue 編號の集合
+  // 既存 Issue 編號
   const issueIds = new Set();
   if (issueSheet.getLastRow() >= 2) {
     const ih = issueSheet.getRange(1, 1, 1, issueSheet.getLastColumn()).getValues()[0].map(h => String(h).trim());
@@ -1215,41 +1243,43 @@ function seedJIGDummy() {
     if (ic >= 0) issueSheet.getRange(2, ic + 1, issueSheet.getLastRow() - 1, 1).getValues().forEach(r => issueIds.add(String(r[0]).trim()));
   }
   // Issue が無い部門は範例 Issue を作成
-  let iCount = 0;
+  const issueRows = [];
   Object.keys(DUMMY_ISSUES_FALLBACK).forEach(id => {
     if (issueIds.has(id)) return;
     const fb = DUMMY_ISSUES_FALLBACK[id];
-    _appendByHeaders(issueSheet, {
-      '編號': id, 'Issue': fb.name, '處': fb.dept, '組': fb.group, '狀態': '進行中',
-      '事務局備註': DUMMY_MARK + '範例 Issue', '更新日': _dummyDate(3), 'Issue定義': fb.def || ''
-    });
-    issueIds.add(id); iCount++;
+    issueRows.push({ '編號': id, 'Issue': fb.name, '處': fb.dept, '組': fb.group, '狀態': '進行中',
+      '事務局備註': DUMMY_MARK + '範例 Issue', '更新日': _dummyDate(3), 'Issue定義': fb.def || '' });
+    issueIds.add(id);
   });
+  if (issueRows.length) _bulkAppend(issueSheet, issueRows);
 
-  let mCount = 0, tCount = 0, skipped = [];
+  // 既存 Mission から parent ごとの次 -M 番号（メモリ内で採番）
+  const next = {};
+  if (mSheet.getLastRow() >= 2) {
+    mSheet.getRange(2, 1, mSheet.getLastRow() - 1, 1).getValues().forEach(r => {
+      const m = String(r[0]).trim().match(/^(.*)-M(\d+)$/);
+      if (m) next[m[1]] = Math.max(next[m[1]] || 0, +m[2]);
+    });
+  }
+  const missionRows = [], taskRows = [], skipped = [];
   DUMMY_GROUPS.forEach(g => {
     if (!issueIds.has(g.issue)) { skipped.push(g.issue); return; }
+    next[g.issue] = (next[g.issue] || 0) + 1;
+    const missionId = g.issue + '-M' + next[g.issue];
     const owner = (g.members[0] && g.members[0].n) || '';
-    const missionId = _nextMissionId(mSheet, g.issue);
-    _appendByHeaders(mSheet, {
-      '編號': missionId, 'Mission': g.mission, '親編號': g.issue,
+    missionRows.push({ '編號': missionId, 'Mission': g.mission, '親編號': g.issue,
       '戰略負責人': g.lead || '', '擔當': owner, '狀態': g.status || '進行中',
       'Mission進度': DUMMY_MARK + (g.def ? g.def.slice(0, 30) : ''), '更新日': _dummyDate(g.age),
-      'Confluence URL': '', 'Mission定義': g.def || ''
-    });
-    mCount++;
-    (g.members || []).forEach(mem => {
-      const taskId = _nextTaskId(tSheet, missionId);
-      _appendByHeaders(tSheet, {
-        '編號': taskId, 'Task': mem.t || (mem.n + ' 的任務'), '親編號': missionId,
+      'Confluence URL': '', 'Mission定義': g.def || '' });
+    (g.members || []).forEach((mem, k) => {
+      taskRows.push({ '編號': missionId + '-T' + (k + 1), 'Task': mem.t || (mem.n + ' 的任務'), '親編號': missionId,
         'DRI': mem.n || '', '協作': mem.c || '', '狀態': mem.s || '構想中',
-        '進度': DUMMY_MARK + (mem.p || ''), '更新日': _dummyDate(mem.a), '連結': ''
-      });
-      tCount++;
+        '進度': DUMMY_MARK + (mem.p || ''), '更新日': _dummyDate(mem.a), '連結': '' });
     });
   });
-  SpreadsheetApp.flush();
-  console.log(`[seed] 完了：範例 Issue ${iCount} / Mission ${mCount} / Task ${tCount} 件を投入。` + (skipped.length ? ` 親不在でスキップ: ${skipped.join(',')}` : ''));
+  _bulkAppend(mSheet, missionRows);
+  _bulkAppend(tSheet, taskRows);
+  console.log(`[seed] 完了：範例Issue ${issueRows.length} / Mission ${missionRows.length} / Task ${taskRows.length}` + (skipped.length ? ` skip親不在:${skipped.join(',')}` : ''));
 }
 
 function clearJIGDummy() {
