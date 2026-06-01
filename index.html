@@ -535,11 +535,11 @@
   .my-link:hover { text-decoration: underline; }
   /* 我的：階層テーブル */
   .my-wrap { padding: 10px 12px 40px; max-width: none; }
-  table.my-table { width: 100%; border-collapse: collapse; font-size: var(--fs-xs); }
+  table.my-table { width: 100%; border-collapse: collapse; font-size: var(--fs-xs); table-layout: fixed; }
   .my-table th { position: sticky; top: 0; z-index: 2; background: #E8EAED; color: #202124; padding: 6px 8px; text-align: left; font-weight: var(--fw-bold); border: 1px solid var(--border); font-size: var(--fs-sm); white-space: nowrap; }
-  .my-table td { padding: 3px 8px; border: 1px solid #ECEEF1; vertical-align: middle; line-height: 1.35; }
-  .my-table tr.my-row-issue   > td:not(.my-c-grey) { background: #E8F0FE; } /* Issue=藍 */
-  .my-table tr.my-row-mission > td:not(.my-c-grey) { background: #E6F4EA; } /* Mission=綠 */
+  .my-table td { padding: 3px 8px; border: 1px solid #ECEEF1; vertical-align: middle; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .my-table tr.my-row-issue   > td:not(.my-c-grey) { background: #AECBFA; } /* Issue=濃藍 */
+  .my-table tr.my-row-mission > td:not(.my-c-grey) { background: #D2E3FC; } /* Mission=中藍 */
   .my-table tr.my-row-task    > td:not(.my-c-grey) { background: #FFFFFF; } /* Task=白 */
   /* フォントサイズは3層で統一（Mission の大きさ＝--fs-xs）。ウェイトのみ差を残す */
   .my-table .my-c-name { font-size: var(--fs-xs); }
@@ -555,7 +555,7 @@
   }
   .my-c-no { font-size: var(--fs-2xs); color: #80868B; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .my-c-grey { background: repeating-linear-gradient(135deg,#F4F5F7,#F4F5F7 6px,#EFF0F2 6px,#EFF0F2 12px); }
-  .my-c-name { cursor: pointer; min-width: 120px; }
+  .my-c-name { cursor: pointer; }
   .my-c-name.my-name:hover, .my-task-name:hover { color: var(--g-blue); text-decoration: underline; }
   .my-c-st, .my-c-link, .my-c-date, .my-c-folder { white-space: nowrap; text-align: center; }
   .my-c-comment { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; color: #3C4043; }
@@ -567,7 +567,15 @@
   .my-add:hover { opacity: 1; background: #E8F0FE; }
   .my-link-count { display: inline-block; min-width: 16px; padding: 0 5px; border-radius: 8px; background: var(--g-blue); color: #fff; font-size: var(--fs-2xs); font-weight: var(--fw-bold); cursor: pointer; }
   .my-cedit { width: 100%; box-sizing: border-box; padding: 3px 6px; font-size: var(--fs-sm); border: 1px solid var(--accent); border-radius: 5px; font-family: inherit; }
-  .my-c-dri, .my-c-collab, .my-c-lead { white-space: normal; }
+  .my-c-dri, .my-c-collab, .my-c-lead { white-space: nowrap; }
+  /* DRI 名前セレクター（チップ） */
+  .my-who-chips { display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center; flex: 1; min-width: 0; }
+  .my-who-chip { font-size: var(--fs-2xs); padding: 2px 9px; border-radius: 9px; cursor: pointer; border: 1px solid transparent; user-select: none; line-height: 1.6; white-space: nowrap; }
+  .my-who-chip:hover { filter: brightness(0.94); }
+  .my-who-chip.active { box-shadow: 0 0 0 2px #fff, 0 0 0 3px #1A73E8; font-weight: 700; }
+  /* 狀態の編集グリッドは固定幅セルに収まらないのでポップオーバー表示 */
+  .my-table .my-c-st { overflow: visible; position: relative; }
+  .my-table .my-st-pick .my-st-grid { position: absolute; left: 50%; transform: translateX(-50%); top: 100%; margin-top: 3px; z-index: 6; display: flex; flex-wrap: wrap; gap: 3px; width: max-content; max-width: 240px; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 5px; box-shadow: var(--shadow-md); }
   .conf-edit-bar { display: flex; gap: 6px; align-items: center; }
   .conf-edit-add { border: 1px dashed var(--g-blue); background: var(--g-blue-bg); color: var(--g-blue); border-radius: 3px; cursor: pointer; font-size: 10px; padding: 3px 8px; }
   .conf-edit-save { border: 1px solid var(--g-blue); background: var(--g-blue); color: #fff; border-radius: 3px; cursor: pointer; font-size: 10px; padding: 3px 10px; margin-left: auto; }
@@ -1289,11 +1297,11 @@
 <!-- ===== My：我的（名前起点メイン画面・2026-06-01 リデザイン P2） ===== -->
 <div class="panel active" id="panel-My">
   <div class="ctrl-bar">
-    <span class="my-who-label">你是誰？</span>
-    <select id="myWho"><option value="">— 請選擇你的名字 —</option></select>
+    <span class="my-who-label">DRI</span>
+    <span id="myWhoChips" class="my-who-chips"></span>
     <span class="ctrl-sep"></span>
-    <label><input type="checkbox" id="myShowAll">看全部（總覽）</label>
-    <label><input type="checkbox" id="myShowClosed">顯示已結案／凍結／中止</label>
+    <label><input type="checkbox" id="myShowAll">看全部</label>
+    <label><input type="checkbox" id="myShowClosed">顯示結案/凍結/中止</label>
     <span class="ctrl-count" id="myCount"></span>
   </div>
   <div class="my-wrap" id="myWrap">
@@ -1650,9 +1658,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.37.1';
+const APP_VERSION = '0.37.2';
 const APP_BUILD = '2026-06-01';
-const APP_NOTE  = '我的テーブルの微調整：①Issue/Mission/Task のフォント size を統一 ②3層の地色を分離（Issue=藍/Mission=綠/Task=白）③タブ名を「My Work」に ④選択中の自分のチップが光る。｜リデザイン P2改：名前起点メイン「我的」を階層テーブル化（カード廃止）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
+const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -4637,9 +4645,10 @@ function _myStatusGridHtml() {
   return '<span class="my-st-grid">' + STATUS_ORDER.map(v =>
     `<span class="my-st-opt" data-v="${escapeHtml(v)}">${escapeHtml(v)}</span>`).join('') + '</span>';
 }
+function _myGetWho() { return localStorage.getItem(MY_WHO_KEY) || ''; }
 function populateMyWho() {
-  const sel = document.getElementById('myWho');
-  if (!sel) return;
+  const box = document.getElementById('myWhoChips');
+  if (!box) return;
   let names = [];
   const pm = window.personMap || {};
   const keys = Object.keys(pm);
@@ -4652,10 +4661,15 @@ function populateMyWho() {
   } else {
     names = (typeof collectAuthorNames === 'function' ? collectAuthorNames() : []);
   }
-  const cur = sel.value || localStorage.getItem(MY_WHO_KEY) || '';
-  sel.innerHTML = '<option value="">— 請選擇你的名字 —</option>' +
-    names.map(n => `<option value="${escapeHtml(n)}"${n === cur ? ' selected' : ''}>${escapeHtml(n)}</option>`).join('');
-  if (cur && names.includes(cur)) sel.value = cur;
+  const cur = _myGetWho();
+  const map = _personDeptMap || (typeof buildPersonDeptMap === 'function' ? (_personDeptMap = buildPersonDeptMap()) : {});
+  box.innerHTML = names.length
+    ? names.map(n => {
+        const c = (typeof deptChipColor === 'function') ? deptChipColor(map[n] || '') : { bg: '#eee', fg: '#333' };
+        const act = n === cur ? ' active' : '';
+        return `<span class="my-who-chip${act}" data-name="${escapeAttr(n)}" style="background:${c.bg};color:${c.fg}">${escapeHtml(n)}</span>`;
+      }).join('')
+    : '<span class="my-muted" style="font-size:var(--fs-xs)">（尚無人員名單，請於「人員」分頁建立）</span>';
 }
 // Mission 1件の HTML（タスクは showTasks のものを含める）
 // ===== 我的：階層テーブル（行ビルダー）=====
@@ -4708,14 +4722,14 @@ function _myDateCell(v) { return `<td class="my-c-date">${_myLastHtml(v)}</td>`;
 function renderMyView() {
   const wrap = document.getElementById('myWrap');
   if (!wrap) return;
-  populateMyWho();
-  const who = (document.getElementById('myWho') || {}).value || '';
+  const who = _myGetWho();
   window._myWhoCur = who; // _myChips の光彩判定で使用
+  populateMyWho();
   const showAll = !!document.getElementById('myShowAll')?.checked;
   const showClosed = !!document.getElementById('myShowClosed')?.checked;
   const countEl = document.getElementById('myCount');
   if (!who && !showAll) {
-    wrap.innerHTML = '<div class="my-empty">請先在上方選擇你的名字，顯示「你負責（含上下層）」的項目；或勾選「看全部」總覽。</div>';
+    wrap.innerHTML = '<div class="my-empty">請先在上方點選你的 DRI 名字，顯示「你負責（含上下層）」的項目；或勾選「看全部」總覽。</div>';
     if (countEl) countEl.textContent = '';
     _myWire();
     return;
@@ -4814,7 +4828,13 @@ function renderMyView() {
   });
 
   if (!rows) rows = `<tr><td colspan="12" class="my-empty">沒有符合的項目${showAll ? '' : '（試試勾選「看全部」）'}。</td></tr>`;
-  wrap.innerHTML = `<table class="my-table"><thead><tr>`
+  wrap.innerHTML = `<table class="my-table">`
+    + `<colgroup>`
+    + `<col style="width:58px"><col style="width:15%"><col style="width:15%"><col style="width:15%">`
+    + `<col style="width:38px"><col style="width:42px"><col style="width:76px"><col style="width:66px">`
+    + `<col style="width:19%"><col style="width:76px"><col style="width:84px"><col style="width:62px">`
+    + `</colgroup>`
+    + `<thead><tr>`
     + `<th>NO.</th><th>Issue</th><th>Mission</th><th>Task</th><th>Link</th><th>folder</th>`
     + `<th>DRI</th><th>狀態</th><th>狀態紀錄</th><th>協作</th><th>戰略組擔當</th><th>記錄日</th>`
     + `</tr></thead><tbody>${rows}</tbody></table>`;
@@ -4877,7 +4897,7 @@ async function _mySaveComment(kind, id, text) {
   if (kind === 'mission') {
     const r = await saveMissionEdit(id, { '備註': text });
     if (r) { const m = _myFindMission(id); if (m) { m['Mission進度'] = text; m['更新日'] = _myTodayStr(); }
-      const who = (document.getElementById('myWho') || {}).value || '';
+      const who = _myGetWho();
       (window.missionLog[id] = window.missionLog[id] || []).unshift({ date: _myTodayStr(), author: who, text }); toast('已記入', 'success'); }
   } else if (kind === 'task') {
     const r = await _postWrite({ action: 'updateTask', '編號': id, '進度': text });
@@ -4919,7 +4939,7 @@ function _myAddMission(parentId) {
 async function _myAddTask(mid) {
   const name = (window.prompt('新增 Task（一行）。重的內容請貼 Confluence／SharePoint 連結：', '') || '').trim();
   if (!name) return;
-  const who = (document.getElementById('myWho') || {}).value || '';
+  const who = _myGetWho();
   const r = await _postWrite({ action: 'addTask', '親編號': mid, 'Task': name, 'DRI': who, '狀態': '構想中' });
   if (r) { toast(`已新增 Task：${r['編號'] || ''}`, 'success'); await loadTasksLayer(); renderMyView(); }
 }
@@ -4927,8 +4947,15 @@ function _myFindMission(id) { return issueData.find(x => x['種別'] === 'Missio
 function _myFindIssue(id) { return issueData.find(x => (x['種別'] || 'Issue') !== 'Mission' && (x['編號'] || '').trim() === id) || null; }
 function _myFindTask(id) { const m = window.tasksByParent || {}; for (const p of Object.keys(m)) { const t = m[p].find(x => (x['編號'] || '').trim() === id); if (t) return t; } return null; }
 document.addEventListener('DOMContentLoaded', () => {
-  const sel = document.getElementById('myWho');
-  if (sel) sel.addEventListener('change', () => { localStorage.setItem(MY_WHO_KEY, sel.value || ''); renderMyView(); });
+  const box = document.getElementById('myWhoChips');
+  if (box) box.addEventListener('click', (e) => {
+    const chip = e.target.closest('.my-who-chip');
+    if (!chip) return;
+    const n = chip.dataset.name || '';
+    const nv = (_myGetWho() === n) ? '' : n; // 再クリックで解除
+    localStorage.setItem(MY_WHO_KEY, nv);
+    renderMyView();
+  });
   document.getElementById('myShowClosed')?.addEventListener('change', renderMyView);
   document.getElementById('myShowAll')?.addEventListener('change', renderMyView);
 });
