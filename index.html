@@ -588,7 +588,13 @@
   .my-add:hover { opacity: 1; background: #E8F0FE; }
   .my-link-count { display: inline-block; min-width: 16px; padding: 0 5px; border-radius: 8px; background: var(--g-blue); color: #fff; font-size: var(--fs-2xs); font-weight: var(--fw-bold); cursor: pointer; }
   .my-cedit { width: 100%; box-sizing: border-box; padding: 3px 6px; font-size: var(--fs-sm); border: 1px solid var(--accent); border-radius: 5px; font-family: inherit; }
-  .my-c-dri, .my-c-collab, .my-c-lead { white-space: nowrap; }
+  .my-c-dri, .my-c-collab, .my-c-lead { white-space: nowrap; cursor: pointer; }
+  .my-c-dri:hover, .my-c-collab:hover, .my-c-lead:hover { outline: 1px dashed var(--g-blue); outline-offset: -1px; }
+  /* 上部 DRI ピッカー（モーダルと同じチップ選択） */
+  .my-who-np { display: inline-block; position: relative; min-width: 150px; vertical-align: middle; }
+  .my-who-np .np-trigger { width: 100%; min-height: 26px; padding: 3px 9px; font-size: var(--fs-sm); }
+  /* 各行セル編集用の浮遊ピッカー（固定配置で任意位置に出す） */
+  .my-cell-pop { position: fixed; left: 0; top: 0; right: auto; width: 240px; z-index: 60; }
   /* DRI 名前セレクター（チップ） */
   .my-who-chips { display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center; flex: 1; min-width: 0; }
   .my-who-chip { font-size: var(--fs-2xs); padding: 2px 9px; border-radius: 9px; cursor: pointer; border: 1px solid transparent; user-select: none; line-height: 1.6; white-space: nowrap; }
@@ -1319,14 +1325,25 @@
 <div class="panel active" id="panel-My">
   <div class="ctrl-bar">
     <span class="my-who-label">DRI</span>
-    <select id="myWho"><option value="">— 請選擇 —</option></select>
+    <span class="np-wrap my-who-np" id="myWhoPickWrap">
+      <button type="button" class="author-trigger np-trigger is-placeholder" id="myWhoPickTrigger" data-placeholder="選擇你的名字"></button>
+      <div class="author-menu np-menu" id="myWhoPickMenu">
+        <input type="text" class="author-menu-search" id="myWhoPickSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
+        <div class="author-menu-chips" id="myWhoPickChips"></div>
+      </div>
+    </span>
     <span class="ctrl-sep"></span>
     <label><input type="checkbox" id="myShowAll">看全部</label>
     <label><input type="checkbox" id="myShowClosed">顯示結案/凍結/中止</label>
     <span class="ctrl-count" id="myCount"></span>
   </div>
   <div class="my-wrap" id="myWrap">
-    <div class="my-empty">請先在上方選擇你的名字，以顯示與你相關的 Issue／Mission／Task。</div>
+    <div class="my-empty">請先在上方選擇你的 DRI 名字，以顯示與你相關的 Issue／Mission／Task。</div>
+  </div>
+  <!-- 各行のDRI/協作/戰略組擔當セル編集用：共有チップピッカー（モーダルと同仕様） -->
+  <div class="author-menu np-menu my-cell-pop" id="myCellMenu">
+    <input type="text" class="author-menu-search" id="myCellSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
+    <div class="author-menu-chips" id="myCellChips"></div>
   </div>
 </div>
 
@@ -1679,7 +1696,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.38.0';
+const APP_VERSION = '0.39.0';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
@@ -2798,6 +2815,8 @@ function _setAddKind(kind) {
 window._namePickSel = window._namePickSel || {};   // prefix -> [name, ...]
 window._namePickMulti = window._namePickMulti || {}; // prefix -> bool
 window._namePickAllow = window._namePickAllow || {}; // prefix -> [name,...] | null（限定リスト）
+window._namePickOnChange = window._namePickOnChange || {}; // prefix -> fn(value)（選択変更時に発火）
+function _npFire(prefix) { const f = window._namePickOnChange[prefix]; if (typeof f === 'function') f(namePickValue(prefix)); }
 function _namePickerChipData() {
   const names = (typeof collectAuthorNames === 'function') ? collectAuthorNames() : [];
   const deptMap = (typeof buildAuthorDeptMap === 'function') ? buildAuthorDeptMap() : {};
@@ -2846,6 +2865,7 @@ function _refreshNamePickerTrigger(prefix) {
         const s = document.getElementById(prefix + 'Search');
         renderNamePickerChips(prefix, s ? s.value : '');
       }
+      _npFire(prefix);
     });
   });
 }
@@ -2880,10 +2900,12 @@ function renderNamePickerChips(prefix, filter) {
         _refreshNamePickerTrigger(prefix);
         const s = document.getElementById(prefix + 'Search');
         renderNamePickerChips(prefix, s ? s.value : ''); // active 表示を更新（メニューは開いたまま）
+        _npFire(prefix);
       } else {
         window._namePickSel[prefix] = (i >= 0) ? [] : [name]; // 再クリックで解除
         _refreshNamePickerTrigger(prefix);
         _closeNamePickers();
+        _npFire(prefix);
       }
     });
   });
@@ -4673,24 +4695,13 @@ function _mySwHtml(level) {
   return `<label class="ios-sw" title="顯示/隱藏此層"><input type="checkbox" data-level="${level}"${on ? ' checked' : ''}><span class="ios-track"></span></label>`;
 }
 function populateMyWho() {
-  const box = document.getElementById('myWho');
-  if (!box) return;
-  let names = [];
-  const pm = window.personMap || {};
-  const keys = Object.keys(pm);
-  if (keys.length) {
-    names = keys.sort((a, b) => {
-      const oa = +(pm[a].order || 0), ob = +(pm[b].order || 0);
-      if (oa !== ob) return oa - ob;
-      return String(pm[a].dept || '').localeCompare(String(pm[b].dept || '')) || a.localeCompare(b);
-    });
-  } else {
-    names = (typeof collectAuthorNames === 'function' ? collectAuthorNames() : []);
-  }
-  const cur = _myGetWho();
-  box.innerHTML = '<option value="">— 請選擇 —</option>' +
-    names.map(n => `<option value="${escapeAttr(n)}"${n === cur ? ' selected' : ''}>${escapeHtml(n)}</option>`).join('');
-  if (cur && names.includes(cur)) box.value = cur;
+  if (!document.getElementById('myWhoPickTrigger')) return;
+  // モーダルと同じチップピッカー（單選）。選択で localStorage 更新＋再描画。
+  resetNamePicker('myWhoPick', _myGetWho(), false);
+  window._namePickOnChange['myWhoPick'] = (val) => {
+    localStorage.setItem(MY_WHO_KEY, (val || '').split('/')[0] || '');
+    renderMyView();
+  };
 }
 // Mission 1件の HTML（タスクは showTasks のものを含める）
 // ===== 我的：階層テーブル（行ビルダー）=====
@@ -4884,6 +4895,8 @@ function _myWire() {
     if (nm) { if (typeof openEditEntryModal === 'function') openEditEntryModal(nm.dataset.kind, nm.dataset.id); return; }
     const lk = e.target.closest('.my-link-count');
     if (lk) { if (lk.dataset.kind === 'task') toast('Task 的連結請於試算表「連結」欄維護', 'info'); else if (typeof openConfLinks === 'function') openConfLinks(lk.dataset.id); return; }
+    const pcell = e.target.closest('.my-c-dri, .my-c-collab, .my-c-lead');
+    if (pcell) { _myOpenCellPicker(pcell); return; }
     const cm = e.target.closest('.my-c-comment');
     if (cm && !cm.querySelector('.my-cedit')) { clearTimeout(_myCT); _myCT = setTimeout(() => _myCommentPrimary(cm), 230); return; }
   });
@@ -4973,11 +4986,64 @@ async function _myAddTask(mid) {
 function _myFindMission(id) { return issueData.find(x => x['種別'] === 'Mission' && (x['編號'] || '').trim() === id) || null; }
 function _myFindIssue(id) { return issueData.find(x => (x['種別'] || 'Issue') !== 'Mission' && (x['編號'] || '').trim() === id) || null; }
 function _myFindTask(id) { const m = window.tasksByParent || {}; for (const p of Object.keys(m)) { const t = m[p].find(x => (x['編號'] || '').trim() === id); if (t) return t; } return null; }
+// セル（DRI/協作/戰略組擔當）クリックでモーダル同仕様のチップピッカーを開く
+function _myOpenCellPicker(cell) {
+  const tr = cell.closest('tr.my-row'); if (!tr) return;
+  const kind = tr.dataset.kind, id = tr.dataset.id;
+  let field, multi = false, cur = '';
+  if (cell.classList.contains('my-c-dri')) {
+    field = 'DRI';
+    cur = (kind === 'task') ? (_myFindTask(id) || {})['DRI'] : ((kind === 'mission' ? _myFindMission(id) : _myFindIssue(id)) || {})['擔當'];
+  } else if (cell.classList.contains('my-c-collab')) {
+    if (kind !== 'task') return; field = '協作'; multi = true; cur = (_myFindTask(id) || {})['協作'];
+  } else if (cell.classList.contains('my-c-lead')) {
+    if (kind === 'task') return; field = '戰略'; cur = ((kind === 'mission' ? _myFindMission(id) : _myFindIssue(id)) || {})['戰略負責人'];
+  } else return;
+  resetNamePicker('myCell', cur || '', multi);
+  window._namePickOnChange['myCell'] = (val) => {
+    window._myCellDirty = true;
+    _mySavePerson(kind, id, field, val).then(() => { if (!multi) renderMyView(); });
+  };
+  const pop = document.getElementById('myCellMenu');
+  const r = cell.getBoundingClientRect();
+  const w = 240;
+  let left = r.left; if (left + w > window.innerWidth - 8) left = window.innerWidth - 8 - w;
+  pop.style.left = Math.max(8, left) + 'px';
+  pop.style.top = (r.bottom + 4) + 'px';
+  _closeNamePickers();
+  pop.classList.add('open');
+  const s = document.getElementById('myCellSearch'); if (s) s.value = '';
+  renderNamePickerChips('myCell', '');
+  if (s) requestAnimationFrame(() => s.focus());
+}
+async function _mySavePerson(kind, id, field, val) {
+  let r, o;
+  if (kind === 'task') {
+    const sheetField = (field === '協作') ? '協作' : 'DRI';
+    const p = { action: 'updateTask', '編號': id }; p[sheetField] = val;
+    r = await _postWrite(p);
+    if (r) { o = _myFindTask(id); if (o) { o[sheetField] = val; o['更新日'] = _myTodayStr(); } }
+  } else {
+    const sheetField = (field === '戰略') ? '戰略負責人' : '擔當';
+    const p = { action: kind === 'mission' ? 'updateMission' : 'updateIssue', '編號': id }; p[sheetField] = val;
+    r = await _postWrite(p);
+    if (r) { o = (kind === 'mission') ? _myFindMission(id) : _myFindIssue(id); if (o) { o[sheetField] = val; o['更新日'] = _myTodayStr(); } }
+  }
+  if (r) toast('已更新負責人', 'success');
+}
 document.addEventListener('DOMContentLoaded', () => {
-  const sel = document.getElementById('myWho');
-  if (sel) sel.addEventListener('change', () => { localStorage.setItem(MY_WHO_KEY, sel.value || ''); renderMyView(); });
+  const cs = document.getElementById('myCellSearch');
+  if (cs) cs.addEventListener('input', () => renderNamePickerChips('myCell', cs.value));
   document.getElementById('myShowClosed')?.addEventListener('change', renderMyView);
   document.getElementById('myShowAll')?.addEventListener('change', renderMyView);
+  // 外側クリックでセル用ピッカーを閉じる→（変更があれば）再描画
+  document.addEventListener('mousedown', (e) => {
+    const pop = document.getElementById('myCellMenu');
+    if (pop && pop.classList.contains('open') && !pop.contains(e.target) && !e.target.closest('.my-c-dri,.my-c-collab,.my-c-lead')) {
+      pop.classList.remove('open');
+      if (window._myCellDirty) { window._myCellDirty = false; renderMyView(); }
+    }
+  });
 });
 
 function renderAll() {
