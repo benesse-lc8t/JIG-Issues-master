@@ -123,8 +123,9 @@
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .stats { font-size: 12px; color: #3C4043; padding: 6px 10px; background: var(--g-grey-bg); border-radius: 4px; display: inline-block; }
   .panel { display: none; border: 1px solid var(--hairline); background: #fff; border-radius: var(--radius-card); overflow: auto; max-height: calc(100vh - 150px); box-shadow: var(--shadow-md); }
-  /* スクロール時もヘッダー行を固定（パネル内部スクロール）*/
-  .panel table thead th { position: sticky; top: 0; z-index: 5; box-shadow: inset 0 -1px 0 var(--border); }
+  /* スクロール時もフィルタ行＋ヘッダー行を固定（パネル内部スクロール）*/
+  .panel > .ctrl-bar { position: sticky; top: 0; z-index: 6; }
+  .panel table thead th { position: sticky; top: var(--ctrlbar-h, 0px); z-index: 5; box-shadow: inset 0 -1px 0 var(--border); }
   .panel.active { display: block; }
 
   /* Table */
@@ -1495,9 +1496,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.32.1';
+const APP_VERSION = '0.32.2';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = '縦スクロール時もテーブルのヘッダー行を固定（パネルを内部スクロール化＋thead を sticky top:0）。Apps Script 変更なし。';
+const APP_NOTE  = 'スクロール時にフィルタ/検索行（ctrl-bar）も固定。ctrl-bar 高さを JS で測り（show/renderAll/resize）固定ヘッダーの top に渡す。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -1514,7 +1515,17 @@ function show(id, e) {
       if ((t.getAttribute('onclick') || '').includes(`show('${id}'`)) t.classList.add('active');
     });
   }
+  updateStickyOffsets();
 }
+
+// フィルタ行（ctrl-bar）の高さを測り、固定ヘッダーの top オフセットに渡す
+function updateStickyOffsets() {
+  document.querySelectorAll('.panel.active').forEach(p => {
+    const cb = p.querySelector(':scope > .ctrl-bar');
+    p.style.setProperty('--ctrlbar-h', (cb ? cb.offsetHeight : 0) + 'px');
+  });
+}
+window.addEventListener('resize', () => { if (window._stickyRaf) cancelAnimationFrame(window._stickyRaf); window._stickyRaf = requestAnimationFrame(updateStickyOffsets); });
 
 // Mission進度タブ（Tab C）の該当 Mission 行へジャンプして強調表示
 function jumpToMission(missionId) {
@@ -4436,6 +4447,7 @@ function renderAll() {
   renderTabF();
   wireClosedToggles();
   wireTabCEditing();
+  updateStickyOffsets();
 }
 
 // ===== 列陣列 → 資料物件（雲端載入用）=====

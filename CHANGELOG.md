@@ -5,6 +5,12 @@
 
 ---
 
+## v0.32.2 — 2026-05-31
+
+**フィルタ/検索行もスクロール固定**
+
+ヘッダー行に加え、**フィルタ・検索行（`ctrl-bar`）も `position: sticky; top:0`** で固定。ctrl-bar の高さは可変（折返し）なため、`updateStickyOffsets()` で実測して CSS 変数 `--ctrlbar-h` にセットし、`thead th` の `top` をその分だけ下げて重なりを回避。`show()`／`renderAll()`／`window.resize`（rAF デバウンス）で更新。Apps Script 変更なし。
+
 ## v0.32.1 — 2026-05-31
 
 **スクロール時にテーブルのヘッダー行を固定**
