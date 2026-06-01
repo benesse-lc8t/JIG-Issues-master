@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root {
     /* Google brand palette */
@@ -43,9 +43,9 @@
     --accent:       #007AFF;  /* macOS system blue */
     --accent-hover: #0A6CE0;
     --accent-bg:    #EAF3FF;
-    --font:    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', 'Roboto', 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+    --font:    'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', 'Roboto', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
     /* CJK 主体のテキスト用。繁体字を素直に表示 */
-    --font-cjk: -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+    --font-cjk: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
     --hdr-bg:  #FAFAFB;
     --sec-bg:  #F1F1F3;
     --mtg-bg:  #FFFFFF;
@@ -61,7 +61,7 @@
     --radius-ctl: 7px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font); font-weight: 400; font-size: 13px; color: #1D1D1F; padding: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  body { font-family: var(--font); font-weight: 300; font-size: 13px; color: #1D1D1F; padding: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
     /* リキッドグラスが透ける下地：淡い青〜緑〜暖色のグラデ（固定） */
     background: linear-gradient(160deg, #EAF2FF 0%, #EAF6F4 32%, #F3F1FA 60%, #FCF3EC 100%) fixed, var(--body-bg); }
   body::before { content:""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
@@ -1519,9 +1519,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.33.1';
+const APP_VERSION = '0.34.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'ダイジェスト窓と編集モーダルに淡いブルーのガラス（透過＋青み＋青い縁）。Apps Script 変更なし。';
+const APP_NOTE  = 'フォントを Noto Sans TC・本文ウェイト 300（Light）に。見出し/バッジ等の太字は維持。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
