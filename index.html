@@ -610,6 +610,7 @@
   .ctrl-bar .my-reset-col:hover { background: #F5F5F7; color: #1D1D1F; }
   /* ⑤ Only my DRI スライド（明るい ctrl-bar 用の配色） */
   .my-slide { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+  .ctrl-bar .my-lv-label { font-size: 9px; color: var(--g-grey); font-weight: 600; }
   .ctrl-bar .ios-sw .ios-track { background: #C7CCD1; }
   .ctrl-bar .ios-sw input:checked + .ios-track { background: #1A73E8; }
   .ctrl-bar .ios-sw input:checked + .ios-track::before { background: #fff; }
@@ -1354,6 +1355,11 @@
     <label class="my-slide"><span>Only my DRI</span><span class="ios-sw"><input type="checkbox" id="myOnlyDri"><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>Show all</span><span class="ios-sw"><input type="checkbox" id="myShowAll"><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>Show closed</span><span class="ios-sw"><input type="checkbox" id="myShowClosed"><span class="ios-track"></span></span></label>
+    <span class="ctrl-sep"></span>
+    <span class="my-lv-label">Columns</span>
+    <label class="my-slide"><span>Issue</span><span class="ios-sw"><input type="checkbox" id="myLvIssue" checked><span class="ios-track"></span></span></label>
+    <label class="my-slide"><span>Mission</span><span class="ios-sw"><input type="checkbox" id="myLvMission" checked><span class="ios-track"></span></span></label>
+    <label class="my-slide"><span>Task</span><span class="ios-sw"><input type="checkbox" id="myLvTask" checked><span class="ios-track"></span></span></label>
     <button type="button" class="my-reset-col" id="myResetCol">Reset columns</button>
     <span class="ctrl-count" id="myCount"></span>
   </div>
@@ -1716,7 +1722,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.40.1';
+const APP_VERSION = '0.40.2';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
@@ -4911,7 +4917,7 @@ function renderMyView() {
   wrap.innerHTML = `<table class="${tcls}">`
     + `<colgroup>${cols}</colgroup>`
     + `<thead><tr>`
-    + `<th>NO.${rz}</th><th>Issue${_mySwHtml('issue')}${rz}</th><th>Mission${_mySwHtml('mission')}${rz}</th><th>Task${_mySwHtml('task')}${rz}</th><th>Link${rz}</th><th>folder${rz}</th>`
+    + `<th>NO.${rz}</th><th>Issue${rz}</th><th>Mission${rz}</th><th>Task${rz}</th><th>Link${rz}</th><th>folder${rz}</th>`
     + `<th>DRI${rz}</th><th>Status${rz}</th><th>Progress${rz}</th><th>Collaborator${rz}</th><th>Supporter${rz}</th><th>Updated${rz}</th>`
     + `</tr></thead><tbody>${rows}</tbody></table>`;
   if (countEl) countEl.textContent = showAll ? `All ${totalCount}` : (onlyDri ? `My DRI ${mineCount}` : `DRI ${mineCount} (with context ${totalCount})`);
@@ -5087,6 +5093,13 @@ document.addEventListener('DOMContentLoaded', () => {
     renderMyView();
   });
   document.getElementById('myResetCol')?.addEventListener('click', () => { localStorage.removeItem(MY_COLW_KEY); renderMyView(); });
+  // レベル表示トグル（ctrl-bar に常設＝列を消しても復活できる）
+  [['myLvIssue', 'issue'], ['myLvMission', 'mission'], ['myLvTask', 'task']].forEach(([id, lv]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.checked = window._myLevelShow[lv] !== false;
+    el.addEventListener('change', () => { window._myLevelShow[lv] = el.checked; renderMyView(); });
+  });
   // 外側クリックでセル用ピッカーを閉じる→（変更があれば）再描画
   document.addEventListener('mousedown', (e) => {
     const pop = document.getElementById('myCellMenu');
