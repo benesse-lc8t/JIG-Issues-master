@@ -59,9 +59,28 @@
     --shadow-lg: 0 12px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
     --radius-card: 12px;
     --radius-ctl: 7px;
+
+    /* ===== タイポグラフィ・トークン（typography tokens）=====
+       これまで 7〜28px が14種・ウェイトが直書きで散在していたのを集約。
+       「サイズは8段階に整理／ウェイトは4語で意味づけ」して、ここを変えれば全体に効く一次ソースにする。
+       使い方：font-size: var(--fs-xs) のように参照する（数値の直書きをやめる）。 */
+    /* サイズ（密な表 UI 向けに実寸へ寄せたスケール） */
+    --fs-2xs: 9px;   /* 極小ラベル・補助バッジ */
+    --fs-xs:  10px;  /* 表セル（高密度）*/
+    --fs-sm:  11px;  /* 補助テキスト・小バッジ */
+    --fs-ui:  12px;  /* UI 操作部（タブ・チップ・ボタン）*/
+    --fs-base:13px;  /* 既定の本文 */
+    --fs-lg:  15px;  /* 読み物本文（モーダル等）*/
+    --fs-h:   17px;  /* 見出し（h1）*/
+    --fs-xl:  22px;  /* 大見出し・ダッシュボード見出し */
+    /* ウェイト（CJK の本文は 400 が下限。Light=300 は小サイズの繁体字で線が霞むため本文では使わない） */
+    --fw-normal:   400;  /* 本文・表セル */
+    --fw-medium:   500;  /* 操作部のラベル */
+    --fw-semibold: 600;  /* 強調・見出し・チップ */
+    --fw-bold:     700;  /* 表ヘッダ・大見出しのみ */
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font); font-weight: 300; font-size: 13px; color: #1D1D1F; padding: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  body { font-family: var(--font); font-weight: var(--fw-normal); font-size: var(--fs-base); color: #1D1D1F; padding: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
     /* リキッドグラスが透ける下地：淡い青〜緑〜暖色のグラデ（固定） */
     background: linear-gradient(160deg, #EAF2FF 0%, #EAF6F4 32%, #F3F1FA 60%, #FCF3EC 100%) fixed, var(--body-bg); }
   body::before { content:""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
@@ -69,7 +88,7 @@
                 radial-gradient(120% 90% at 96% 100%, rgba(120,210,180,0.22), rgba(120,210,180,0) 55%); }
   button, input, select, textarea, a { font-family: var(--font); }
   code { font-family: var(--font); font-weight: 500; font-size: 0.92em; background: var(--g-grey-bg); color: #3C4043; padding: 1px 6px; border-radius: 4px; letter-spacing: 0.01em; }
-  h1 { font-size: 17px; font-weight: 600; color: #1D1D1F; margin: 0; letter-spacing: -0.01em; }
+  h1 { font-size: var(--fs-h); font-weight: var(--fw-semibold); color: #1D1D1F; margin: 0; letter-spacing: -0.01em; }
   .topbar { display: flex; align-items: center; justify-content: space-between; gap: 14px;
     position: sticky; top: 8px; z-index: 50; padding: 9px 16px; margin-bottom: 14px; overflow: hidden;
     background: rgba(255,255,255,0.55); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
@@ -81,7 +100,7 @@
   /* トップのお知らせボード（読み取り専用・編集は管理者ページ）*/
   .notice-board { flex: 1; min-width: 0; margin: 0 20px; max-width: 920px; align-self: center; display: flex; align-items: center; gap: 9px; background: #FFFBEA; border: 1px solid #F2E2A6; border-radius: 8px; padding: 7px 13px; color: #7A5B00; }
   .notice-board .nb-ico { flex-shrink: 0; color: #C9A227; }
-  .notice-board .nb-text { font-size: 12px; line-height: 1.45; white-space: pre-wrap; max-height: 46px; overflow-y: auto; }
+  .notice-board .nb-text { font-size: var(--fs-ui); line-height: 1.45; white-space: pre-wrap; max-height: 46px; overflow-y: auto; }
   .admin-btn { padding: 6px 13px; font-size: 12px; font-weight: 500; border: none; border-radius: 9px; background: rgba(255,255,255,0.45); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); box-shadow: var(--glass-edge); color: #3C4043; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
   .admin-btn:hover { background: rgba(255,255,255,0.7); color: #1D1D1F; }
   .admin-btn.active { background: var(--accent-bg); color: var(--accent); border-color: transparent; }
@@ -95,16 +114,16 @@
     background: rgba(255,255,255,0.72); -webkit-backdrop-filter: saturate(160%); backdrop-filter: saturate(160%);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), inset 0 0 0 1px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.12);
     transition: left 0.30s cubic-bezier(.32,.72,0,1), width 0.30s cubic-bezier(.32,.72,0,1), opacity 0.2s; z-index: 0; pointer-events: none; }
-  .tab { position: relative; z-index: 1; padding: 6px 16px; cursor: pointer; font-size: 12px; font-weight: 500; border: none; border-radius: 7px; background: transparent; color: #5F6368; transition: color 0.18s; letter-spacing: 0; }
+  .tab { position: relative; z-index: 1; padding: 6px 16px; cursor: pointer; font-size: var(--fs-ui); font-weight: var(--fw-medium); border: none; border-radius: 7px; background: transparent; color: #5F6368; transition: color 0.18s; letter-spacing: 0; }
   .tab:hover { color: #1D1D1F; }
-  .tab.active { color: #1D1D1F; font-weight: 600; }
+  .tab.active { color: #1D1D1F; font-weight: var(--fw-semibold); }
   .tab:active { transform: scale(0.97); }
 
   /* topbar 右肩のアクション群（管理者ボタンと人物ボタンを縦に並べる） */
   .topbar-actions { display: flex; flex-direction: column; gap: 4px; align-items: stretch; }
   /* 詩雅／育菱の呼び出し：普段は目立たない小さなアイコン、hover/選択時のみ色づく */
   .person-btns { display: flex; gap: 2px; }
-  .person-btn { display: inline-flex; align-items: center; gap: 3px; padding: 3px 6px; font-size: 10px; font-weight: 500; border: none; border-radius: 5px; background: transparent; color: #C5C8CC; cursor: pointer; white-space: nowrap; opacity: 0.75; transition: all 0.15s; font-family: inherit; }
+  .person-btn { display: inline-flex; align-items: center; gap: 3px; padding: 3px 6px; font-size: var(--fs-xs); font-weight: var(--fw-medium); border: none; border-radius: 5px; background: transparent; color: #C5C8CC; cursor: pointer; white-space: nowrap; opacity: 0.75; transition: all 0.15s; font-family: inherit; }
   .person-btn .ico { width: 14px; height: 14px; }
   .person-btn:hover { background: #F1F3F4; color: #5F6368; opacity: 1; }
   .person-btn.btn-shiya.active  { background: #FCE8E6; color: #B31412; opacity: 1; }
@@ -379,9 +398,9 @@
 
   /* Tab B/C/D/E 共通：シンプル表 */
   .simple-table { width: 100%; border-collapse: collapse; font-size: 10px; }
-  .simple-table th { background: #E8EAED; color: #202124; padding: 6px 8px; text-align: left; font-weight: 700; border: 1px solid var(--border); font-size: 11px; }
-  .simple-table td { padding: 2px 8px; border: 1px solid var(--border); vertical-align: middle; line-height: 1.3; font-size: 10px; }
-  .simple-table tr.sec-row th { background: #F1F3F4; color: #5F6368; font-size: 12px; padding: 8px 12px; letter-spacing: 0.02em; }
+  .simple-table th { background: #E8EAED; color: #202124; padding: 6px 8px; text-align: left; font-weight: var(--fw-bold); border: 1px solid var(--border); font-size: var(--fs-sm); }
+  .simple-table td { padding: 2px 8px; border: 1px solid var(--border); vertical-align: middle; line-height: 1.3; font-size: var(--fs-xs); }
+  .simple-table tr.sec-row th { background: #F1F3F4; color: #5F6368; font-size: var(--fs-ui); padding: 8px 12px; letter-spacing: 0.02em; }
   .simple-table tr.mtg-header th { background: #FEF7E0; color: #B06000; font-size: 12px; padding: 8px 12px; }
   .simple-table tr.mtg-header .mtg-time { color: #5F6368; font-weight: 500; margin-left: 8px; }
   .simple-table tr.stalled-red { background: #FCE8E6; }
@@ -547,7 +566,7 @@
   .np-trigger .np-x { margin-left: 4px; cursor: pointer; font-weight: 700; opacity: 0.55; font-size: 13px; line-height: 1; }
   .np-trigger .np-x:hover { opacity: 1; }
   /* 一覧の人物セル：處カラーの小チップ */
-  .person-chip { display: inline-block; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 9px; margin: 1px 3px 1px 0; white-space: nowrap; line-height: 1.55; }
+  .person-chip { display: inline-block; font-size: var(--fs-xs); font-weight: var(--fw-semibold); padding: 1px 6px; border-radius: 9px; margin: 1px 3px 1px 0; white-space: nowrap; line-height: 1.55; }
   /* 行の編集（✎）ボタン：ホバーで表示 */
   .row-edit-btn { margin-left: 6px; border: none; background: transparent; cursor: pointer; color: #9AA0A6; font-size: 12px; opacity: 0; transition: opacity .12s, color .12s; padding: 0 2px; vertical-align: middle; }
   tr:hover .row-edit-btn { opacity: 0.65; }
@@ -796,9 +815,9 @@
   .digest-window.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
   .digest-window .dw-head { padding: 12px 18px 9px; border-bottom: 1px solid rgba(120,165,255,0.20); display: flex; align-items: baseline; gap: 8px; }
   .digest-window .dw-id { flex-shrink: 0; background: #E8EAED; color: #3C4043; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9px; }
-  .digest-window .dw-name { font-size: 12px; font-weight: 600; color: #202124; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .digest-window .dw-name { font-size: var(--fs-ui); font-weight: var(--fw-semibold); color: #202124; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .digest-window .dw-label { padding: 10px 18px 0; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: #9AA0A6; text-transform: uppercase; }
-  .digest-window .dw-body { padding: 6px 18px 14px; overflow-y: auto; font-size: 14px; line-height: 1.75; color: #202124; white-space: pre-wrap; word-break: break-word; }
+  .digest-window .dw-body { padding: 6px 18px 14px; overflow-y: auto; font-size: var(--fs-lg); line-height: 1.75; color: #202124; white-space: pre-wrap; word-break: break-word; }
   .digest-window .dw-foot { padding: 8px 18px; border-top: 1px solid rgba(120,165,255,0.20); font-size: 10px; color: #6B7C99; flex-shrink: 0; }
 
   /* 汎用：アイコン集約＋件数バッジ（Tab A の .conf / 他タブの .conf-icon 共通） */
@@ -1519,9 +1538,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.34.0';
+const APP_VERSION = '0.35.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'フォントを Noto Sans TC・本文ウェイト 300（Light）に。見出し/バッジ等の太字は維持。Apps Script 変更なし。';
+const APP_NOTE  = 'タイポグラフィのトークン体系を導入（:root に --fs-* 8段階／--fw-* 4種）。主要パーツ（本文・表セル・見出し・タブ・チップ・モーダル本文）を変数参照へ。CJK 逆効果の本文 300 は 400 に復帰。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
