@@ -563,8 +563,7 @@
   .my-table .st-type { font-size: 6px; padding: 1px 4px; }
   /* フォントサイズは3層で統一（Mission の大きさ＝--fs-xs）。ウェイトのみ差を残す */
   .my-table .my-c-name { font-size: var(--fs-xs); }
-  .my-table tr.my-row-issue .my-c-name { font-weight: var(--fw-bold); }
-  .my-table tr.my-row-mission .my-c-name { font-weight: var(--fw-semibold); }
+  /* Issue/Mission の名称ウェイトを Task と同じ（標準）に揃える */
   .my-table tr.my-row-task .my-c-name { color: #3C4043; }
   .my-table tr.my-row:hover > td { filter: brightness(0.96); }
   /* 選択中の自分のチップを光らせる */
@@ -1726,7 +1725,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.41.0';
+const APP_VERSION = '0.41.1';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
