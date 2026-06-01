@@ -5,6 +5,12 @@
 
 ---
 
+## v0.32.4 — 2026-05-31
+
+**タブを iPhone 風スライドセグメンテッドコントロールに**
+
+選択タブの白いピルが**滑らかにスライド**して移動する iOS UISegmentedControl 風に。`.tab-thumb`（絶対配置の白インジケータ・`cubic-bezier(.32,.72,0,1)` でアニメ）を `.tabs` に追加し、`moveTabThumb()` が選択タブの `offsetLeft/offsetWidth` に合わせて移動。`show()`／初期化／`resize` で更新。主タブ以外（D/E/Admin）表示中はインジケータを非表示。Apps Script 変更なし。
+
 ## v0.32.3 — 2026-05-31
 
 **システムタイトル変更**
