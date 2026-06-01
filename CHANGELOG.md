@@ -5,6 +5,12 @@
 
 ---
 
+## v0.32.1 — 2026-05-31
+
+**スクロール時にテーブルのヘッダー行を固定**
+
+縦スクロールで列ヘッダーが見えなくなる問題に対応。`.panel` を**内部スクロール領域**（`overflow:auto` ＋ `max-height: calc(100vh - 150px)`）にし、`.panel table thead th` を **`position: sticky; top:0`** で上端固定（下線は `inset` シャドウで保持）。Tab A は `table.resizable th{position:relative}` に勝つようセレクタ特異度を上げて適用。横スクロール時はヘッダーも一緒に横移動（縦のみ固定）。Apps Script 変更なし。
+
 ## v0.32.0 — 2026-05-31
 
 **macOS 風 UI 刷新 v1（基盤トークン＋チロム）**
