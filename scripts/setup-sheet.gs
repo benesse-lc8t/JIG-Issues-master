@@ -1075,3 +1075,129 @@ function colToLetter(c) {
   }
   return s;
 }
+
+// =====================================================================
+// ダミーデータ投入（UI 確認用・2026-06-01）
+//   使い方：Apps Script エディタでこのファイルを保存 →（未実施なら）setupJIG を実行
+//           → seedJIGDummy() を 1 回実行。Web App の再公開は不要（直接シートに書く）。
+//           ダッシュボードは gviz で読むので、リロードすれば「我的」テーブルに出る。
+//   取り消し：clearJIGDummy() を実行（ダミーの Mission/Task 行を名前一致で削除）。
+//   親 Issue は Issue主檔 に実在する編號（戰略-1 等）に紐づける。
+//   DRI/協作/戰略組擔當 は AIC4 組織ページの実在の名前を使用。
+// =====================================================================
+const DUMMY_MARK = '〔範例〕'; // Mission進度 / 進度 の先頭に付与（clear の目印）
+
+const DUMMY_DATA = [
+  { parent: '戰略-1', mission: 'BCL收集戰略-綁定理由&LP', lead: '張育菱', owner: '張育菱', status: '進行中',
+    def: '讓 BCL 名單以低成本可複製方式增加，並確保綁定理由清晰、LP 轉換順暢。', age: 2,
+    tasks: [
+      { name: '綁定計劃', dri: '陳少琪', collab: '王詩雅', status: '策劃中', prog: '盤點現有綁定誘因，彙整 3 個方案', age: 3 },
+      { name: 'LP A/B 測試設計', dri: '竹下友梨', collab: '', status: '構想中', prog: '定義假設與 KPI（綁定率）', age: 6 },
+      { name: '0歲前後名單比率分析', dri: '阿比留華', collab: '張育菱', status: '待審核', prog: '初版分析待詩雅確認', age: 9 },
+    ] },
+  { parent: '整合-2', mission: 'AWRT WEB再行銷對象抽取·自動發信', lead: '劉靜芸', owner: '陳筱昀', status: '進行中',
+    def: '從 WEB 行為抽取高潛力再行銷對象，建立自動發信流程以提升轉換。', age: 1,
+    tasks: [
+      { name: '再行銷對象抽取邏輯', dri: '鍾明雯', collab: '白如雪', status: '進行中', prog: 'GA4 事件條件草案完成', age: 2 },
+      { name: '自動發信腳本（n8n）', dri: '陳思嘉', collab: '戴詠', status: '策劃中', prog: '等待 n8n 節點權限', age: 5 },
+      { name: '素材 A/B 切角開發', dri: '陳思嘉', collab: '', status: '構想中', prog: '家長痛點×品牌價值 5 切角', age: 12 },
+    ] },
+  { parent: '學習-1', mission: 'YOUTUBE 內容強化與訂閱擴大', lead: '江美齡', owner: '陳勝朋', status: '策劃中',
+    def: '以 AI 輔助提升影音產能，強化各事業導流並擴大訂閱者。', age: 4,
+    tasks: [
+      { name: 'AI 影音剪輯流程導入', dri: '陳勝朋', collab: '', status: '進行中', prog: '測試自動字幕與剪輯', age: 3 },
+      { name: '套組內容對齊教育價值', dri: '陳乃菁', collab: '陳瓊芳', status: '待審核', prog: '初稿待江處長確認', age: 8 },
+    ] },
+  { parent: '舞台劇-1', mission: '舞台劇會員制度與回流機制', lead: '江美齡', owner: '沈美君', status: '構想中',
+    def: '建立 LINE 分眾的回流觀劇機制（年 2〜3 場），提升黏著與回購。', age: 16,
+    tasks: [
+      { name: '會員卡持續運作機制', dri: '藍靜儀', collab: '', status: '構想中', prog: '盤點現有會員資料', age: 16 },
+      { name: '廣宣發稿節奏優化', dri: '林欣亭', collab: '', status: '凍結', prog: '暫緩至下季', age: 30 },
+    ] },
+  { parent: 'CX-1', mission: 'ACTS 產品系列定期發信自動化', lead: '鮑慧芬', owner: '賴純美', status: '進行中',
+    def: '超過 1000 推播的自動化，依「商品×月齡×訊號」決定最佳發信時機。', age: 1,
+    tasks: [
+      { name: '推播時機判斷規則', dri: '郭姿伶', collab: '賴純美', status: '進行中', prog: '0-7 歲分齡規則 v1', age: 2 },
+      { name: '1000+ 推播技術確認', dri: '戴詠', collab: '白如雪', status: '待審核', prog: '壓測結果待審', age: 7 },
+      { name: '成效回饋循環', dri: '賴純美', collab: '', status: '構想中', prog: '', age: 20 },
+    ] },
+  { parent: '資訊-1', mission: '端對端系統整合（訂單→金流→發票→物流→CS）', lead: '白如雪', owner: '戴詠', status: '策劃中',
+    def: '建立跨系統數據流與 API 標準，確保資料可關聯、可追蹤、可擴展。', age: 3,
+    tasks: [
+      { name: 'API/Webhook 連接標準', dri: '戴詠', collab: '', status: '進行中', prog: '草擬連接規格', age: 2 },
+      { name: 'SQL 效能優化與備份', dri: '吳家慶', collab: '', status: '進行中', prog: '索引調校中', age: 4 },
+      { name: 'IT Help Desk SOP', dri: '吳昌儒', collab: '', status: '構想中', prog: '新人上手中', age: 11 },
+      { name: '舊報表 ETL 汰換', dri: '吳家慶', collab: '', status: '中止', prog: '改由新平台取代', age: 40 },
+    ] },
+];
+
+function _dummyDate(age) {
+  const d = new Date(Date.now() - (age || 0) * 86400000);
+  const p = x => String(x).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+function seedJIGDummy() {
+  const ss = _getSpreadsheet();
+  if (!ss) { console.log('[seed] SHEET_ID 未設定'); return; }
+  const mSheet = ss.getSheetByName(MISSION_SHEET_FOR_WRITE);
+  if (!mSheet) { console.log('[seed] Mission一覽 が無い。先に setupJIG を実行'); return; }
+  let tSheet = ss.getSheetByName(TASK_SHEET_NAME);
+  if (!tSheet) {
+    tSheet = ss.insertSheet(TASK_SHEET_NAME);
+    tSheet.getRange(1, 1, 1, TASK_HEADERS.length).setValues([TASK_HEADERS]).setFontWeight('bold').setBackground('#F7F4EC');
+    Object.keys(TASK_COL_WIDTHS).forEach(k => tSheet.setColumnWidth(Number(k), TASK_COL_WIDTHS[k]));
+    tSheet.setFrozenRows(1);
+  }
+  // 親 Issue の存在チェック用
+  const issueSheet = ss.getSheetByName(ISSUE_SHEET_FOR_WRITE);
+  const issueIds = new Set();
+  if (issueSheet && issueSheet.getLastRow() >= 2) {
+    const ih = issueSheet.getRange(1, 1, 1, issueSheet.getLastColumn()).getValues()[0].map(h => String(h).trim());
+    const ic = ih.indexOf('編號');
+    if (ic >= 0) issueSheet.getRange(2, ic + 1, issueSheet.getLastRow() - 1, 1).getValues().forEach(r => issueIds.add(String(r[0]).trim()));
+  }
+  let mCount = 0, tCount = 0, skipped = [];
+  DUMMY_DATA.forEach(d => {
+    if (issueIds.size && !issueIds.has(d.parent)) { skipped.push(d.parent); return; }
+    const missionId = _nextMissionId(mSheet, d.parent);
+    _appendByHeaders(mSheet, {
+      '編號': missionId, 'Mission': d.mission, '親編號': d.parent,
+      '戰略負責人': d.lead || '', '擔當': d.owner || '', '狀態': d.status || '構想中',
+      'Mission進度': DUMMY_MARK + (d.def ? d.def.slice(0, 40) : ''), '更新日': _dummyDate(d.age),
+      'Confluence URL': '', 'Mission定義': d.def || ''
+    });
+    mCount++;
+    (d.tasks || []).forEach(t => {
+      const taskId = _nextTaskId(tSheet, missionId);
+      _appendByHeaders(tSheet, {
+        '編號': taskId, 'Task': t.name, '親編號': missionId,
+        'DRI': t.dri || '', '協作': t.collab || '', '狀態': t.status || '構想中',
+        '進度': DUMMY_MARK + (t.prog || ''), '更新日': _dummyDate(t.age), '連結': ''
+      });
+      tCount++;
+    });
+  });
+  SpreadsheetApp.flush();
+  console.log(`[seed] 完了：Mission ${mCount} 件 / Task ${tCount} 件を投入。` + (skipped.length ? ` 親不在でスキップ: ${skipped.join(',')}` : ''));
+}
+
+function clearJIGDummy() {
+  const ss = _getSpreadsheet();
+  if (!ss) return;
+  let removed = 0;
+  [[MISSION_SHEET_FOR_WRITE, 'Mission進度'], [TASK_SHEET_NAME, '進度']].forEach(([name, col]) => {
+    const sh = ss.getSheetByName(name);
+    if (!sh || sh.getLastRow() < 2) return;
+    const headers = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(h => String(h).trim());
+    const ci = headers.indexOf(col);
+    if (ci < 0) return;
+    const vals = sh.getRange(2, ci + 1, sh.getLastRow() - 1, 1).getValues();
+    // 下から削除（行ズレ防止）
+    for (let i = vals.length - 1; i >= 0; i--) {
+      if (String(vals[i][0] || '').indexOf(DUMMY_MARK) === 0) { sh.deleteRow(i + 2); removed++; }
+    }
+  });
+  SpreadsheetApp.flush();
+  console.log(`[clearDummy] ${removed} 行を削除（〔範例〕で始まる進度の行）`);
+}
