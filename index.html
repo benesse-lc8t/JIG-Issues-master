@@ -554,7 +554,7 @@
     50%      { box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(26,115,232,1), 0 0 9px rgba(26,115,232,.85); }
   }
   .my-c-no { font-size: var(--fs-2xs); color: #80868B; white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .my-c-grey { background: repeating-linear-gradient(135deg,#F4F5F7,#F4F5F7 6px,#EFF0F2 6px,#EFF0F2 12px); }
+  .my-c-grey { background: #FFFFFF; }
   .my-c-name { cursor: pointer; }
   .my-c-name.my-name:hover, .my-task-name:hover { color: var(--g-blue); text-decoration: underline; }
   .my-c-st, .my-c-link, .my-c-date, .my-c-folder { white-space: nowrap; text-align: center; }
@@ -1298,7 +1298,7 @@
 <div class="panel active" id="panel-My">
   <div class="ctrl-bar">
     <span class="my-who-label">DRI</span>
-    <span id="myWhoChips" class="my-who-chips"></span>
+    <select id="myWho"><option value="">— 請選擇 —</option></select>
     <span class="ctrl-sep"></span>
     <label><input type="checkbox" id="myShowAll">看全部</label>
     <label><input type="checkbox" id="myShowClosed">顯示結案/凍結/中止</label>
@@ -1658,7 +1658,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.37.2';
+const APP_VERSION = '0.37.3';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
@@ -4647,7 +4647,7 @@ function _myStatusGridHtml() {
 }
 function _myGetWho() { return localStorage.getItem(MY_WHO_KEY) || ''; }
 function populateMyWho() {
-  const box = document.getElementById('myWhoChips');
+  const box = document.getElementById('myWho');
   if (!box) return;
   let names = [];
   const pm = window.personMap || {};
@@ -4662,14 +4662,9 @@ function populateMyWho() {
     names = (typeof collectAuthorNames === 'function' ? collectAuthorNames() : []);
   }
   const cur = _myGetWho();
-  const map = _personDeptMap || (typeof buildPersonDeptMap === 'function' ? (_personDeptMap = buildPersonDeptMap()) : {});
-  box.innerHTML = names.length
-    ? names.map(n => {
-        const c = (typeof deptChipColor === 'function') ? deptChipColor(map[n] || '') : { bg: '#eee', fg: '#333' };
-        const act = n === cur ? ' active' : '';
-        return `<span class="my-who-chip${act}" data-name="${escapeAttr(n)}" style="background:${c.bg};color:${c.fg}">${escapeHtml(n)}</span>`;
-      }).join('')
-    : '<span class="my-muted" style="font-size:var(--fs-xs)">（尚無人員名單，請於「人員」分頁建立）</span>';
+  box.innerHTML = '<option value="">— 請選擇 —</option>' +
+    names.map(n => `<option value="${escapeAttr(n)}"${n === cur ? ' selected' : ''}>${escapeHtml(n)}</option>`).join('');
+  if (cur && names.includes(cur)) box.value = cur;
 }
 // Mission 1件の HTML（タスクは showTasks のものを含める）
 // ===== 我的：階層テーブル（行ビルダー）=====
@@ -4947,15 +4942,8 @@ function _myFindMission(id) { return issueData.find(x => x['種別'] === 'Missio
 function _myFindIssue(id) { return issueData.find(x => (x['種別'] || 'Issue') !== 'Mission' && (x['編號'] || '').trim() === id) || null; }
 function _myFindTask(id) { const m = window.tasksByParent || {}; for (const p of Object.keys(m)) { const t = m[p].find(x => (x['編號'] || '').trim() === id); if (t) return t; } return null; }
 document.addEventListener('DOMContentLoaded', () => {
-  const box = document.getElementById('myWhoChips');
-  if (box) box.addEventListener('click', (e) => {
-    const chip = e.target.closest('.my-who-chip');
-    if (!chip) return;
-    const n = chip.dataset.name || '';
-    const nv = (_myGetWho() === n) ? '' : n; // 再クリックで解除
-    localStorage.setItem(MY_WHO_KEY, nv);
-    renderMyView();
-  });
+  const sel = document.getElementById('myWho');
+  if (sel) sel.addEventListener('change', () => { localStorage.setItem(MY_WHO_KEY, sel.value || ''); renderMyView(); });
   document.getElementById('myShowClosed')?.addEventListener('change', renderMyView);
   document.getElementById('myShowAll')?.addEventListener('change', renderMyView);
 });
