@@ -538,11 +538,21 @@
   table.my-table { width: 100%; border-collapse: collapse; font-size: var(--fs-xs); }
   .my-table th { position: sticky; top: 0; z-index: 2; background: #E8EAED; color: #202124; padding: 6px 8px; text-align: left; font-weight: var(--fw-bold); border: 1px solid var(--border); font-size: var(--fs-sm); white-space: nowrap; }
   .my-table td { padding: 3px 8px; border: 1px solid #ECEEF1; vertical-align: middle; line-height: 1.35; }
-  .my-table tr.my-row-issue > td { background: #F8F9FB; }
-  .my-table tr.my-row-issue .my-c-name { font-weight: var(--fw-bold); font-size: var(--fs-base); }
+  .my-table tr.my-row-issue   > td:not(.my-c-grey) { background: #E8F0FE; } /* Issue=藍 */
+  .my-table tr.my-row-mission > td:not(.my-c-grey) { background: #E6F4EA; } /* Mission=綠 */
+  .my-table tr.my-row-task    > td:not(.my-c-grey) { background: #FFFFFF; } /* Task=白 */
+  /* フォントサイズは3層で統一（Mission の大きさ＝--fs-xs）。ウェイトのみ差を残す */
+  .my-table .my-c-name { font-size: var(--fs-xs); }
+  .my-table tr.my-row-issue .my-c-name { font-weight: var(--fw-bold); }
   .my-table tr.my-row-mission .my-c-name { font-weight: var(--fw-semibold); }
   .my-table tr.my-row-task .my-c-name { color: #3C4043; }
-  .my-table tr.my-row:hover > td { background: #EAF1FB; }
+  .my-table tr.my-row:hover > td { filter: brightness(0.96); }
+  /* 選択中の自分のチップを光らせる */
+  .person-chip.my-chip-me { font-weight: 700; position: relative; animation: chipGlow 1.5s ease-in-out infinite; }
+  @keyframes chipGlow {
+    0%, 100% { box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(26,115,232,.55); }
+    50%      { box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(26,115,232,1), 0 0 9px rgba(26,115,232,.85); }
+  }
   .my-c-no { font-size: var(--fs-2xs); color: #80868B; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .my-c-grey { background: repeating-linear-gradient(135deg,#F4F5F7,#F4F5F7 6px,#EFF0F2 6px,#EFF0F2 12px); }
   .my-c-name { cursor: pointer; min-width: 120px; }
@@ -1269,7 +1279,7 @@
 
 <div class="tabs">
   <div class="tab-thumb" id="tabThumb"></div>
-  <div class="tab active" onclick="show('My',event)">我的</div>
+  <div class="tab active" onclick="show('My',event)">My Work</div>
   <div class="tab" onclick="show('A',event)">Issue &amp; Mission</div>
   <div class="tab" onclick="show('C',event)">Mission進度</div>
   <div class="tab" onclick="show('B',event)">會議議程</div>
@@ -1640,9 +1650,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.37.0';
+const APP_VERSION = '0.37.1';
 const APP_BUILD = '2026-06-01';
-const APP_NOTE  = 'リデザイン P2改：名前起点メイン「我的」を階層テーブル化（カード廃止）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
+const APP_NOTE  = '我的テーブルの微調整：①Issue/Mission/Task のフォント size を統一 ②3層の地色を分離（Issue=藍/Mission=綠/Task=白）③タブ名を「My Work」に ④選択中の自分のチップが光る。｜リデザイン P2改：名前起点メイン「我的」を階層テーブル化（カード廃止）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
 // ===== Tab switch =====
 function show(id, e) {
@@ -4659,7 +4669,14 @@ function _myDispNo(ii, mNum, tNum) {
 function _myChips(v) {
   v = (v || '').trim();
   if (!v) return '';
-  return (typeof personChipsHtml === 'function') ? personChipsHtml(v) : escapeHtml(v);
+  const who = window._myWhoCur || '';
+  const names = (typeof splitPersons === 'function') ? splitPersons(v) : [v];
+  const map = _personDeptMap || (typeof buildPersonDeptMap === 'function' ? (_personDeptMap = buildPersonDeptMap()) : {});
+  return names.map(n => {
+    const c = (typeof deptChipColor === 'function') ? deptChipColor(map[n] || '') : { bg: '#eee', fg: '#333' };
+    const me = (who && (n === who || n.indexOf(who) >= 0 || who.indexOf(n) >= 0)) ? ' my-chip-me' : '';
+    return `<span class="person-chip${me}" style="background:${c.bg};color:${c.fg}">${escapeHtml(n)}</span>`;
+  }).join('');
 }
 function _myLinkCount(v) {
   return String(v || '').split(/[\n,]+/).map(s => s.trim()).filter(Boolean).length;
@@ -4693,6 +4710,7 @@ function renderMyView() {
   if (!wrap) return;
   populateMyWho();
   const who = (document.getElementById('myWho') || {}).value || '';
+  window._myWhoCur = who; // _myChips の光彩判定で使用
   const showAll = !!document.getElementById('myShowAll')?.checked;
   const showClosed = !!document.getElementById('myShowClosed')?.checked;
   const countEl = document.getElementById('myCount');
