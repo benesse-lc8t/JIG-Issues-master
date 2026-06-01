@@ -37,40 +37,49 @@
     --S-bg:  #E0F7FA;  --S-fg:  #007B83;
     --IP-bg: #FFF8E1;  --IP-fg: #8B5A00;
 
-    /* Structural */
-    --border:  #DADCE0;
-    --font:    'Roboto', 'Noto Sans TC', 'Microsoft JhengHei', 'PingFang TC', 'Source Han Sans TC', sans-serif;
-    /* CJK 主体のテキスト（編集モーダルの記入者・進度・ログ）用。繁体字を素直に表示 */
-    --font-cjk: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', 'Source Han Sans TC', sans-serif;
-    --hdr-bg:  #F8F9FA;
-    --sec-bg:  #F1F3F4;
+    /* Structural（macOS 寄せ v1）*/
+    --border:  #E4E4E7;
+    --hairline: rgba(0,0,0,0.08);
+    --accent:       #007AFF;  /* macOS system blue */
+    --accent-hover: #0A6CE0;
+    --accent-bg:    #EAF3FF;
+    --font:    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', 'Roboto', 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+    /* CJK 主体のテキスト用。繁体字を素直に表示 */
+    --font-cjk: -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+    --hdr-bg:  #FAFAFB;
+    --sec-bg:  #F1F1F3;
     --mtg-bg:  #FFFFFF;
     --pgc-bg:  #FFFFFF;
-    --body-bg: #FFFFFF;
+    --body-bg: #F5F5F7;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05), 0 1px 1px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 14px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
+    --radius-card: 12px;
+    --radius-ctl: 7px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font); font-weight: 400; font-size: 13px; color: #202124; background: var(--body-bg); padding: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  body { font-family: var(--font); font-weight: 400; font-size: 13px; color: #1D1D1F; background: var(--body-bg); padding: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   button, input, select, textarea, a { font-family: var(--font); }
   code { font-family: var(--font); font-weight: 500; font-size: 0.92em; background: var(--g-grey-bg); color: #3C4043; padding: 1px 6px; border-radius: 4px; letter-spacing: 0.01em; }
-  h1 { font-size: 18px; font-weight: 500; color: #202124; margin-bottom: 14px; letter-spacing: 0; }
-  .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  h1 { font-size: 17px; font-weight: 600; color: #1D1D1F; margin: 0; letter-spacing: -0.01em; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    position: sticky; top: 8px; z-index: 50; padding: 9px 16px; margin-bottom: 14px;
+    background: rgba(255,255,255,0.72); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+    border: 1px solid rgba(255,255,255,0.6); border-radius: 14px; box-shadow: var(--shadow-md); }
   /* トップのお知らせボード（読み取り専用・編集は管理者ページ）*/
   .notice-board { flex: 1; min-width: 0; margin: 0 20px; max-width: 920px; align-self: center; display: flex; align-items: center; gap: 9px; background: #FFFBEA; border: 1px solid #F2E2A6; border-radius: 8px; padding: 7px 13px; color: #7A5B00; }
   .notice-board .nb-ico { flex-shrink: 0; color: #C9A227; }
   .notice-board .nb-text { font-size: 12px; line-height: 1.45; white-space: pre-wrap; max-height: 46px; overflow-y: auto; }
-  .admin-btn { padding: 6px 12px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); border-radius: 4px; background: #fff; color: var(--g-grey); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
-  .admin-btn:hover { background: var(--g-grey-bg); color: #202124; }
-  .admin-btn.active { background: var(--g-blue-bg); color: var(--g-blue); border-color: var(--g-blue); }
+  .admin-btn { padding: 6px 13px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); border-radius: var(--radius-ctl); background: rgba(255,255,255,0.6); color: #3C4043; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .admin-btn:hover { background: #fff; color: #1D1D1F; border-color: #D6D6DA; }
+  .admin-btn.active { background: var(--accent-bg); color: var(--accent); border-color: transparent; }
 
   /* Tabs — Google Workspace 風のフィルド配色（v0.9.0：全体 75% サイズ）*/
-  .tabs { display: flex; gap: 3px; margin-bottom: 0; }
-  .tab { padding: 7px 18px; cursor: pointer; font-size: 10px; font-weight: 500; border: 1px solid var(--border); border-bottom: none; border-radius: 6px 6px 0 0; background: #F8F9FA; color: #5F6368; transition: all 0.15s; letter-spacing: 0.01em; }
-  .tab:hover { background: #F1F3F4; color: #202124; }
-  .tab.active { font-weight: 700; box-shadow: 0 -2px 8px rgba(0,0,0,0.08); transform: translateY(-1px); }
-  .tab.active:nth-child(1) { background: #4285F4; color: #fff;     border-color: #1A73E8; } /* Issue & Mission */
-  .tab.active:nth-child(2) { background: #EA4335; color: #fff;     border-color: #C5221F; } /* Mission進度 */
-  .tab.active:nth-child(3) { background: #FBBC04; color: #202124; border-color: #F9AB00; } /* 會議議程 */
-  .tab.active:nth-child(4) { background: #00ACC1; color: #fff;     border-color: #00838F; } /* DASHBOARD */
+  /* macOS セグメンテッドコントロール風タブ */
+  .tabs { display: inline-flex; gap: 2px; margin-bottom: 12px; padding: 3px; background: #E8E8EA; border-radius: 10px; }
+  .tab { padding: 6px 16px; cursor: pointer; font-size: 12px; font-weight: 500; border: none; border-radius: 7px; background: transparent; color: #3C4043; transition: background 0.18s, color 0.18s, box-shadow 0.18s; letter-spacing: 0; }
+  .tab:hover { background: rgba(0,0,0,0.045); color: #1D1D1F; }
+  .tab.active { background: #fff; color: #1D1D1F; font-weight: 600; box-shadow: var(--shadow-sm); transform: none; }
 
   /* topbar 右肩のアクション群（管理者ボタンと人物ボタンを縦に並べる） */
   .topbar-actions { display: flex; flex-direction: column; gap: 4px; align-items: stretch; }
@@ -96,7 +105,7 @@
   #panel-E.active { border-top: 3px solid #9334E6; }
   #panel-F.active { border-top: 3px solid #00ACC1; }
   #panel-Admin.active { border-top: 3px solid #5F6368; }
-  .panel.active { box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .panel.active { box-shadow: var(--shadow-md); }
 
   /* Console (Tab E) */
   .console { padding: 18px 20px; }
@@ -106,13 +115,14 @@
   .con-section .section-title { font-size: 13px; font-weight: 500; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px dashed var(--border); display: flex; align-items: center; gap: 8px; color: #202124; }
   .con-section .section-title .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 500; }
   .con-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
-  .btn { display: inline-block; padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border); background: #fff; color: #3C4043; font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.15s; text-decoration: none; }
-  .btn:hover { background: var(--g-grey-bg); color: #202124; }
-  .btn-primary { background: var(--g-blue); border-color: var(--g-blue); color: #fff; }
-  .btn-primary:hover { background: #1967D2; color: #fff; }
+  .btn { display: inline-block; padding: 7px 15px; border-radius: var(--radius-ctl); border: 1px solid var(--border); background: #fff; color: #1D1D1F; font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.15s; text-decoration: none; box-shadow: 0 1px 1.5px rgba(0,0,0,0.04); }
+  .btn:hover { background: #F5F5F7; border-color: #D6D6DA; }
+  .btn:active { background: #ECECEF; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 1px 2px rgba(0,122,255,0.35); }
+  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: #fff; }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .stats { font-size: 12px; color: #3C4043; padding: 6px 10px; background: var(--g-grey-bg); border-radius: 4px; display: inline-block; }
-  .panel { display: none; border: 1px solid var(--border); background: #fff; border-radius: 0 8px 8px 8px; overflow-x: auto; }
+  .panel { display: none; border: 1px solid var(--hairline); background: #fff; border-radius: var(--radius-card); overflow-x: auto; box-shadow: var(--shadow-md); }
   .panel.active { display: block; }
 
   /* Table */
@@ -228,15 +238,16 @@
   .st-type-mission  { background: #E8F0FE; color: #1967D2; border: 1px dashed #4285F4; }
 
   /* Tab A controls bar */
-  .ctrl-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 7px 9px; background: var(--hdr-bg); border-bottom: 1px solid var(--border); font-size: 9px; }
-  .ctrl-bar input[type="search"], .ctrl-bar select { padding: 4px 7px; font-size: 9px; border: 1px solid var(--border); border-radius: 3px; background: #fff; font-family: inherit; color: #202124; transition: border-color 0.15s; height: 24px; }
-  .ctrl-bar input[type="search"]:focus, .ctrl-bar select:focus { outline: none; border-color: var(--g-blue); box-shadow: 0 0 0 2px var(--g-blue-bg); }
+  .ctrl-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 11px; background: var(--hdr-bg); border-bottom: 1px solid var(--hairline); font-size: 9px; }
+  .panel > .ctrl-bar:first-child { border-radius: var(--radius-card) var(--radius-card) 0 0; }
+  .ctrl-bar input[type="search"], .ctrl-bar select { padding: 4px 9px; font-size: 9px; border: 1px solid var(--border); border-radius: 6px; background: #fff; font-family: inherit; color: #1D1D1F; transition: border-color 0.15s, box-shadow 0.15s; height: 26px; }
+  .ctrl-bar input[type="search"]:focus, .ctrl-bar select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
   .ctrl-bar input[type="search"] { min-width: 150px; }
   .ctrl-bar label { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; color: #3C4043; font-size: 9px; }
   .ctrl-bar input[type="checkbox"] { accent-color: var(--g-blue); width: 11px; height: 11px; }
   .ctrl-bar .ctrl-sep { width: 1px; height: 13px; background: var(--border); margin: 0 3px; }
-  .ctrl-bar .ctrl-clear { padding: 4px 8px; font-size: 8px; font-weight: 500; border: 1px solid var(--border); border-radius: 3px; background: #fff; cursor: pointer; color: var(--g-grey); transition: all 0.15s; height: 24px; line-height: 1; }
-  .ctrl-bar .ctrl-clear:hover { background: var(--g-grey-bg); color: #202124; }
+  .ctrl-bar .ctrl-clear { padding: 4px 9px; font-size: 8px; font-weight: 500; border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer; color: var(--g-grey); transition: all 0.15s; height: 26px; line-height: 1; }
+  .ctrl-bar .ctrl-clear:hover { background: #F5F5F7; color: #1D1D1F; border-color: #D6D6DA; }
   .ctrl-bar .ctrl-count { margin-left: auto; font-size: 8px; color: var(--g-grey); }
   .ctrl-bar .ctrl-toggle { display: inline-flex; align-items: center; gap: 4px; font-size: 9px; color: #3C4043; cursor: pointer; user-select: none; white-space: nowrap; }
   .ctrl-bar .ctrl-toggle input { accent-color: var(--g-blue); width: 11px; height: 11px; }
@@ -272,8 +283,8 @@
   .lnk a:hover { color: var(--g-blue-fg); }
 
   /* Version badge — Google Blue pill */
-  .ver { display: inline-block; margin-left: 10px; padding: 2px 10px; font-size: 10px; font-weight: 700; color: var(--g-blue); background: var(--g-blue-bg); border: 1px solid #D2E3FC; border-radius: 12px; vertical-align: middle; letter-spacing: 0.05em; cursor: help; }
-  .ver:hover { background: #D2E3FC; color: var(--g-blue-fg); }
+  .ver { display: inline-block; margin-left: 10px; padding: 2px 9px; font-size: 10px; font-weight: 600; color: var(--accent); background: var(--accent-bg); border: none; border-radius: 20px; vertical-align: middle; letter-spacing: 0.02em; cursor: help; }
+  .ver:hover { background: #D8EAFF; }
 
   /* Issue expand toggle (for missions) */
   .num-cell { position: relative; }
@@ -466,7 +477,8 @@
 
   /* Mission 編集モーダル（Mission進度 / 狀態 / Confluence URL 統合） */
   .remark-modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.38); z-index: 900;
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.28); z-index: 900;
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
     align-items: center; justify-content: center;
   }
   .remark-modal-overlay.open { display: flex; }
@@ -479,10 +491,10 @@
   .ctrl-spring { flex: 1 1 auto; }
   .ctrl-add {
     font-family: var(--font-cjk); font-size: 12px; font-weight: 600; cursor: pointer;
-    padding: 4px 12px; border-radius: 7px; border: 1px solid #C9D6F0;
-    color: #1967D2; background: #F4F8FF; transition: all .12s; white-space: nowrap;
+    padding: 5px 13px; border-radius: var(--radius-ctl); border: 1px solid var(--accent);
+    color: #fff; background: var(--accent); box-shadow: 0 1px 2px rgba(0,122,255,0.35); transition: all .12s; white-space: nowrap;
   }
-  .ctrl-add:hover { background: #E8F0FE; border-color: #A9C3F0; }
+  .ctrl-add:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
   /* 新增モーダル：種別トグルとフォーム */
   .seg-toggle { display: flex; gap: 6px; margin-bottom: 4px; }
   .seg-btn {
@@ -533,10 +545,10 @@
   .load-bar::before { content: ''; position: absolute; top: 0; bottom: 0; left: -45%; width: 45%; background: var(--g-blue); border-radius: 2px; animation: loadslide 1.1s ease-in-out infinite; }
   @keyframes loadslide { 0% { left: -45%; } 100% { left: 100%; } }
   .remark-modal {
-    background: #fff; border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+    background: #fff; border-radius: 16px; box-shadow: var(--shadow-lg);
     width: min(680px, 94vw); max-height: 90vh; display: flex; flex-direction: column;
     animation: modalIn 0.16s ease-out;
-    border-top: 5px solid var(--rm-accent, #DADCE0);
+    border-top: 4px solid var(--rm-accent, #DADCE0);
     overflow: hidden;
   }
   @keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
@@ -654,17 +666,17 @@
     display: flex; align-items: center; justify-content: flex-end; gap: 10px;
   }
   .remark-modal-cancel {
-    padding: 7px 18px; border: 1.5px solid #DADCE0; border-radius: 6px;
-    background: #fff; color: #3C4043; font: inherit; font-size: 12px; font-weight: 500;
+    padding: 7px 16px; border: 1px solid var(--border); border-radius: var(--radius-ctl);
+    background: #fff; color: #1D1D1F; font: inherit; font-size: 12px; font-weight: 500;
     cursor: pointer; transition: background 0.12s;
   }
-  .remark-modal-cancel:hover { background: #F1F3F4; }
+  .remark-modal-cancel:hover { background: #F5F5F7; border-color: #D6D6DA; }
   .remark-modal-save {
-    padding: 7px 22px; border: none; border-radius: 6px;
-    background: var(--g-blue); color: #fff; font: inherit; font-size: 12px; font-weight: 600;
-    cursor: pointer; transition: background 0.12s, opacity 0.12s;
+    padding: 7px 20px; border: none; border-radius: var(--radius-ctl);
+    background: var(--accent); color: #fff; font: inherit; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: background 0.12s, opacity 0.12s; box-shadow: 0 1px 2px rgba(0,122,255,0.35);
   }
-  .remark-modal-save:hover { background: #1558B0; }
+  .remark-modal-save:hover { background: var(--accent-hover); }
   .remark-modal-save:disabled { opacity: 0.55; cursor: default; }
   .remark-modal-save.saving { background: #5F6368; }
   /* 編輯ボタン（表示モーダル＝読み取り専用のときだけ表示） */
@@ -1481,9 +1493,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.31.2';
+const APP_VERSION = '0.32.0';
 const APP_BUILD = '2026-05-31';
-const APP_NOTE  = 'データ読み込み中のプレースホルダに不確定プログレスバー（スライド）を追加。Apps Script 変更なし。';
+const APP_NOTE  = 'macOS 風 UI 刷新 v1：システムフォント・薄グレー背景＋白カード・アクセント#007AFF・ヘアライン/ソフトシャドウ・トップバー＆モーダルにフロストガラス・タブをセグメンテッドコントロール化。データ表のグリッドは据え置き（v2 で精緻化）。Apps Script 変更なし。';
 
 // ===== Tab switch =====
 function show(id, e) {
