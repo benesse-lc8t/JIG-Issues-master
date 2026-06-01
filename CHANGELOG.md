@@ -5,6 +5,18 @@
 
 ---
 
+## [リデザイン P1] Apps Script データモデル拡張 — 2026-06-01
+
+**3層カスケード（Issue→Mission→Task）と7状態の器をバックエンドに用意**（詳細は `REDESIGN-PLAN.md`）。
+
+- **Task一覽 タブ新設**：`編號 / Task / 親編號 / DRI / 協作 / 狀態 / 進度 / 更新日 / 連結`（3層目の実体）。`setupJIG` で作成、`狀態` プルダウン・色・更新日鮮度色を付与。
+- **定義欄を追加**：`Issue主檔` に `Issue定義`、`Mission一覽` に `Mission定義`（カスケード健全性の言語化＝D8）。既存シートへは非破壊で追記。
+- **7状態化**：`STATUS_VALUES = 構想中 / 策劃中 / 待審核 / 進行中 / 結案 / 凍結 / 中止`。旧 `未開始 / 需確認` は書込許容（移行期互換）、表示側の読み替えは P2 で実施。状態プルダウンは `allowInvalid:true` に変更（旧値が残る行を弾かない）。
+- **doPost に `addTask` / `updateTask` 追加**：`_handleAddTask`（親 Mission 配下に `-K{n}` 自動採番）・`_nextTaskId`。`_handleUpdate` の許容フィールドに Task 系（Task/DRI/協作/進度/連結/定義）を追加。
+- `doGet` 診断に `taskSheetExists` / `statusValues` を追加。`CODE_VERSION = gs-2026-06-01-cascade1`。
+- **index.html は未変更**（ライブサイトは現状維持）。UI は P2 で対応。
+- ⚠️ **管理者作業が必要**：①`setupJIG` を 1 回実行（`Task一覽` 作成・定義列追補）②Apps Script を**同一 URL で再公開**（`doGet` の `codeVersion` が `cascade1` になることを確認）。これが済むまで Task の追加/編集は動かない。
+
 ## v0.35.0 — 2026-06-01
 
 **タイポグラフィのトークン体系を導入（一元管理の土台）**

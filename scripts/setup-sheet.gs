@@ -36,17 +36,24 @@
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 // 再公開が反映されたか確認するための目印。doGet が返す。変更のたびに上げる。
-const CODE_VERSION = 'gs-2026-05-31-announce1';
+const CODE_VERSION = 'gs-2026-06-01-cascade1';
 
-const STATUS_VALUES = ['未開始', '策劃中', '需確認', '進行中', '結案'];
+// ===== 状態（2026-06-01 リデザイン：Mission/Task は7状態）=====
+// REDESIGN-PLAN.md D3。Issue は7状態を付けない（D2）。
+// 旧5状態（未開始/需確認）は表示側で読み替え（未開始→構想中・需確認→待審核）。
+const STATUS_VALUES = ['構想中', '策劃中', '待審核', '進行中', '結案', '凍結', '中止'];
 const STATUS_COLORS = {
-  '未開始': '#EEEAE0',
+  '構想中': '#EEEAE0',
   '策劃中': '#D1F2F7',
-  '需確認': '#FEE7BB',
+  '待審核': '#FEE7BB',
   '進行中': '#DCEBFB',
-  '結案':   '#D4F2DD'
+  '結案':   '#D4F2DD',
+  '凍結':   '#E2E3E5',
+  '中止':   '#F3D9D9'
 };
-const ISSUE_NEW_COLS = ['Confluence URL', '狀態', '事務局備註', '更新日'];
+// 旧状態（移行期の互換。ドロップダウンには出さないが、書込は許容して弾かない）
+const LEGACY_STATUS = ['未開始', '需確認'];
+const ISSUE_NEW_COLS = ['Confluence URL', '狀態', '事務局備註', '更新日', 'Issue定義'];
 const MISSION_HEADERS = [
   '編號',          // A
   'Mission',       // B
@@ -55,9 +62,27 @@ const MISSION_HEADERS = [
   '狀態',          // E
   'Mission進度',   // F
   '更新日',        // G
-  'Confluence URL' // H
+  'Confluence URL',// H
+  'Mission定義'    // I（2026-06-01 追加：カスケード健全性の言語化＝D8）
 ];
-const MISSION_COL_WIDTHS = { 1: 100, 2: 320, 3: 90, 4: 90, 5: 80, 6: 220, 7: 90, 8: 240 };
+const MISSION_COL_WIDTHS = { 1: 100, 2: 320, 3: 90, 4: 90, 5: 80, 6: 220, 7: 90, 8: 240, 9: 320 };
+
+// ===== Task一覽（2026-06-01 リデザイン：3層目の実体）=====
+// REDESIGN-PLAN.md §3.2。親 Mission 編號の配下に -K{n} で採番。
+// 協作は列内マルチ値（区切り , / 、）。連結は「名前|URL」を複数（改行/カンマ区切り）。
+const TASK_SHEET_NAME = 'Task一覽';
+const TASK_HEADERS = [
+  '編號',     // A
+  'Task',     // B
+  '親編號',   // C（Mission一覽 の編號）
+  'DRI',      // D（組員。空なら親 Mission 継承）
+  '協作',     // E（複数可・列内マルチ値）
+  '狀態',     // F（7状態）
+  '進度',     // G（一行・短文）
+  '更新日',   // H
+  '連結'      // I（名前|URL を複数）
+];
+const TASK_COL_WIDTHS = { 1: 130, 2: 300, 3: 110, 4: 90, 5: 120, 6: 80, 7: 240, 8: 100, 9: 240 };
 
 // ===== Mission進度ログ（追記専用ログ）=====
 // 本人が週1で書く進度を 1 記入＝1 行で溜める。上書きしない。
@@ -98,7 +123,8 @@ const WRITE_FIELDS = {
   '更新日': '更新日',
   'Confluence URL': 'Confluence URL'   // 複数 URL は改行区切りで保持
 };
-const ALLOWED_STATUS = new Set(STATUS_VALUES);
+// 書込許容：7状態＋旧2状態（移行期の互換）。ドロップダウンは STATUS_VALUES のみ。
+const ALLOWED_STATUS = new Set([...STATUS_VALUES, ...LEGACY_STATUS]);
 
 // ===== メニュー登録 =====
 function onOpen() {
@@ -144,13 +170,15 @@ function doPost(e) {
 
     // 追加／編集アクション。action 無しは従来どおりの更新（狀態/進度ログ等）。
     const action = String(data.action || '').trim();
-    if (action === 'addMission' || action === 'addIssue' || action === 'updateMission' || action === 'updateIssue' || action === 'saveMemo' || action === 'saveAnnounce') {
+    if (action === 'addMission' || action === 'addIssue' || action === 'addTask' || action === 'updateMission' || action === 'updateIssue' || action === 'updateTask' || action === 'saveMemo' || action === 'saveAnnounce') {
       const ssA = _getSpreadsheet();
       if (!ssA) return _writeJson({ ok: false, error: 'no_spreadsheet', hint: 'Set SHEET_ID in the script.' });
       if (action === 'addMission')    return _handleAddMission(ssA, data);
       if (action === 'addIssue')      return _handleAddIssue(ssA, data);
+      if (action === 'addTask')       return _handleAddTask(ssA, data);
       if (action === 'updateMission') return _handleUpdate(ssA, data, MISSION_SHEET_FOR_WRITE);
       if (action === 'updateIssue')   return _handleUpdate(ssA, data, ISSUE_SHEET_FOR_WRITE);
+      if (action === 'updateTask')    return _handleUpdate(ssA, data, TASK_SHEET_NAME);
       if (action === 'saveAnnounce')  return _handleSaveAnnounce(ssA, data);
       return _handleSaveMemo(ssA, data);
     }
@@ -415,6 +443,72 @@ function _handleAddMission(ss, data) {
   return _writeJson({ ok: true, action: 'addMission', mission: newId, '編號': newId, row: r.row, parent: parent, warnings: r.rejected });
 }
 
+// 親 Mission 編號配下の次の Task 編號（親編號-K{n}）を採番する。
+function _nextTaskId(sheet, parentId) {
+  const last = sheet.getLastRow();
+  let max = 0;
+  if (last >= 2) {
+    const ids = sheet.getRange(2, 1, last - 1, 1).getValues();
+    const esc = parentId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp('^' + esc + '-K(\\d+)$');
+    ids.forEach(r => { const m = String(r[0]).trim().match(re); if (m) max = Math.max(max, parseInt(m[1], 10)); });
+  }
+  return parentId + '-K' + (max + 1);
+}
+
+// Task の追加（3層目）。親は Mission一覽 の編號。-K{n} で自動採番。
+function _handleAddTask(ss, data) {
+  const parent = String(data['親編號'] || '').trim();
+  const name   = String(data['Task'] || '').trim();
+  if (!parent) return _writeJson({ ok: false, error: 'parent_required' });
+  if (!name)   return _writeJson({ ok: false, error: 'task_name_required' });
+  const status = String(data['狀態'] || '').trim();
+  if (status && !ALLOWED_STATUS.has(status)) return _writeJson({ ok: false, error: 'invalid_status', value: status });
+
+  // Task一覽 が無ければ作成（setupJIG 未実行でも初回 add で器を用意）
+  let sheet = ss.getSheetByName(TASK_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(TASK_SHEET_NAME);
+    sheet.getRange(1, 1, 1, TASK_HEADERS.length).setValues([TASK_HEADERS])
+      .setFontWeight('bold').setBackground('#F7F4EC');
+    Object.keys(TASK_COL_WIDTHS).forEach(k => sheet.setColumnWidth(Number(k), TASK_COL_WIDTHS[k]));
+    sheet.setFrozenRows(1);
+  }
+
+  // 親 Mission の存在チェック（Mission一覽 の編號）
+  const mSheet = ss.getSheetByName(MISSION_SHEET_FOR_WRITE);
+  if (mSheet) {
+    const ml = mSheet.getLastRow();
+    if (ml >= 2) {
+      const mhead = mSheet.getRange(1, 1, 1, mSheet.getLastColumn()).getValues()[0].map(h => String(h).trim());
+      const mnum = mhead.indexOf('編號');
+      if (mnum >= 0) {
+        const mvals = mSheet.getRange(2, mnum + 1, ml - 1, 1).getValues();
+        if (!mvals.some(r => String(r[0]).trim() === parent)) {
+          return _writeJson({ ok: false, error: 'parent_not_found', parent: parent });
+        }
+      }
+    }
+  }
+
+  const newId = _nextTaskId(sheet, parent);
+  const vmap = {
+    '編號': newId,
+    'Task': name,
+    '親編號': parent,
+    'DRI': String(data['DRI'] || ''),
+    '協作': String(data['協作'] || ''),
+    '狀態': status,
+    '進度': String(data['進度'] || ''),
+    '更新日': new Date(),
+    '連結': String(data['連結'] || data['Confluence URL'] || '')
+  };
+  const r = _appendByHeaders(sheet, vmap);
+  SpreadsheetApp.flush();
+  console.log('  → addTask ok:', newId, 'row', r.row);
+  return _writeJson({ ok: true, action: 'addTask', task: newId, '編號': newId, row: r.row, parent: parent, warnings: r.rejected });
+}
+
 // 既存行（編號で特定）の指定フィールドを更新。数式列は触らず、入力規則違反はスキップ。
 function _updateRowByHeaders(sheet, rowIdx, valueMap) {
   const lastCol = sheet.getLastColumn();
@@ -460,7 +554,9 @@ function _handleUpdate(ss, data, sheetName) {
   if (status && !ALLOWED_STATUS.has(status)) return _writeJson({ ok: false, error: 'invalid_status', value: status });
 
   const vmap = {};
-  ['Issue', 'Mission', '擔當', '戰略負責人', '處', '組', '狀態', 'Confluence URL'].forEach(k => {
+  // Issue/Mission/Task で使い得るフィールドを一括許容（対象シートに無い列は colOf=-1 でスキップ）
+  ['Issue', 'Mission', 'Task', '擔當', '戰略負責人', 'DRI', '協作', '處', '組',
+   '狀態', 'Confluence URL', '連結', '進度', 'Issue定義', 'Mission定義'].forEach(k => {
     if (Object.prototype.hasOwnProperty.call(data, k)) vmap[k] = String(data[k]);
   });
   vmap['更新日'] = new Date();
@@ -604,6 +700,9 @@ function doGet() {
       remarkColIndex: remarkCol,   // -1 なら列が見つかっていない
       logSheetName:   LOG_SHEET_NAME,
       logSheetExists: !!logSheet,  // false ならログタブ未作成（setupJIG 要実行）
+      taskSheetName:   TASK_SHEET_NAME,
+      taskSheetExists: !!(ss && ss.getSheetByName(TASK_SHEET_NAME)),  // false なら Task一覽 未作成
+      statusValues:    STATUS_VALUES,  // 7状態（再公開確認用）
       personSheetName:   PERSON_SHEET_NAME,
       personSheetExists: !!(ss && ss.getSheetByName(PERSON_SHEET_NAME)),
       memoSheetName:     MEMO_SHEET_NAME,
@@ -754,6 +853,18 @@ function setupJIG() {
     });
   }
 
+  // 既存 Mission一覽 に不足列（Mission定義＝カスケード健全性の言語化）を追記（非破壊）
+  {
+    const mh = readHeaders(taskSheet);
+    ['Mission定義'].forEach(name => {
+      if (!mh.includes(name)) {
+        const col = taskSheet.getLastColumn() + 1;
+        taskSheet.getRange(1, col).setValue(name).setFontWeight('bold').setBackground('#F7F4EC');
+        log.push(`✓ Mission一覽 に列「${name}」を追加`);
+      }
+    });
+  }
+
   // 行 freeze
   taskSheet.setFrozenRows(1);
 
@@ -773,6 +884,43 @@ function setupJIG() {
     log.push(`✓ Mission一覽 に条件付き書式 ${added1 + added2} 件を追加`);
   }
   if (taskCreated) log.push('  　└ 列幅・行 freeze・プルダウンも設定済み');
+
+  // --- 2.5 Task一覽 タブ（3層目の実体／2026-06-01 リデザイン）---
+  let tkSheet = ss.getSheetByName(TASK_SHEET_NAME);
+  if (!tkSheet) {
+    tkSheet = ss.insertSheet(TASK_SHEET_NAME);
+    tkSheet.getRange(1, 1, 1, TASK_HEADERS.length).setValues([TASK_HEADERS])
+      .setFontWeight('bold').setBackground('#F7F4EC');
+    Object.keys(TASK_COL_WIDTHS).forEach(k => tkSheet.setColumnWidth(Number(k), TASK_COL_WIDTHS[k]));
+    tkSheet.setFrozenRows(1);
+    log.push('✓ 「Task一覽」タブを作成（' + TASK_HEADERS.join(' / ') + '）');
+  } else {
+    // 既存タブに不足列を追記（非破壊）
+    const th = readHeaders(tkSheet);
+    TASK_HEADERS.forEach(name => {
+      if (!th.includes(name)) {
+        const col = tkSheet.getLastColumn() + 1;
+        tkSheet.getRange(1, col).setValue(name).setFontWeight('bold').setBackground('#F7F4EC');
+        log.push('✓ Task一覽 に列「' + name + '」を追加');
+      }
+    });
+  }
+  // Task一覽 の 狀態 プルダウン・色、更新日 の鮮度色（列名で特定）
+  {
+    const thd = readHeaders(tkSheet);
+    const tkStatusCol = thd.indexOf('狀態') + 1;
+    const tkUpdCol    = thd.indexOf('更新日') + 1;
+    const tkRows      = Math.max(tkSheet.getMaxRows() - 1, 1000);
+    if (tkStatusCol > 0) applyStatusValidation(tkSheet.getRange(2, tkStatusCol, tkRows, 1));
+    const tkRules = tkSheet.getConditionalFormatRules();
+    let tA = 0, tB = 0;
+    if (tkStatusCol > 0) tA = addStatusColorRulesIfMissing(tkRules, tkSheet.getRange(2, tkStatusCol, tkRows, 1));
+    if (tkUpdCol    > 0) tB = addFreshnessRulesIfMissing(tkRules, tkSheet.getRange(2, tkUpdCol, tkRows, 1), tkUpdCol);
+    if (tA + tB > 0) {
+      tkSheet.setConditionalFormatRules(tkRules);
+      log.push(`✓ Task一覽 に条件付き書式 ${tA + tB} 件を追加`);
+    }
+  }
 
   // --- 3. Mission進度ログ タブ（追記専用）---
   let logSheet = ss.getSheetByName(LOG_SHEET_NAME);
@@ -836,7 +984,7 @@ function setupJIG() {
 // ===== 条件付き書式をクリアして入れ直す（重複が気になったとき用）=====
 function resetAndSetup() {
   const ss = _getSpreadsheet();
-  ['Issue主檔', 'Mission一覽'].forEach(name => {
+  ['Issue主檔', 'Mission一覽', TASK_SHEET_NAME].forEach(name => {
     const sh = ss.getSheetByName(name);
     if (sh) sh.setConditionalFormatRules([]);  // 全クリア（注意：手動で入れたルールも消える）
   });
@@ -853,8 +1001,8 @@ function readHeaders(sheet) {
 function applyStatusValidation(range) {
   const rule = SpreadsheetApp.newDataValidation()
     .requireValueInList(STATUS_VALUES, true)
-    .setAllowInvalid(false)
-    .setHelpText('未開始 / 策劃中 / 需確認 / 進行中 / 結案 のいずれかを選択')
+    .setAllowInvalid(true)  // 旧状態(未開始/需確認)が残る行を弾かない（移行期の互換）
+    .setHelpText('構想中 / 策劃中 / 待審核 / 進行中 / 結案 / 凍結 / 中止 のいずれかを選択')
     .build();
   range.setDataValidation(rule);
 }
