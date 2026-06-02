@@ -628,14 +628,18 @@
   .my-row:hover .my-add { opacity: 0.7; }
   .my-add:hover { opacity: 1; background: #E8F0FE; }
   .my-link-count { display: inline-block; min-width: 13px; padding: 0 4px; border-radius: 8px; background: var(--g-blue); color: #fff; font-size: 7px; font-weight: var(--fw-bold); cursor: pointer; line-height: 1.5; }
-  .my-cedit { width: 100%; box-sizing: border-box; padding: 3px 6px; font-size: var(--fs-sm); border: 1px solid var(--accent); border-radius: 5px; font-family: inherit; }
+  /* ④ インライン入力欄は検索バーと同じトーン：細い枠＋フォーカスで青く光る */
+  .my-cedit { width: 100%; box-sizing: border-box; padding: 2px 8px; font-size: var(--fs-sm); border: 1px solid #DADCE0; border-radius: 6px; font-family: inherit; background: #fff; outline: none; transition: border-color .15s, box-shadow .15s; }
+  .my-cedit:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
   .my-c-dri, .my-c-collab, .my-c-lead { white-space: nowrap; cursor: pointer; }
   .my-table .my-c-dri { text-align: center; } /* ③ DRI は1名想定＝中央寄せ・列幅も狭め */
   .my-c-dri:hover, .my-c-collab:hover, .my-c-lead:hover { outline: 1px dashed var(--g-blue); outline-offset: -1px; }
   /* 上部 DRI ピッカー（モーダルと同じチップ選択） */
   .my-who-np { display: inline-block; position: relative; min-width: 150px; vertical-align: middle; }
-  .my-who-np .np-trigger { width: 100%; min-height: 20px; padding: 1px 8px; font-size: var(--fs-sm); }
+  .my-who-np .np-trigger { width: 100%; height: 24px; min-height: 0; box-sizing: border-box; padding: 0 8px; font-size: var(--fs-sm); }
   .my-search { flex: 0 1 240px; min-width: 160px; }
+  /* ① 高さを DRI トリガに合わせる ② 虫眼鏡 SVG のみ（文字なし） */
+  .ctrl-bar input.my-search { height: 24px; padding: 0 9px 0 28px; background: #fff url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239AA0A6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='8'/><path d='m21 21-4.3-4.3'/></svg>") no-repeat 9px center; background-size: 13px; }
   /* 各行セル編集用の浮遊ピッカー（固定配置で任意位置に出す） */
   .my-cell-pop { position: fixed; left: 0; top: 0; right: auto; width: 240px; z-index: 60; }
   /* ⑥ NO.列は省略しない（全文表示） */
@@ -751,9 +755,9 @@
   .np-wrap .author-trigger { width: 100%; }
   .np-wrap .np-menu { left: 0; right: 0; }
   /* 名前ピッカーのトリガ：選択（単数/複数）をタグで表示 */
-  .np-trigger.has-sel { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; background: #fff !important; border-color: #DADCE0 !important; padding-top: 2px; padding-bottom: 2px; }
+  .np-trigger.has-sel { display: flex; flex-wrap: nowrap; gap: 4px; align-items: center; background: #fff !important; border-color: #DADCE0 !important; padding-top: 0; padding-bottom: 0; overflow: hidden; }
   .np-trigger .np-ph { color: #BCC0C6; font-weight: 500; }
-  .np-trigger .np-tag { font-size: 11px; font-weight: 600; padding: 1px 6px 1px 8px; border-radius: 10px; white-space: nowrap; line-height: 1.7; display: inline-flex; align-items: center; }
+  .np-trigger .np-tag { font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 10px; white-space: nowrap; line-height: 1.6; display: inline-flex; align-items: center; gap: 5px; background: #F1F3F4; color: #3C4043; }
   .np-trigger .np-x { margin-left: 4px; cursor: pointer; font-weight: 700; opacity: 0.55; font-size: 13px; line-height: 1; }
   .np-trigger .np-x:hover { opacity: 1; }
   /* 一覧の人物セル：處カラーの小チップ */
@@ -1564,7 +1568,7 @@
         <div class="author-menu-chips" id="myWhoPickChips"></div>
       </div>
     </span>
-    <input type="search" id="mySearch" class="my-search" placeholder="搜尋 Issue／Mission／Task／姓名…" autocomplete="off">
+    <input type="search" id="mySearch" class="my-search" placeholder="" autocomplete="off">
     <span class="ctrl-sep"></span>
     <label class="my-slide"><span>僅我DRI</span><span class="ios-sw"><input type="checkbox" id="myOnlyDri"><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>顯示全部</span><span class="ios-sw"><input type="checkbox" id="myShowAll" checked><span class="ios-track"></span></span></label>
@@ -1642,7 +1646,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.50.3';
+const APP_VERSION = '0.50.4';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
@@ -2804,7 +2808,8 @@ function _refreshNamePickerTrigger(prefix) {
   trg.classList.remove('is-placeholder'); trg.classList.add('has-sel');
   trg.innerHTML = sel.map(n => {
     const c = _namePickColor(n, data);
-    return `<span class="np-tag" style="background:${c.bg};color:${c.fg}">${escapeHtml(n)}<span class="np-x" role="button" title="移除" data-name="${escapeAttr(n)}">×</span></span>`;
+    // ③ 處カラーはドットで示し、名前は黒文字（赤文字タブー回避）
+    return `<span class="np-tag"><span class="anp-dot" style="background:${c.fg}"></span>${escapeHtml(n)}<span class="np-x" role="button" title="移除" data-name="${escapeAttr(n)}">×</span></span>`;
   }).join('');
   // タグの「×」で個別削除（トリガのメニュー開閉は発火させない）
   trg.querySelectorAll('.np-x').forEach(x => {
