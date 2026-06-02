@@ -1508,8 +1508,14 @@ function seedFullDummy() {
     Object.keys(TASK_COL_WIDTHS).forEach(k => tSheet.setColumnWidth(Number(k), TASK_COL_WIDTHS[k]));
     tSheet.setFrozenRows(1);
   }
-  // 旧〔範例〕Mission/Task を掃除
-  const cleared = _fdClearDummyMT(ss);
+  // Mission一覽／Task一覽 を全リセット（ヘッダ1行を残してデータ行を全削除）。
+  // ※手編集で〔範例〕が消えた行も含めて綺麗にし、編號重複を根絶する。全ダミー前提。
+  let cleared = 0;
+  [mSheet, tSheet].forEach(sh => {
+    const lr = sh.getLastRow();
+    if (lr > 1) { sh.deleteRows(2, lr - 1); cleared += (lr - 1); }
+  });
+  SpreadsheetApp.flush();
 
   // 全 Issue を読む
   const ih = iSheet.getRange(1, 1, 1, iSheet.getLastColumn()).getValues()[0].map(h => String(h).trim());
