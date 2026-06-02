@@ -84,11 +84,23 @@
     /* リキッドグラスが透ける下地：淡い青〜緑〜暖色のグラデ（固定） */
     background: linear-gradient(160deg, #EAF2FF 0%, #EAF6F4 32%, #F3F1FA 60%, #FCF3EC 100%) fixed, var(--body-bg); }
   /* 起動ローディング・オーバーレイ */
-  #bootOverlay { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center;
+  #bootOverlay { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; overflow: hidden;
     background: linear-gradient(160deg, #EAF2FF 0%, #EAF6F4 38%, #F3F1FA 70%, #FCF3EC 100%);
     transition: opacity .45s ease; }
+  /* ⑤ オーロラ：背景でパステルがゆっくり移ろう */
+  .boot-aurora { position: absolute; inset: -30%; z-index: 0; filter: blur(46px); opacity: .8; pointer-events: none;
+    background:
+      radial-gradient(40% 40% at 25% 30%, rgba(110,170,255,.85), transparent 60%),
+      radial-gradient(38% 38% at 75% 35%, rgba(150,130,255,.7), transparent 60%),
+      radial-gradient(45% 45% at 60% 75%, rgba(120,215,190,.7), transparent 60%),
+      radial-gradient(40% 40% at 30% 80%, rgba(255,200,170,.6), transparent 60%);
+    animation: bootAurora 9s ease-in-out infinite alternate; }
+  @keyframes bootAurora {
+    0%   { transform: translate(-4%,-3%) scale(1); }
+    50%  { transform: translate(4%,2%) scale(1.12); }
+    100% { transform: translate(-2%,4%) scale(1.05); } }
   #bootOverlay.boot-hide { opacity: 0; pointer-events: none; }
-  .boot-box { text-align: center; }
+  .boot-box { text-align: center; position: relative; z-index: 1; }
   /* ロゴは中央に小さく固定（パルス動作なし）。動くのは起動バーのみ。 */
   .boot-logo { filter: drop-shadow(0 4px 12px rgba(26,115,232,.22)); }
   .boot-bar { width: 150px; height: 4px; margin: 14px auto 0; border-radius: 99px; background: rgba(26,103,210,.15); overflow: hidden; }
@@ -1244,6 +1256,7 @@
 <div class="toast-container" id="toastContainer"></div>
 <!-- 起動ローディング・オーバーレイ（初回読み込み中） -->
 <div id="bootOverlay">
+  <div class="boot-aurora"></div>
   <div class="boot-box">
     <img src="IMT_favicon.png" alt="IMT" width="45" height="40" class="boot-logo">
     <div class="boot-bar"><span></span></div>
@@ -1658,7 +1671,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.50.13';
+const APP_VERSION = '0.51.0';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
