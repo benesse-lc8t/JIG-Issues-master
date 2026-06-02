@@ -3,172 +3,164 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>名前 × 狀態 マーカー比較モック</title>
+<title>名前 × 狀態 マーカー比較（3段地色つき）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    /* 處（部門）カラー：地色 / 文字 */
-    --blue-bg:#E8F0FE;   --blue-tx:#1967D2;
-    --green-bg:#E6F4EA;  --green-tx:#137333;
-    --yellow-bg:#FEF7E0; --yellow-tx:#B06000;
-    --red-bg:#FCE8E6;    --red-tx:#B31412;
-    --purple-bg:#F3E8FD; --purple-tx:#7026A6;
-    --teal-bg:#E0F7FA;   --teal-tx:#00838F;
-    --pink-bg:#FDE7F3;   --pink-tx:#B80672;
-    --grey-bg:#F8F9FA;   --grey-tx:#5F6368;
-  }
   *{box-sizing:border-box;}
-  body{font-family:'Noto Sans TC',sans-serif; margin:0; padding:24px;
+  body{font-family:'Noto Sans TC',sans-serif; margin:0; padding:22px;
     background:linear-gradient(160deg,#EAF2FF 0%,#EAF6F4 38%,#F3F1FA 70%,#FCF3EC 100%);
     color:#202124;}
   h1{font-size:18px; margin:0 0 4px;}
-  .lead{font-size:12px; color:#5F6368; margin:0 0 18px; max-width:760px; line-height:1.6;}
-  .grid{display:grid; grid-template-columns:repeat(2,minmax(330px,1fr)); gap:16px;}
-  .card{background:#fff; border:1px solid #E3E6EA; border-radius:8px; padding:14px 14px 16px; box-shadow:0 1px 4px rgba(0,0,0,.06);}
+  .lead{font-size:12px; color:#5F6368; margin:0 0 16px; max-width:820px; line-height:1.6;}
+  .grid{display:grid; grid-template-columns:repeat(2,minmax(440px,1fr)); gap:16px;}
+  .card{background:#fff; border:1px solid #E3E6EA; border-radius:8px; padding:13px 12px 15px; box-shadow:0 1px 4px rgba(0,0,0,.06); overflow:hidden;}
   .card h2{font-size:13px; margin:0 0 2px; display:flex; align-items:center; gap:8px;}
   .badge-rec{font-size:9px; font-weight:700; color:#fff; background:#34A853; border-radius:4px; padding:1px 6px;}
-  .card .note{font-size:10.5px; color:#80868B; margin:0 0 10px; line-height:1.5;}
-  table{width:100%; border-collapse:collapse; font-size:12px;}
-  th{font-size:10px; color:#5F6368; font-weight:600; text-align:left; padding:4px 8px; border-bottom:1px solid #E3E6EA;}
-  td{padding:5px 8px; border-bottom:1px solid #F1F3F4; vertical-align:middle; white-space:nowrap;}
-  th.c-st,td.c-st{text-align:center;}
+  .card .note{font-size:10.5px; color:#80868B; margin:0 0 9px; line-height:1.5;}
 
-  /* ===== 現状（CURRENT）：名前=塗りピル太字 / 狀態=ベタ塗り ===== */
+  table{width:100%; border-collapse:separate; border-spacing:0; font-size:12px; table-layout:fixed;}
+  th{font-size:10px; color:#1F4E8C; font-weight:700; text-align:center; padding:4px 5px; background:#EEF3FA; border-bottom:1px solid #1967D2; white-space:nowrap;}
+  td{padding:4px 7px; border-bottom:1px solid #EDF1F5; vertical-align:middle; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  th.cNo,td.cNo{width:74px; text-align:left; font-size:10px; color:#5F6368;}
+  th.cItem{width:auto;} td.cItem{}
+  th.cDri,td.cDri{width:74px;}
+  th.cCo,td.cCo{width:70px;}
+  th.cSt,td.cSt{width:64px; text-align:center;}
+
+  /* 3段の地色（本体と同じ） */
+  tr.r-i > td{background:#E3F0FA;}   /* Issue=濃いめ */
+  tr.r-m > td{background:#E8F5FE;}   /* Mission=薄い */
+  tr.r-t > td{background:#FFFFFF;}   /* Task=白 */
+
+  /* レベルバッジ（本体 70%サイズ） */
+  .lvl{display:inline-flex; align-items:center; justify-content:center; width:9.8px; height:9.8px; border-radius:50%; font-size:5.6px; font-weight:700; color:#fff; margin-right:4px; vertical-align:middle; flex-shrink:0;}
+  .lvl.i{background:#3282ED;} .lvl.m{background:#629EEF;} .lvl.t{background:#C3DBF8; color:#1A3A6B;}
+  .it1{padding-left:14px;} .it2{padding-left:28px;}
+  .iname{font-size:11.5px; color:#202124;}
+
+  /* ===== 現状 ===== */
   .cur .chip{display:inline-block; font-size:11px; font-weight:700; padding:1px 7px; border-radius:9px; line-height:1.55;}
-  .cur .st{display:inline-block; padding:2px 8px; border-radius:10px; font-weight:700; font-size:11px; color:#fff; letter-spacing:.02em;}
-  .st-構想中{background:#9AA0A6;} .st-策劃中{background:#00ACC1;} .st-待審核{background:#F9AB00; color:#202124;}
-  .st-進行中{background:#4285F4;} .st-結案{background:#34A853;} .st-凍結{background:#BDC1C6; color:#202124;} .st-中止{background:#D93025;}
-
-  /* ===== A案：名前=色文字（枠なし） / 狀態=淡色バッジ ===== */
-  .A .nm{font-weight:600; font-size:12px;}
-  .A .sub{font-weight:500; font-size:11px;}
+  .cur .st{display:inline-block; padding:2px 8px; border-radius:10px; font-weight:700; font-size:11px; color:#fff;}
+  /* ===== A案 ===== */
+  .A .nm{font-weight:600; font-size:12px;} .A .sub{font-weight:500; font-size:11px;}
   .A .stA{display:inline-block; padding:2px 9px; border-radius:7px; font-weight:600; font-size:11px;}
-  .stA-構想中{background:#F1F3F4; color:#5F6368;}
-  .stA-策劃中{background:#E0F7FA; color:#00838F;}
-  .stA-待審核{background:#FEF7E0; color:#B06000;}
-  .stA-進行中{background:#E8F0FE; color:#1967D2;}
-  .stA-結案{background:#E6F4EA; color:#137333;}
-  .stA-凍結{background:#F1F3F4; color:#9AA0A6;}
-  .stA-中止{background:#FCE8E6; color:#C5221F;}
-
-  /* ===== B案：ドット方式 ===== */
+  /* ===== B案 ===== */
   .B .nm,.B .sub{color:#3C4043; font-weight:500; font-size:12px;}
-  .B .dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:6px; vertical-align:middle;}
+  .B .dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px; vertical-align:middle;}
   .B .stB{font-size:12px; color:#3C4043; font-weight:500;}
-  .dotB-構想中{background:#9AA0A6;} .dotB-策劃中{background:#00ACC1;} .dotB-待審核{background:#F9AB00;}
-  .dotB-進行中{background:#4285F4;} .dotB-結案{background:#34A853;} .dotB-凍結{background:#BDC1C6;} .dotB-中止{background:#D93025;}
-
-  /* ===== C案：チップ維持・淡色統一・600 ===== */
+  /* ===== C案 ===== */
   .C .chip{display:inline-block; font-size:11.5px; font-weight:600; padding:2px 8px; border-radius:7px; line-height:1.5;}
   .C .stC{display:inline-block; padding:2px 8px; border-radius:7px; font-weight:600; font-size:11.5px;}
-  /* C の狀態も淡色（A と同じトーン）に寄せるが、名前ピルが残る点が違い */
-  .stC-構想中{background:#F1F3F4; color:#5F6368;}
-  .stC-策劃中{background:#E0F7FA; color:#00838F;}
-  .stC-待審核{background:#FEF7E0; color:#B06000;}
-  .stC-進行中{background:#E8F0FE; color:#1967D2;}
-  .stC-結案{background:#E6F4EA; color:#137333;}
-  .stC-凍結{background:#F1F3F4; color:#9AA0A6;}
-  .stC-中止{background:#FCE8E6; color:#C5221F;}
 
-  /* dept tint helpers */
-  .bg-blue{background:var(--blue-bg);} .tx-blue{color:var(--blue-tx);}
-  .bg-green{background:var(--green-bg);} .tx-green{color:var(--green-tx);}
-  .bg-yellow{background:var(--yellow-bg);} .tx-yellow{color:var(--yellow-tx);}
-  .bg-red{background:var(--red-bg);} .tx-red{color:var(--red-tx);}
-  .bg-purple{background:var(--purple-bg);} .tx-purple{color:var(--purple-tx);}
-  .bg-teal{background:var(--teal-bg);} .tx-teal{color:var(--teal-tx);}
-  .bg-pink{background:var(--pink-bg);} .tx-pink{color:var(--pink-tx);}
-  .dot-blue{background:var(--blue-tx);} .dot-green{background:var(--green-tx);} .dot-yellow{background:var(--yellow-tx);}
-  .dot-red{background:var(--red-tx);} .dot-purple{background:var(--purple-tx);} .dot-teal{background:var(--teal-tx);} .dot-pink{background:var(--pink-tx);}
-  .legend{font-size:10px; color:#80868B; margin-top:18px; line-height:1.6;}
+  .legend{font-size:10px; color:#80868B; margin-top:16px; line-height:1.7;}
 </style>
 </head>
 <body>
-  <h1>名前 × 狀態 マーカー：現状 と A / B / C 案の比較</h1>
-  <p class="lead">同じデータを4通りで描画。處カラー（組織色）の意味は全案で保持。違いは「色をどう運ばせるか」。実際の配色・サイズに合わせています。各案の見え方を比べてください。</p>
+  <h1>名前 × 狀態 マーカー比較（Issue→Mission→Task の3段地色つき）</h1>
+  <p class="lead">本体と同じ3段地色（Issue=濃青 #E3F0FA／Mission=薄青 #E8F5FE／Task=白）の上に、同一データを4通りで描画。處カラーの意味は全案で保持。<b>地色の上でチップ／文字／ドットがどう見えるか</b>を比べてください。</p>
+  <div class="grid" id="grid"></div>
+  <p class="legend">處カラー：經營戰略=青／整合行銷=綠／商品事業=黃／CX計劃=紅／資訊事業=紫／財務=青緑／總管理=桃。　狀態：構想中・策劃中・待審核・進行中・結案・凍結・中止。</p>
 
-  <div class="grid">
+<script>
+// 處（部門）カラー
+const DEPT = {
+  blue:{bg:'#E8F0FE',tx:'#1967D2'}, green:{bg:'#E6F4EA',tx:'#137333'},
+  yellow:{bg:'#FEF7E0',tx:'#B06000'}, red:{bg:'#FCE8E6',tx:'#B31412'},
+  purple:{bg:'#F3E8FD',tx:'#7026A6'}, teal:{bg:'#E0F7FA',tx:'#00838F'},
+  pink:{bg:'#FDE7F3',tx:'#B80672'}, grey:{bg:'#F8F9FA',tx:'#5F6368'}
+};
+// 狀態カラー（現状=ベタ塗り）
+const ST_SOLID = {
+  '構想中':{bg:'#9AA0A6',tx:'#fff'}, '策劃中':{bg:'#00ACC1',tx:'#fff'}, '待審核':{bg:'#F9AB00',tx:'#202124'},
+  '進行中':{bg:'#4285F4',tx:'#fff'}, '結案':{bg:'#34A853',tx:'#fff'}, '凍結':{bg:'#BDC1C6',tx:'#202124'}, '中止':{bg:'#D93025',tx:'#fff'}
+};
+// 狀態カラー（A/C=淡色）
+const ST_SOFT = {
+  '構想中':{bg:'#F1F3F4',tx:'#5F6368'}, '策劃中':{bg:'#E0F7FA',tx:'#00838F'}, '待審核':{bg:'#FEF7E0',tx:'#B06000'},
+  '進行中':{bg:'#E8F0FE',tx:'#1967D2'}, '結案':{bg:'#E6F4EA',tx:'#137333'}, '凍結':{bg:'#F1F3F4',tx:'#9AA0A6'}, '中止':{bg:'#FCE8E6',tx:'#C5221F'}
+};
+// 狀態カラー（B=ドット）
+const ST_DOT = {'構想中':'#9AA0A6','策劃中':'#00ACC1','待審核':'#F9AB00','進行中':'#4285F4','結案':'#34A853','凍結':'#BDC1C6','中止':'#D93025'};
 
-    <!-- 現状 -->
-    <div class="card cur">
-      <h2>現状（CURRENT）</h2>
-      <p class="note">名前＝塗りピル太字（8色）／狀態＝ベタ塗り（7色）。色システムが2つ衝突して虹色化。</p>
-      <table>
-        <tr><th>DRI</th><th>協作</th><th class="c-st">狀態</th></tr>
-        <tr><td><span class="chip bg-yellow tx-yellow">于安平</span></td><td><span class="chip bg-blue tx-blue">陳少琪</span></td><td class="c-st"><span class="st st-中止">中止</span></td></tr>
-        <tr><td><span class="chip bg-yellow tx-yellow">陳勝朋</span></td><td></td><td class="c-st"><span class="st st-構想中">構想中</span></td></tr>
-        <tr><td><span class="chip bg-green tx-green">謝惠琪</span></td><td></td><td class="c-st"><span class="st st-策劃中">策劃中</span></td></tr>
-        <tr><td><span class="chip bg-blue tx-blue">劉玉珊</span></td><td><span class="chip bg-yellow tx-yellow">沈美君</span></td><td class="c-st"><span class="st st-待審核">待審核</span></td></tr>
-        <tr><td><span class="chip bg-red tx-red">陳伊柔</span></td><td></td><td class="c-st"><span class="st st-進行中">進行中</span></td></tr>
-        <tr><td><span class="chip bg-green tx-green">江美齡</span></td><td><span class="chip bg-purple tx-purple">鍾明雯</span></td><td class="c-st"><span class="st st-進行中">進行中</span></td></tr>
-        <tr><td><span class="chip bg-purple tx-purple">林欣亭</span></td><td></td><td class="c-st"><span class="st st-凍結">凍結</span></td></tr>
-        <tr><td><span class="chip bg-teal tx-teal">曹舒涵</span></td><td><span class="chip bg-green tx-green">郭怡梅</span></td><td class="c-st"><span class="st st-策劃中">策劃中</span></td></tr>
-        <tr><td><span class="chip bg-purple tx-purple">吳家慶</span></td><td></td><td class="c-st"><span class="st st-結案">結案</span></td></tr>
-        <tr><td><span class="chip bg-pink tx-pink">鄧宏毅</span></td><td></td><td class="c-st"><span class="st st-待審核">待審核</span></td></tr>
-      </table>
-    </div>
+// 同一サンプルデータ（カスケード）
+const DATA = [
+ {lv:'I',no:'#01',name:'新BCL註冊用戶擴大',dri:'王詩雅',driD:'blue',co:'',coD:'',st:'進行中'},
+ {lv:'M',no:'#01-M1',name:'新BCL－策略與計畫',dri:'王詩雅',driD:'blue',co:'',coD:'',st:'構想中'},
+ {lv:'T',no:'#01-M1-T1',name:'現況盤點與假設',dri:'張育菱',driD:'blue',co:'陳少琪',coD:'blue',st:'策劃中'},
+ {lv:'T',no:'#01-M1-T2',name:'方案設計與KPI',dri:'陳瓊芳',driD:'yellow',co:'',coD:'',st:'待審核'},
+ {lv:'M',no:'#01-M2',name:'新BCL－執行與優化',dri:'于安平',driD:'yellow',co:'',coD:'',st:'進行中'},
+ {lv:'I',no:'#02',name:'BCL忠誠用戶擴大',dri:'張育菱',driD:'blue',co:'',coD:'',st:'進行中'},
+ {lv:'M',no:'#02-M1',name:'BCL忠誠－策略與計畫',dri:'劉玉珊',driD:'blue',co:'',coD:'',st:'中止'},
+ {lv:'T',no:'#02-M1-T1',name:'現況盤點與假設',dri:'陳伊柔',driD:'red',co:'沈美君',coD:'yellow',st:'構想中'},
+ {lv:'T',no:'#02-M1-T2',name:'方案設計與KPI',dri:'藍靜儀',driD:'green',co:'',coD:'',st:'策劃中'},
+ {lv:'M',no:'#02-M2',name:'BCL忠誠－執行與優化',dri:'林欣亭',driD:'purple',co:'',coD:'',st:'待審核'},
+ {lv:'I',no:'#03',name:'跨通路跨商品戰略',dri:'張育菱',driD:'blue',co:'',coD:'',st:'進行中'},
+ {lv:'M',no:'#03-M1',name:'跨通路－策略與計畫',dri:'曹舒涵',driD:'teal',co:'',coD:'',st:'凍結'},
+ {lv:'T',no:'#03-M1-T2',name:'方案設計與KPI',dri:'張菀庭',driD:'green',co:'',coD:'',st:'構想中'},
+ {lv:'M',no:'#03-M2',name:'跨通路－執行與優化',dri:'賴純美',driD:'pink',co:'鄭心怡',coD:'pink',st:'策劃中'}
+];
 
-    <!-- A案 -->
-    <div class="card A">
-      <h2>A案 <span class="badge-rec">推奨</span></h2>
-      <p class="note">名前＝處カラーの「文字のみ」（枠なし）／狀態＝淡色バッジに統一。色は狀態列に集中＝状態が一目で読める。名前は組織色をほのめかす程度に。</p>
-      <table>
-        <tr><th>DRI</th><th>協作</th><th class="c-st">狀態</th></tr>
-        <tr><td><span class="nm tx-yellow">于安平</span></td><td><span class="sub tx-blue">陳少琪</span></td><td class="c-st"><span class="stA stA-中止">中止</span></td></tr>
-        <tr><td><span class="nm tx-yellow">陳勝朋</span></td><td></td><td class="c-st"><span class="stA stA-構想中">構想中</span></td></tr>
-        <tr><td><span class="nm tx-green">謝惠琪</span></td><td></td><td class="c-st"><span class="stA stA-策劃中">策劃中</span></td></tr>
-        <tr><td><span class="nm tx-blue">劉玉珊</span></td><td><span class="sub tx-yellow">沈美君</span></td><td class="c-st"><span class="stA stA-待審核">待審核</span></td></tr>
-        <tr><td><span class="nm tx-red">陳伊柔</span></td><td></td><td class="c-st"><span class="stA stA-進行中">進行中</span></td></tr>
-        <tr><td><span class="nm tx-green">江美齡</span></td><td><span class="sub tx-purple">鍾明雯</span></td><td class="c-st"><span class="stA stA-進行中">進行中</span></td></tr>
-        <tr><td><span class="nm tx-purple">林欣亭</span></td><td></td><td class="c-st"><span class="stA stA-凍結">凍結</span></td></tr>
-        <tr><td><span class="nm tx-teal">曹舒涵</span></td><td><span class="sub tx-green">郭怡梅</span></td><td class="c-st"><span class="stA stA-策劃中">策劃中</span></td></tr>
-        <tr><td><span class="nm tx-purple">吳家慶</span></td><td></td><td class="c-st"><span class="stA stA-結案">結案</span></td></tr>
-        <tr><td><span class="nm tx-pink">鄧宏毅</span></td><td></td><td class="c-st"><span class="stA stA-待審核">待審核</span></td></tr>
-      </table>
-    </div>
+const lvBadge = lv => {
+  const c = lv==='I'?'i':lv==='M'?'m':'t';
+  const ind = lv==='M'?'it1':lv==='T'?'it2':'';
+  return {cls:c, ind};
+};
+const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
 
-    <!-- B案 -->
-    <div class="card B">
-      <h2>B案：ドット方式（最ミニマル）</h2>
-      <p class="note">名前＝●處カラー＋黒文字／狀態＝●色＋黒文字。枠を全廃。最も静かで業務ツールらしい。状態の一目色分けはやや弱い。</p>
-      <table>
-        <tr><th>DRI</th><th>協作</th><th class="c-st">狀態</th></tr>
-        <tr><td><span class="dot dot-yellow"></span><span class="nm">于安平</span></td><td><span class="dot dot-blue"></span><span class="sub">陳少琪</span></td><td class="c-st"><span class="dot dotB-中止"></span><span class="stB">中止</span></td></tr>
-        <tr><td><span class="dot dot-yellow"></span><span class="nm">陳勝朋</span></td><td></td><td class="c-st"><span class="dot dotB-構想中"></span><span class="stB">構想中</span></td></tr>
-        <tr><td><span class="dot dot-green"></span><span class="nm">謝惠琪</span></td><td></td><td class="c-st"><span class="dot dotB-策劃中"></span><span class="stB">策劃中</span></td></tr>
-        <tr><td><span class="dot dot-blue"></span><span class="nm">劉玉珊</span></td><td><span class="dot dot-yellow"></span><span class="sub">沈美君</span></td><td class="c-st"><span class="dot dotB-待審核"></span><span class="stB">待審核</span></td></tr>
-        <tr><td><span class="dot dot-red"></span><span class="nm">陳伊柔</span></td><td></td><td class="c-st"><span class="dot dotB-進行中"></span><span class="stB">進行中</span></td></tr>
-        <tr><td><span class="dot dot-green"></span><span class="nm">江美齡</span></td><td><span class="dot dot-purple"></span><span class="sub">鍾明雯</span></td><td class="c-st"><span class="dot dotB-進行中"></span><span class="stB">進行中</span></td></tr>
-        <tr><td><span class="dot dot-purple"></span><span class="nm">林欣亭</span></td><td></td><td class="c-st"><span class="dot dotB-凍結"></span><span class="stB">凍結</span></td></tr>
-        <tr><td><span class="dot dot-teal"></span><span class="nm">曹舒涵</span></td><td><span class="dot dot-green"></span><span class="sub">郭怡梅</span></td><td class="c-st"><span class="dot dotB-策劃中"></span><span class="stB">策劃中</span></td></tr>
-        <tr><td><span class="dot dot-purple"></span><span class="nm">吳家慶</span></td><td></td><td class="c-st"><span class="dot dotB-結案"></span><span class="stB">結案</span></td></tr>
-        <tr><td><span class="dot dot-pink"></span><span class="nm">鄧宏毅</span></td><td></td><td class="c-st"><span class="dot dotB-待審核"></span><span class="stB">待審核</span></td></tr>
-      </table>
-    </div>
+function nameCell(mode, name, dept){
+  if(!name) return '';
+  const d = DEPT[dept]||DEPT.grey;
+  if(mode==='cur'||mode==='C'){
+    return `<span class="chip" style="background:${d.bg};color:${d.tx}">${esc(name)}</span>`;
+  }
+  if(mode==='A'){
+    return `<span class="nm" style="color:${d.tx}">${esc(name)}</span>`;
+  }
+  if(mode==='B'){
+    return `<span class="dot" style="background:${d.tx}"></span><span class="nm">${esc(name)}</span>`;
+  }
+}
+function coCell(mode, name, dept){
+  if(!name) return '';
+  const d = DEPT[dept]||DEPT.grey;
+  if(mode==='cur'||mode==='C') return `<span class="chip" style="background:${d.bg};color:${d.tx}">${esc(name)}</span>`;
+  if(mode==='A') return `<span class="sub" style="color:${d.tx}">${esc(name)}</span>`;
+  if(mode==='B') return `<span class="dot" style="background:${d.tx}"></span><span class="sub">${esc(name)}</span>`;
+}
+function stCell(mode, st){
+  if(mode==='cur'){ const c=ST_SOLID[st]; return `<span class="st" style="background:${c.bg};color:${c.tx}">${st}</span>`; }
+  if(mode==='A'){ const c=ST_SOFT[st]; return `<span class="stA" style="background:${c.bg};color:${c.tx}">${st}</span>`; }
+  if(mode==='C'){ const c=ST_SOFT[st]; return `<span class="stC" style="background:${c.bg};color:${c.tx}">${st}</span>`; }
+  if(mode==='B'){ return `<span class="dot" style="background:${ST_DOT[st]}"></span><span class="stB">${st}</span>`; }
+}
 
-    <!-- C案 -->
-    <div class="card C">
-      <h2>C案：チップ維持・色を抑える</h2>
-      <p class="note">構造は今のまま。太字600・形状統一・狀態も淡色化。変更最小だが、名前ピルが残るので「箱だらけ」感は一部残る。</p>
-      <table>
-        <tr><th>DRI</th><th>協作</th><th class="c-st">狀態</th></tr>
-        <tr><td><span class="chip bg-yellow tx-yellow">于安平</span></td><td><span class="chip bg-blue tx-blue">陳少琪</span></td><td class="c-st"><span class="stC stC-中止">中止</span></td></tr>
-        <tr><td><span class="chip bg-yellow tx-yellow">陳勝朋</span></td><td></td><td class="c-st"><span class="stC stC-構想中">構想中</span></td></tr>
-        <tr><td><span class="chip bg-green tx-green">謝惠琪</span></td><td></td><td class="c-st"><span class="stC stC-策劃中">策劃中</span></td></tr>
-        <tr><td><span class="chip bg-blue tx-blue">劉玉珊</span></td><td><span class="chip bg-yellow tx-yellow">沈美君</span></td><td class="c-st"><span class="stC stC-待審核">待審核</span></td></tr>
-        <tr><td><span class="chip bg-red tx-red">陳伊柔</span></td><td></td><td class="c-st"><span class="stC stC-進行中">進行中</span></td></tr>
-        <tr><td><span class="chip bg-green tx-green">江美齡</span></td><td><span class="chip bg-purple tx-purple">鍾明雯</span></td><td class="c-st"><span class="stC stC-進行中">進行中</span></td></tr>
-        <tr><td><span class="chip bg-purple tx-purple">林欣亭</span></td><td></td><td class="c-st"><span class="stC stC-凍結">凍結</span></td></tr>
-        <tr><td><span class="chip bg-teal tx-teal">曹舒涵</span></td><td><span class="chip bg-green tx-green">郭怡梅</span></td><td class="c-st"><span class="stC stC-策劃中">策劃中</span></td></tr>
-        <tr><td><span class="chip bg-purple tx-purple">吳家慶</span></td><td></td><td class="c-st"><span class="stC stC-結案">結案</span></td></tr>
-        <tr><td><span class="chip bg-pink tx-pink">鄧宏毅</span></td><td></td><td class="c-st"><span class="stC stC-待審核">待審核</span></td></tr>
-      </table>
-    </div>
+function renderRows(mode){
+  return DATA.map(r=>{
+    const b = lvBadge(r.lv);
+    const rcls = r.lv==='I'?'r-i':r.lv==='M'?'r-m':'r-t';
+    return `<tr class="${rcls}">`
+      +`<td class="cNo">${r.no}</td>`
+      +`<td class="cItem"><span class="${b.ind}"></span><span class="lvl ${b.cls}">${r.lv}</span><span class="iname">${esc(r.name)}</span></td>`
+      +`<td class="cDri">${nameCell(mode,r.dri,r.driD)}</td>`
+      +`<td class="cCo">${coCell(mode,r.co,r.coD)}</td>`
+      +`<td class="cSt">${stCell(mode,r.st)}</td>`
+      +`</tr>`;
+  }).join('');
+}
+function tableHtml(mode){
+  return `<table><tr><th class="cNo">NO.</th><th class="cItem">IMT</th><th class="cDri">DRI</th><th class="cCo">協作</th><th class="cSt">狀態</th></tr>${renderRows(mode)}</table>`;
+}
 
-  </div>
-
-  <p class="legend">處カラー：經營戰略=青／整合行銷=綠／商品事業=黃／CX計劃=紅／資訊事業=紫／財務=青緑／總管理=桃。<br>
-  狀態：構想中・策劃中・待審核・進行中・結案・凍結・中止（7状態）。</p>
+const CARDS = [
+ {mode:'cur', cls:'cur', title:'現状（CURRENT）', rec:false, note:'名前＝塗りピル太字（8色）／狀態＝ベタ塗り（7色）。地色の上で塗りピルが浮いて虹色感が強い。'},
+ {mode:'A', cls:'A', title:'A案', rec:true, note:'名前＝處カラーの文字のみ（枠なし）／狀態＝淡色バッジ。地色になじみ、色は狀態に集中。'},
+ {mode:'B', cls:'B', title:'B案：ドット方式', rec:false, note:'名前＝●處カラー＋黒文字／狀態＝●色＋黒文字。枠を全廃。最も静かで地色を邪魔しない。'},
+ {mode:'C', cls:'C', title:'C案：チップ維持・色控えめ', rec:false, note:'構造は現状のまま。太字600・形状統一・狀態は淡色化。名前ピルは残る。'}
+];
+document.getElementById('grid').innerHTML = CARDS.map(c=>
+  `<div class="card ${c.cls}"><h2>${c.title}${c.rec?' <span class="badge-rec">推奨</span>':''}</h2><p class="note">${c.note}</p>${tableHtml(c.mode)}</div>`
+).join('');
+</script>
 </body>
 </html>
