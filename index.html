@@ -581,6 +581,11 @@
   /* Item 列：レベルでインデント（開始位置を変えて階層表現） */
   .my-c-item.lvl-1 { padding-left: 18px; }
   .my-c-item.lvl-2 { padding-left: 34px; }
+  /* IMT レベルバッジ（●＋頭文字） */
+  .my-lvl-badge { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; font-size: 8px; font-weight: 700; color: #fff; margin-right: 5px; vertical-align: middle; flex-shrink: 0; }
+  .my-lvl-badge.lv-i { background: #3282ED; }
+  .my-lvl-badge.lv-m { background: #629EEF; }
+  .my-lvl-badge.lv-t { background: #C3DBF8; color: #1A3A6B; } /* 薄い地色のため頭文字は濃紺で可読性確保 */
   /* 名前・狀態チップは表内で約 70% サイズ */
   .my-table .person-chip { font-size: 7px; padding: 0 5px; border-radius: 7px; margin: 1px 2px 1px 0; line-height: 1.6; }
   .my-table .st-badge { font-size: 7px; padding: 1px 6px; line-height: 1.4; }
@@ -1761,7 +1766,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.44.1';
+const APP_VERSION = '0.44.2';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
@@ -4897,7 +4902,7 @@ function renderMyView() {
     // Issue 行
     rows += `<tr class="my-row my-row-issue${issMine ? ' my-mine' : ''}" data-kind="issue" data-id="${escapeAttr(inum)}">`
       + `<td class="my-c-no">${_myDispNo(ii, null, null)}</td>`
-      + `<td class="my-c-name my-c-item my-name lvl-0" data-kind="issue" data-id="${escapeAttr(inum)}" title="Click: definition / edit">${issMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(iss['Issue'] || '')}<span class="my-add my-add-m" data-id="${escapeAttr(inum)}" title="Add Mission">＋M</span></td>`
+      + `<td class="my-c-name my-c-item my-name lvl-0" data-kind="issue" data-id="${escapeAttr(inum)}" title="Click: definition / edit"><span class="my-lvl-badge lv-i">I</span>${issMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(iss['Issue'] || '')}<span class="my-add my-add-m" data-id="${escapeAttr(inum)}" title="Add Mission">＋M</span></td>`
       + `<td class="my-c-dri">${_myChips(iss['擔當'])}</td>`
       + _myLinkCell(iss['Confluence URL'], inum, 'issue')
       + `<td class="my-c-folder"></td>`
@@ -4914,7 +4919,7 @@ function renderMyView() {
       const mn = +((String(mid).match(/-M(\d+)/) || [])[1]) || 0;
       rows += `<tr class="my-row my-row-mission${mb.mMine ? ' my-mine' : ''}" data-kind="mission" data-id="${escapeAttr(mid)}">`
         + `<td class="my-c-no">${_myDispNo(ii, mn, null)}</td>`
-        + `<td class="my-c-name my-c-item my-name lvl-1" data-kind="mission" data-id="${escapeAttr(mid)}" title="Click: definition / edit">${mb.mMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(mb.m['Mission'] || mb.m['Issue'] || '')}<span class="my-add my-add-t" data-id="${escapeAttr(mid)}" title="Add Task">＋T</span></td>`
+        + `<td class="my-c-name my-c-item my-name lvl-1" data-kind="mission" data-id="${escapeAttr(mid)}" title="Click: definition / edit"><span class="my-lvl-badge lv-m">M</span>${mb.mMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(mb.m['Mission'] || mb.m['Issue'] || '')}<span class="my-add my-add-t" data-id="${escapeAttr(mid)}" title="Add Task">＋T</span></td>`
         + `<td class="my-c-dri">${_myChips(mb.m['擔當'])}</td>`
         + _myLinkCell(mb.m['Confluence URL自身'] || mb.m['Confluence URL'], mid, 'mission')
         + `<td class="my-c-folder"></td>`
@@ -4930,7 +4935,7 @@ function renderMyView() {
         const tn = +((String(tid).match(/-[KT](\d+)/) || [])[1]) || 0;
         rows += `<tr class="my-row my-row-task${tr.tMine ? ' my-mine' : ''}" data-kind="task" data-id="${escapeAttr(tid)}">`
           + `<td class="my-c-no">${_myDispNo(ii, mn, tn)}</td>`
-          + `<td class="my-c-name my-c-item my-task-name lvl-2" data-id="${escapeAttr(tid)}" title="Double-click to rename">${tr.tMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(tr.t['Task'] || '')}</td>`
+          + `<td class="my-c-name my-c-item my-task-name lvl-2" data-id="${escapeAttr(tid)}" title="Double-click to rename"><span class="my-lvl-badge lv-t">T</span>${tr.tMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(tr.t['Task'] || '')}</td>`
           + `<td class="my-c-dri">${_myChips(tr.t['DRI'])}</td>`
           + _myLinkCell(tr.t['連結'], tid, 'task')
           + `<td class="my-c-folder"></td>`
