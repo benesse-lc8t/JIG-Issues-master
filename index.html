@@ -1162,9 +1162,7 @@
   .im-cancel:hover { background: #DCEEFB; }
   .im-primary { padding: 6px 16px; font-size: 12px; font-weight: 600; border: none; background: #3282ED; color: #fff; border-radius: 7px; cursor: pointer; }
   .im-primary:hover { filter: brightness(1.06); }
-  .im-primary:disabled { opacity: .6; cursor: default; }
-  .im-primary.is-saving { background: linear-gradient(90deg, #3282ED 0%, #9FC6FF 50%, #3282ED 100%); background-size: 220% 100%; animation: imSaveBar .9s linear infinite; opacity: 1; }
-  @keyframes imSaveBar { 0% { background-position: 120% 0; } 100% { background-position: -120% 0; } }
+  .im-primary:disabled { opacity: .85; cursor: default; }
   .im-st-ph { color: #8FA6BD; font-weight: 600; }
   .im-author-row > div { flex: 0 0 160px; }
   /* ピッカーのチップは My Work に合わせて約70% */
@@ -1172,6 +1170,30 @@
   #issueModal .np-trigger .np-x { font-size: 8px; margin-left: 2px; }
   #issueModal .author-chip { font-size: 8px; padding: 1px 7px; }
   #issueModal .author-menu-search { font-size: 11px; }
+  /* ① ヘッダーの Author（Status の左） */
+  .im-author-hd { position: relative; }
+  .im-author-hd .np-trigger { min-height: 22px; padding: 2px 9px; background: transparent; border: 1px solid #C9DEEF; border-radius: 14px; font-size: 11px; min-width: 78px; }
+  .im-author-hd .author-menu { right: auto; left: 0; min-width: 150px; }
+  .im-author-hd .np-trigger.is-placeholder .np-ph { color: #8FA6BD; font-size: 11px; }
+  /* ② タイポgrafi（サイズ・ウェイトを整理） */
+  .im-title { font-size: 14px; font-weight: 700; color: #16324F; }
+  .im-people label, .im-sect { font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #6B86A0; }
+  .im-ef-val { font-size: 12.5px; font-weight: 400; }
+  .im-ef[data-f="name"] .im-ef-val { font-size: 14px; font-weight: 600; color: #16324F; }
+  .im-ef[data-f="name"] .im-ef-val.im-ef-ph, .im-ef[data-f="def"] .im-ef-val.im-ef-ph, .im-ef[data-f="prog"] .im-ef-val.im-ef-ph { font-weight: 400; }
+  .im-inp { font-size: 12.5px; }
+  .im-foot .im-hint { font-size: 9px; }
+  .im-cancel, .im-primary { font-size: 12px; }
+  /* ④ 新規時は DRI/Collaborator/Supporter のトリガーを白に（入力を促す） */
+  #issueModal.im-add .im-people .np-trigger { background: #fff; border-color: #BFD7EC; }
+  #issueModal.im-add .im-people .np-trigger.is-placeholder .np-ph { color: #9AA7B5; }
+  /* ⑤ 保存中：横にゆっくり色を濃く（サイズ保持） */
+  .im-primary { position: relative; overflow: hidden; }
+  .im-primary.is-saving::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(0,0,0,.24); animation: imFill 1.5s ease-in-out infinite; }
+  @keyframes imFill { 0% { width: 0; } 80% { width: 100%; } 100% { width: 100%; opacity: .35; } }
+  /* ⑥ 保存済み Link は地色に溶け込ませる（フォーカスで白） */
+  .im-link-row.im-lk-saved select, .im-link-row.im-lk-saved input { background: transparent; border-color: #C9DEEF; }
+  .im-link-row.im-lk-saved select:focus, .im-link-row.im-lk-saved input:focus { background: #fff; }
 </style>
 </head>
 <body>
@@ -1370,6 +1392,10 @@
     <div class="im-head">
       <span class="im-badge">I</span>
       <span class="im-title" id="imTitle">+add Issue #</span>
+      <span class="np-wrap im-author-hd">
+        <button type="button" class="author-trigger np-trigger is-placeholder" id="imAuthorTrigger" data-placeholder="Author"></button>
+        <div class="author-menu np-menu" id="imAuthorMenu"><input type="text" class="author-menu-search" id="imAuthorSearch" placeholder="search…"><div class="author-menu-chips" id="imAuthorChips"></div></div>
+      </span>
       <span class="np-wrap im-status" id="imStatusWrap">
         <button type="button" class="im-status-trigger np-trigger" id="imStatusTrigger">Status ▾</button>
         <div class="author-menu np-menu im-status-menu" id="imStatusMenu"></div>
@@ -1397,12 +1423,6 @@
         <div><label>Supporter</label>
           <span class="np-wrap"><button type="button" class="author-trigger np-trigger is-placeholder" id="imSupTrigger" data-placeholder=""></button>
             <div class="author-menu np-menu" id="imSupMenu"><input type="text" class="author-menu-search" id="imSupSearch" placeholder="search…"><div class="author-menu-chips" id="imSupChips"></div></div></span>
-        </div>
-      </div>
-      <div class="im-people im-author-row">
-        <div><label>Author</label>
-          <span class="np-wrap"><button type="button" class="author-trigger np-trigger is-placeholder" id="imAuthorTrigger" data-placeholder=""></button>
-            <div class="author-menu np-menu" id="imAuthorMenu"><input type="text" class="author-menu-search" id="imAuthorSearch" placeholder="search…"><div class="author-menu-chips" id="imAuthorChips"></div></div></span>
         </div>
       </div>
       <div class="im-ef" data-f="prog">
@@ -1896,7 +1916,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.46.1';
+const APP_VERSION = '0.46.2';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
@@ -5749,11 +5769,13 @@ function _imParseLinks(v) {
 function _imRenderLinks(rows) {
   const box = document.getElementById('imLinks');
   box.innerHTML = (rows && rows.length ? rows : [{ type: '', url: '' }]).map(r => {
-    const opts = LINK_TYPES.map(t => `<option${t === (r.type || '') || (!LINK_TYPES.includes(r.type) && t === 'Other') ? ' selected' : ''}>${t}</option>`).join('');
-    return `<div class="im-link-row"><select class="im-lk-type">${opts}</select>`
+    const cur = LINK_TYPES.includes(r.type) ? r.type : (r.type ? 'Other' : 'Confluence'); // ③ 既定 Confluence
+    const opts = LINK_TYPES.map(t => `<option${t === cur ? ' selected' : ''}>${t}</option>`).join('');
+    const saved = (r.url || '').trim() ? ' im-lk-saved' : ''; // ⑥ 保存済みは地色
+    return `<div class="im-link-row${saved}"><select class="im-lk-type">${opts}</select>`
       + `<input type="text" class="im-lk-url" value="${escapeAttr(r.url || '')}" placeholder="https://…">`
-      + `<button type="button" class="im-lk-open" title="開く">↗</button>`
-      + `<button type="button" class="im-lk-del" title="削除">×</button></div>`;
+      + `<button type="button" class="im-lk-open" title="open">↗</button>`
+      + `<button type="button" class="im-lk-del" title="delete">×</button></div>`;
   }).join('');
 }
 function _imCollectLinks() {
@@ -5815,6 +5837,7 @@ function openIssueModal(mode, id) {
   _imViews();
   // 新規＝最初から編集可能／修正＝ロック（✎で開く）
   const editing = (mode !== 'edit');
+  document.getElementById('issueModal').classList.toggle('im-add', editing); // ④ 新規はピッカー白
   ['name', 'def', 'prog'].forEach(f => _imSetEf(f, editing));
   if (mode === 'edit') _imRenderHistory(_imId); else document.getElementById('imHistoryWrap').style.display = 'none';
   document.getElementById('issueModalOverlay').classList.add('open');
@@ -5830,7 +5853,7 @@ async function _imSave() {
   const name = document.getElementById('imName').value.trim();
   if (!name) { toast('Issue name is required', 'error'); return; }
   const btn = document.getElementById('imSave');
-  btn.disabled = true; btn.classList.add('is-saving'); const _lbl = btn.textContent; btn.textContent = '…';
+  btn.disabled = true; btn.classList.add('is-saving'); // ラベル・サイズは保持
   const author = namePickValue('imAuthor');
   const cur = {
     'Issue': name, 'Issue定義': document.getElementById('imDef').value.trim(), '狀態': _imStatus,
@@ -5844,14 +5867,14 @@ async function _imSave() {
     let changed = 0;
     Object.keys(cur).forEach(k => { if (cur[k] !== (_imOrig[k] || '')) { payload[k] = cur[k]; changed++; } });
     if (prog) { payload['進度'] = prog; payload['logProgress'] = '1'; payload['author'] = author; changed++; }
-    if (!changed) { btn.disabled = false; btn.classList.remove('is-saving'); btn.textContent = _lbl; closeIssueModal(); return; }
+    if (!changed) { btn.disabled = false; btn.classList.remove("is-saving"); closeIssueModal(); return; }
     data = await _postWrite(payload);
   } else {
     payload = Object.assign({ token: WRITE_TOKEN, action: 'addIssue', 'author': author }, cur);
     if (prog) payload['進度'] = prog;
     data = await _postWrite(payload);
   }
-  btn.disabled = false; btn.classList.remove('is-saving'); btn.textContent = _lbl;
+  btn.disabled = false; btn.classList.remove("is-saving");
   if (!data) return;
   toast(_imMode === 'edit' ? `Updated: ${data['編號'] || _imId}` : `Added Issue: ${data['編號'] || ''}`, 'success');
   closeIssueModal();
