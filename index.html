@@ -1616,7 +1616,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.48.0';
+const APP_VERSION = '0.48.1';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
@@ -1772,8 +1772,11 @@ function fillShortNames(data) {
 }
 
 // Parse the initial Table A tbody into issueData
+// 旧タブ撤去（2026-06-02）で #panel-A は無くなったため、組み込みテーブルが
+// 無ければ空配列を返す（データは loadFromSheet() で取得する）。
 function parseInitialTable() {
   const tbody = document.querySelector('#panel-A tbody');
+  if (!tbody) return [];
   const rows = tbody.querySelectorAll('tr');
   let curGroup = '';
   const out = [];

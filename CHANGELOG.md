@@ -5,6 +5,15 @@
 
 ---
 
+## v0.48.1 — 2026-06-02
+
+**[ホットフィックス] 旧タブ撤去後にページが読み込めない不具合を修正**
+
+v0.48.0 で `#panel-A` を削除したが、起動時の `parseInitialTable()` が組み込みテーブル `#panel-A tbody` を前提に `tbody.querySelectorAll(...)` を呼んでおり、`tbody` が null となって `Uncaught TypeError: Cannot read properties of null` で初期化が停止していた（ローディング画面のまま）。
+
+- `parseInitialTable()` を null 安全化：組み込みテーブルが無ければ `[]` を返し、そのまま `loadFromSheet()` でクラウドデータを取得する（組み込みテーブルは元々クラウド読込前の暫定フォールバックに過ぎない）。
+- 他の `#panel-A/B/C tbody` 参照・`searchA`・`dashPipeline` 等は、いずれも撤去済みの描画/フィルタ関数の内部にあり起動経路から外れているため影響なし。
+
 ## v0.48.0 — 2026-06-02
 
 **[クリーンアップ] 旧タブ撤去 → メイン画面を「我的（My Work）」へ一本化**
