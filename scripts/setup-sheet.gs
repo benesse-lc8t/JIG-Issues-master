@@ -679,6 +679,8 @@ function _handleAddIssue(ss, data) {
   };
   const r = _appendByHeaders(sheet, vmap);
   SpreadsheetApp.flush();
+  // 編號の先頭ゼロが数値化で消えないよう、書き込んだセルをテキスト書式で再設定
+  if (numC >= 0 && r.row) sheet.getRange(r.row, numC + 1).setNumberFormat('@').setValue(id);
   // 初回 Progress があればログへ追記
   const prog = String(data['進度'] || data['備註'] || '').trim();
   if (prog) _appendLog(ss, id, String(data['擔當'] || data['author'] || ''), prog);
@@ -741,7 +743,7 @@ function migrateNumbers() {
       if (!old) return [''];
       seq++; const nw = String(seq).padStart(3, '0'); issueMap[old] = nw; return [nw];
     });
-    iSheet.getRange(2, iNumC + 1, out.length, 1).setValues(out);
+    iSheet.getRange(2, iNumC + 1, out.length, 1).setNumberFormat("@").setValues(out);
   }
 
   // --- Missions ---
@@ -762,8 +764,8 @@ function migrateNumbers() {
       if (oldM) missionMap[oldM] = newM;
       outN.push([newM]); outP.push([newP]);
     }
-    mSheet.getRange(2, mNumC + 1, outN.length, 1).setValues(outN);
-    if (mParC >= 0 && !parAF) mSheet.getRange(2, mParC + 1, outP.length, 1).setValues(outP); // ARRAYFORMULA 列は編號から自動再計算に任せる
+    mSheet.getRange(2, mNumC + 1, outN.length, 1).setNumberFormat("@").setValues(outN);
+    if (mParC >= 0 && !parAF) mSheet.getRange(2, mParC + 1, outP.length, 1).setNumberFormat("@").setValues(outP); // ARRAYFORMULA 列は編號から自動再計算に任せる
   }
 
   // --- Tasks ---
@@ -783,8 +785,8 @@ function migrateNumbers() {
       if (oldT) taskMap[oldT] = newT;
       outN.push([newT]); outP.push([newPM]);
     }
-    tSheet.getRange(2, tNumC + 1, outN.length, 1).setValues(outN);
-    if (tParC >= 0) tSheet.getRange(2, tParC + 1, outP.length, 1).setValues(outP);
+    tSheet.getRange(2, tNumC + 1, outN.length, 1).setNumberFormat("@").setValues(outN);
+    if (tParC >= 0) tSheet.getRange(2, tParC + 1, outP.length, 1).setNumberFormat("@").setValues(outP);
   }
 
   // --- ログ・個人備註の編號参照 ---
@@ -795,7 +797,7 @@ function migrateNumbers() {
     const c = colOf(sh, '編號'); if (c < 0) return;
     const col = sh.getRange(2, c + 1, sh.getLastRow() - 1, 1).getValues();
     const out = col.map(r => { const o = String(r[0]).trim(); return [all[o] || o]; });
-    sh.getRange(2, c + 1, out.length, 1).setValues(out);
+    sh.getRange(2, c + 1, out.length, 1).setNumberFormat("@").setValues(out);
   });
   SpreadsheetApp.flush();
   console.log('[migrate] 完了：Issue ' + Object.keys(issueMap).length + ' / Mission ' + Object.keys(missionMap).length + ' / Task ' + Object.keys(taskMap).length);
