@@ -560,10 +560,13 @@
   table.my-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--fs-xs); table-layout: fixed; background: #fff; }
   .my-table th { position: sticky; top: -1px; z-index: 2; background: #EEF3FA; color: #1F4E8C; padding: 3px 5px; text-align: center; font-weight: var(--fw-bold); border-right: 1px solid #DCE3EC; border-bottom: 1px solid #1967D2; font-size: var(--fs-2xs); white-space: nowrap; box-shadow: 0 -3px 0 #EEF3FA; }
   .my-table th .ios-sw { margin-left: 5px; }
-  /* ヘッダー固定（確実版）：フィルタ行の高さ分だけ下げ、継ぎ目を1px重ねて裏抜けを防止。
-     ID 指定で汎用ルールより優先。ctrl-bar(z6) より下の z5 にして重なり1pxは ctrl-bar が覆う。 */
+  /* ===== メインページのスクロール構造：フィルタ行は固定、表本体(my-wrap)だけがスクロール =====
+     ヘッダーは「表スクローラ内 top:0」で固定するので、ページ／パネルがどう動いても絶対に動かない。 */
+  #panel-My.active { display: flex; flex-direction: column; overflow: visible; }
+  #panel-My > .ctrl-bar { position: static; flex: 0 0 auto; z-index: 7; border-radius: var(--radius-card) var(--radius-card) 0 0; }
+  #panel-My > .my-wrap { flex: 1 1 auto; min-height: 0; overflow: auto; padding-top: 0; }
   #panel-My .my-table thead th {
-    position: sticky; top: calc(var(--ctrlbar-h, 0px) - 1px); z-index: 5;
+    position: sticky; top: 0; z-index: 5;
     background: #EEF3FA; box-shadow: inset 0 -1px 0 #1967D2;
   }
   .my-table td { padding: 3px 8px; border-right: 1px solid #E6EAF0; border-bottom: 1px solid #E6EAF0; vertical-align: middle; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1652,7 +1655,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.50.5';
+const APP_VERSION = '0.50.6';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
