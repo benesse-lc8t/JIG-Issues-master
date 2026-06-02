@@ -1163,6 +1163,15 @@
   .im-primary { padding: 6px 16px; font-size: 12px; font-weight: 600; border: none; background: #3282ED; color: #fff; border-radius: 7px; cursor: pointer; }
   .im-primary:hover { filter: brightness(1.06); }
   .im-primary:disabled { opacity: .6; cursor: default; }
+  .im-primary.is-saving { background: linear-gradient(90deg, #3282ED 0%, #9FC6FF 50%, #3282ED 100%); background-size: 220% 100%; animation: imSaveBar .9s linear infinite; opacity: 1; }
+  @keyframes imSaveBar { 0% { background-position: 120% 0; } 100% { background-position: -120% 0; } }
+  .im-st-ph { color: #8FA6BD; font-weight: 600; }
+  .im-author-row > div { flex: 0 0 160px; }
+  /* ピッカーのチップは My Work に合わせて約70% */
+  #issueModal .np-trigger .np-tag { font-size: 7px; padding: 0 4px 0 6px; line-height: 1.6; }
+  #issueModal .np-trigger .np-x { font-size: 8px; margin-left: 2px; }
+  #issueModal .author-chip { font-size: 8px; padding: 1px 7px; }
+  #issueModal .author-menu-search { font-size: 11px; }
 </style>
 </head>
 <body>
@@ -1369,25 +1378,31 @@
     </div>
     <div class="im-body">
       <div class="im-ef" data-f="name">
-        <div class="im-ef-view"><span class="im-ef-val im-ef-ph" id="imNameView">Issue Name</span><button type="button" class="im-ef-pen" data-f="name" title="edit">✎</button></div>
-        <input type="text" class="im-ef-in im-inp" id="imName" maxlength="120" placeholder="Issue Name">
+        <div class="im-ef-view"><span class="im-ef-val im-ef-ph" id="imNameView">Issue名稱</span><button type="button" class="im-ef-pen" data-f="name" title="edit">✎</button></div>
+        <input type="text" class="im-ef-in im-inp" id="imName" maxlength="120" placeholder="Issue名稱">
       </div>
       <div class="im-ef" data-f="def">
-        <div class="im-ef-view"><span class="im-ef-val im-ef-ph" id="imDefView">Issue Definition</span><button type="button" class="im-ef-pen" data-f="def" title="edit">✎</button></div>
-        <textarea class="im-ef-in im-inp" id="imDef" rows="3" placeholder="Issue Definition"></textarea>
+        <div class="im-ef-view"><span class="im-ef-val im-ef-ph" id="imDefView">Issue定義</span><button type="button" class="im-ef-pen" data-f="def" title="edit">✎</button></div>
+        <textarea class="im-ef-in im-inp" id="imDef" rows="3" placeholder="Issue定義"></textarea>
       </div>
       <div class="im-people">
         <div><label>DRI</label>
-          <span class="np-wrap"><button type="button" class="author-trigger np-trigger is-placeholder" id="imDriTrigger" data-placeholder="DRI"></button>
+          <span class="np-wrap"><button type="button" class="author-trigger np-trigger is-placeholder" id="imDriTrigger" data-placeholder=""></button>
             <div class="author-menu np-menu" id="imDriMenu"><input type="text" class="author-menu-search" id="imDriSearch" placeholder="search…"><div class="author-menu-chips" id="imDriChips"></div></div></span>
         </div>
         <div><label>Collaborator</label>
-          <span class="np-wrap"><button type="button" class="author-trigger np-trigger is-placeholder" id="imCollabTrigger" data-placeholder="Collaborator"></button>
+          <span class="np-wrap"><button type="button" class="author-trigger np-trigger is-placeholder" id="imCollabTrigger" data-placeholder=""></button>
             <div class="author-menu np-menu" id="imCollabMenu"><input type="text" class="author-menu-search" id="imCollabSearch" placeholder="search…"><div class="author-menu-chips" id="imCollabChips"></div></div></span>
         </div>
         <div><label>Supporter</label>
-          <span class="np-wrap"><button type="button" class="author-trigger np-trigger is-placeholder" id="imSupTrigger" data-placeholder="Supporter"></button>
+          <span class="np-wrap"><button type="button" class="author-trigger np-trigger is-placeholder" id="imSupTrigger" data-placeholder=""></button>
             <div class="author-menu np-menu" id="imSupMenu"><input type="text" class="author-menu-search" id="imSupSearch" placeholder="search…"><div class="author-menu-chips" id="imSupChips"></div></div></span>
+        </div>
+      </div>
+      <div class="im-people im-author-row">
+        <div><label>Author</label>
+          <span class="np-wrap"><button type="button" class="author-trigger np-trigger is-placeholder" id="imAuthorTrigger" data-placeholder=""></button>
+            <div class="author-menu np-menu" id="imAuthorMenu"><input type="text" class="author-menu-search" id="imAuthorSearch" placeholder="search…"><div class="author-menu-chips" id="imAuthorChips"></div></div></span>
         </div>
       </div>
       <div class="im-ef" data-f="prog">
@@ -1881,7 +1896,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.46.0';
+const APP_VERSION = '0.46.1';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
@@ -4938,12 +4953,11 @@ function _myLinkCount(v) {
   return String(v || '').split(/[\n,]+/).map(s => s.trim()).filter(Boolean).length;
 }
 function _myCommentText(row, kind) {
+  const id = (row['編號'] || '').trim();
+  const log = (window.missionLog || {})[id];
+  if (log && log.length && log[0].text) return log[0].text; // 進度ログの最新を全層で優先表示
   if (kind === 'task') return (row['進度'] || '').trim();
-  if (kind === 'mission') {
-    const log = (window.missionLog || {})[(row['編號'] || '').trim()];
-    if (log && log.length && log[0].text) return log[0].text;
-    return (row['Mission進度'] || '').trim();
-  }
+  if (kind === 'mission') return (row['Mission進度'] || '').trim();
   return (row['事務局備註'] || '').trim();
 }
 function _myStCell(kind, id, status) {
@@ -5717,9 +5731,9 @@ function _fitBrandSub() {
 }
 
 // ===== Issue モーダル（新規／修正・2026-06-02）=====
-const ISSUE_STATUS = ['進行中', '結案', '凍結', '中止'];
-const LINK_TYPES = ['Confluence', 'Canva', 'mindmap', 'ChatGPT', 'Claude', 'Gemini', 'NotebookLM', 'SharePoint', 'Other'];
-let _imMode = 'add', _imId = '', _imStatus = '進行中';
+const ISSUE_STATUS = ['構想中', '進行中', '結案', '凍結', '中止'];
+const LINK_TYPES = ['Confluence', 'Canva', 'mindmap', 'Other'];
+let _imMode = 'add', _imId = '', _imStatus = '';
 function _imIssueDispNo(id) {
   const list = issueData.filter(r => (r['種別'] || 'Issue') !== 'Mission');
   const i = list.findIndex(r => (r['編號'] || '').trim() === id);
@@ -5751,9 +5765,12 @@ function _imCollectLinks() {
 }
 function _imBuildStatusMenu() {
   const menu = document.getElementById('imStatusMenu');
-  menu.innerHTML = ISSUE_STATUS.map(v => `<button type="button" class="im-st-opt" data-v="${escapeAttr(v)}">${statusBadge(v, false)} ${escapeHtml(v)}</button>`).join('');
+  menu.innerHTML = ISSUE_STATUS.map(v => `<button type="button" class="im-st-opt" data-v="${escapeAttr(v)}">${statusBadge(v, false)}</button>`).join('');
 }
-function _imSetStatus(v) { _imStatus = v; document.getElementById('imStatusTrigger').innerHTML = statusBadge(v, false) + ' ▾'; }
+function _imSetStatus(v) {
+  _imStatus = v || '';
+  document.getElementById('imStatusTrigger').innerHTML = v ? statusBadge(v, false) + ' ▾' : '<span class="im-st-ph">Status</span> ▾';
+}
 function _imRenderHistory(id) {
   const wrap = document.getElementById('imHistoryWrap'), box = document.getElementById('imHistory');
   const log = (window.missionLog || {})[id] || [];
@@ -5775,7 +5792,7 @@ function _imViews() {
 }
 function openIssueModal(mode, id) {
   _imMode = mode; _imId = (id || '').trim();
-  ['imDri', 'imCollab', 'imSup'].forEach(setupNamePicker);
+  ['imDri', 'imCollab', 'imSup', 'imAuthor'].forEach(setupNamePicker);
   _imBuildStatusMenu();
   const row = (mode === 'edit') ? _myFindIssue(_imId) : null;
   document.getElementById('imName').value = row ? (row['Issue'] || '') : '';
@@ -5784,7 +5801,8 @@ function openIssueModal(mode, id) {
   resetNamePicker('imDri', row ? (row['擔當'] || '') : '', false);
   resetNamePicker('imCollab', row ? (row['協作'] || '') : '', true);
   resetNamePicker('imSup', row ? (row['戰略負責人'] || '') : '', false);
-  _imSetStatus(row ? (normalizeStatus(row['狀態']) || '進行中') : '進行中');
+  resetNamePicker('imAuthor', (typeof _myGetWho === 'function' ? _myGetWho() : ''), false); // 記入者の既定＝My Work で選択中の名前
+  _imSetStatus(row ? normalizeStatus(row['狀態']) : ''); // 新規は空欄
   _imRenderLinks(row ? _imParseLinks(row['Confluence URL']) : [{ type: '', url: '' }]);
   document.getElementById('imTitle').textContent = (mode === 'edit') ? `Issue ${_imIssueDispNo(_imId)}` : 'add Issue #(auto)';
   document.getElementById('imSave').textContent = (mode === 'edit') ? 'Update' : '+add Issue';
@@ -5811,7 +5829,9 @@ function closeIssueModal() {
 async function _imSave() {
   const name = document.getElementById('imName').value.trim();
   if (!name) { toast('Issue name is required', 'error'); return; }
-  const btn = document.getElementById('imSave'); btn.disabled = true;
+  const btn = document.getElementById('imSave');
+  btn.disabled = true; btn.classList.add('is-saving'); const _lbl = btn.textContent; btn.textContent = '…';
+  const author = namePickValue('imAuthor');
   const cur = {
     'Issue': name, 'Issue定義': document.getElementById('imDef').value.trim(), '狀態': _imStatus,
     '擔當': namePickValue('imDri'), '協作': namePickValue('imCollab'), '戰略負責人': namePickValue('imSup'),
@@ -5823,15 +5843,15 @@ async function _imSave() {
     payload = { token: WRITE_TOKEN, action: 'updateIssue', '編號': _imId };
     let changed = 0;
     Object.keys(cur).forEach(k => { if (cur[k] !== (_imOrig[k] || '')) { payload[k] = cur[k]; changed++; } });
-    if (prog) { payload['進度'] = prog; payload['logProgress'] = '1'; payload['擔當'] = cur['擔當']; changed++; }
-    if (!changed) { btn.disabled = false; closeIssueModal(); return; } // 変更なし
+    if (prog) { payload['進度'] = prog; payload['logProgress'] = '1'; payload['author'] = author; changed++; }
+    if (!changed) { btn.disabled = false; btn.classList.remove('is-saving'); btn.textContent = _lbl; closeIssueModal(); return; }
     data = await _postWrite(payload);
   } else {
-    payload = Object.assign({ token: WRITE_TOKEN, action: 'addIssue' }, cur);
+    payload = Object.assign({ token: WRITE_TOKEN, action: 'addIssue', 'author': author }, cur);
     if (prog) payload['進度'] = prog;
     data = await _postWrite(payload);
   }
-  btn.disabled = false;
+  btn.disabled = false; btn.classList.remove('is-saving'); btn.textContent = _lbl;
   if (!data) return;
   toast(_imMode === 'edit' ? `Updated: ${data['編號'] || _imId}` : `Added Issue: ${data['編號'] || ''}`, 'success');
   closeIssueModal();
@@ -5847,8 +5867,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = document.querySelector('.im-ef[data-f="' + f + '"] .im-ef-in'); if (input) input.focus();
   }));
   document.getElementById('imAddUrl')?.addEventListener('click', () => {
-    const rows = _imCollectLinks().split('\n').filter(Boolean).map(l => { const b = l.indexOf('|'); return { type: l.slice(0, b), url: l.slice(b + 1) }; });
-    rows.push({ type: '', url: '' }); _imRenderLinks(rows);
+    // 現在の行（空欄含む）をそのまま読み、末尾に空行を1つ足す
+    const rows = Array.from(document.querySelectorAll('#imLinks .im-link-row')).map(r => ({
+      type: r.querySelector('.im-lk-type').value, url: r.querySelector('.im-lk-url').value
+    }));
+    rows.push({ type: '', url: '' });
+    _imRenderLinks(rows);
   });
   // 種別ピッカー（Status）
   const st = document.getElementById('imStatusTrigger'), stm = document.getElementById('imStatusMenu');
