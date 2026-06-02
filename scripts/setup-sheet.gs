@@ -1512,8 +1512,8 @@ function seedFullDummy() {
   // ※手編集で〔範例〕が消えた行も含めて綺麗にし、編號重複を根絶する。全ダミー前提。
   let cleared = 0;
   [mSheet, tSheet].forEach(sh => {
-    const lr = sh.getLastRow();
-    if (lr > 1) { sh.deleteRows(2, lr - 1); cleared += (lr - 1); }
+    const lr = sh.getLastRow(), lc = sh.getLastColumn();
+    if (lr > 1) { sh.getRange(2, 1, lr - 1, lc).clearContent(); cleared += (lr - 1); } // 行は残し中身だけ消す（全行削除は不可）
   });
   SpreadsheetApp.flush();
 
