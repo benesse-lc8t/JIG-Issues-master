@@ -83,6 +83,23 @@
   body { font-family: var(--font); font-weight: var(--fw-normal); font-size: var(--fs-base); color: #1D1D1F; padding: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
     /* リキッドグラスが透ける下地：淡い青〜緑〜暖色のグラデ（固定） */
     background: linear-gradient(160deg, #EAF2FF 0%, #EAF6F4 32%, #F3F1FA 60%, #FCF3EC 100%) fixed, var(--body-bg); }
+  /* 既定表示は 150%（社内ツール・Chrome 前提の zoom） */
+  body { zoom: 1.5; }
+  /* 起動ローディング・オーバーレイ */
+  #bootOverlay { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(160deg, #EAF2FF 0%, #EAF6F4 38%, #F3F1FA 70%, #FCF3EC 100%);
+    transition: opacity .45s ease; }
+  #bootOverlay.boot-hide { opacity: 0; pointer-events: none; }
+  .boot-box { text-align: center; }
+  .boot-logo { animation: bootPulse 1.4s ease-in-out infinite; filter: drop-shadow(0 4px 12px rgba(26,115,232,.25)); }
+  @keyframes bootPulse { 0%,100% { transform: scale(1); opacity: .9; } 50% { transform: scale(1.12); opacity: 1; } }
+  .boot-title { margin-top: 12px; font-size: 22px; font-weight: 700; color: #1A3A6B; letter-spacing: .04em; }
+  .boot-title .boot-sub { font-size: 12px; font-weight: 500; color: #5F6368; letter-spacing: .12em; }
+  .boot-bar { width: 180px; height: 4px; margin: 16px auto 8px; border-radius: 99px; background: rgba(26,103,210,.15); overflow: hidden; }
+  .boot-bar span { display: block; width: 40%; height: 100%; border-radius: 99px; background: #1967D2;
+    animation: bootSlide 1.1s ease-in-out infinite; }
+  @keyframes bootSlide { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
+  .boot-msg { font-size: 11px; color: #5F6368; letter-spacing: .05em; }
   body::before { content:""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
     background: radial-gradient(120% 80% at 12% 4%, rgba(110,170,255,0.28), rgba(110,170,255,0) 60%),
                 radial-gradient(120% 90% at 96% 100%, rgba(120,210,180,0.22), rgba(120,210,180,0) 55%); }
@@ -1081,6 +1098,15 @@
 </head>
 <body>
 <div class="toast-container" id="toastContainer"></div>
+<!-- 起動ローディング・オーバーレイ（初回読み込み中） -->
+<div id="bootOverlay">
+  <div class="boot-box">
+    <img src="favicon.svg" alt="" width="56" height="56" class="boot-logo">
+    <div class="boot-title">JIG <span class="boot-sub">Mission Control</span></div>
+    <div class="boot-bar"><span></span></div>
+    <div class="boot-msg" id="bootMsg">載入中… Loading</div>
+  </div>
+</div>
 
 <!-- Mission 編集モーダル（Mission進度 / 狀態 / Confluence URL 統合） -->
 <div class="remark-modal-overlay" id="remarkModalOverlay" role="dialog" aria-modal="true">
@@ -1356,7 +1382,7 @@
     </span>
     <span class="ctrl-sep"></span>
     <label class="my-slide"><span>Only my DRI</span><span class="ios-sw"><input type="checkbox" id="myOnlyDri"><span class="ios-track"></span></span></label>
-    <label class="my-slide"><span>Show all</span><span class="ios-sw"><input type="checkbox" id="myShowAll"><span class="ios-track"></span></span></label>
+    <label class="my-slide"><span>Show all</span><span class="ios-sw"><input type="checkbox" id="myShowAll" checked><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>Show closed</span><span class="ios-sw"><input type="checkbox" id="myShowClosed"><span class="ios-track"></span></span></label>
     <span class="ctrl-sep"></span>
     <span class="my-lv-label">Columns</span>
@@ -1725,7 +1751,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.41.3';
+const APP_VERSION = '0.42.0';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
@@ -1864,6 +1890,8 @@ function sheetEditUrl() {
   return SHEET_ID ? `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit` : '';
 }
 function setCloudStatus(text, loading) {
+  const bm = document.getElementById('bootMsg');
+  if (bm) bm.textContent = text; // 起動オーバーレイ表示中はそこにも反映
   const el = document.getElementById('cloudStatus');
   if (!el) return;
   if (loading) el.innerHTML = '<span class="mini-spin"></span> ' + escapeHtml(text);
@@ -5566,6 +5594,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   // 從共用 Google 試算表載入最新資料（覆蓋內建）
   await loadFromSheet();
+  // 起動ローディング・オーバーレイを閉じる
+  const boot = document.getElementById('bootOverlay');
+  if (boot) { boot.classList.add('boot-hide'); setTimeout(() => boot.remove(), 500); }
 });
 </script>
 </body>
