@@ -564,7 +564,8 @@
      ヘッダーは「表スクローラ内 top:0」で固定するので、ページ／パネルがどう動いても絶対に動かない。 */
   #panel-My.active { display: flex; flex-direction: column; overflow: visible; }
   #panel-My > .ctrl-bar { position: static; flex: 0 0 auto; z-index: 7; border-radius: var(--radius-card) var(--radius-card) 0 0; }
-  #panel-My > .my-wrap { flex: 1 1 auto; min-height: 0; overflow: auto; padding-top: 0; }
+  /* フィルタ行と表の間に持続的な隙間（スクロール領域の外＝margin なので消えない） */
+  #panel-My > .my-wrap { flex: 1 1 auto; min-height: 0; overflow: auto; padding-top: 0; margin-top: 7px; }
   #panel-My .my-table thead th {
     position: sticky; top: 0; z-index: 5;
     background: #EEF3FA; box-shadow: inset 0 -1px 0 #1967D2;
@@ -1655,7 +1656,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.50.6';
+const APP_VERSION = '0.50.7';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
