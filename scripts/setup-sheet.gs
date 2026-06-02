@@ -451,10 +451,38 @@ function _nextTaskId(sheet, parentId) {
   if (last >= 2) {
     const ids = sheet.getRange(2, 1, last - 1, 1).getValues();
     const esc = parentId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const re = new RegExp('^' + esc + '-K(\\d+)$');
+    const re = new RegExp('^' + esc + '-T(\\d+)$');
     ids.forEach(r => { const m = String(r[0]).trim().match(re); if (m) max = Math.max(max, parseInt(m[1], 10)); });
   }
-  return parentId + '-K' + (max + 1);
+  return parentId + '-T' + (max + 1); // -K から -T に統一（表示/移行と揃える）
+}
+
+// 残骸 Task を掃除：編號が旧 -K 採番、または親が Mission一覽 に存在しない（孤児）行を削除。
+function cleanupOrphanTasks() {
+  const ss = _getSpreadsheet();
+  if (!ss) return;
+  const tSheet = ss.getSheetByName(TASK_SHEET_NAME);
+  if (!tSheet || tSheet.getLastRow() < 2) { console.log('[cleanup] Task一覽 なし'); return; }
+  const mSheet = ss.getSheetByName(MISSION_SHEET_FOR_WRITE);
+  const colOf = (sh, n) => sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(h => String(h).trim()).indexOf(n);
+  const missionIds = new Set();
+  if (mSheet && mSheet.getLastRow() >= 2) {
+    const mc = colOf(mSheet, '編號');
+    if (mc >= 0) mSheet.getRange(2, mc + 1, mSheet.getLastRow() - 1, 1).getValues().forEach(r => { const v = String(r[0]).trim(); if (v) missionIds.add(v); });
+  }
+  const tNum = colOf(tSheet, '編號'), tPar = colOf(tSheet, '親編號'), tLast = tSheet.getLastRow();
+  const nums = tSheet.getRange(2, tNum + 1, tLast - 1, 1).getValues();
+  const pars = tPar >= 0 ? tSheet.getRange(2, tPar + 1, tLast - 1, 1).getValues() : null;
+  let removed = 0;
+  for (let i = nums.length - 1; i >= 0; i--) {
+    const id = String(nums[i][0]).trim();
+    const par = pars ? String(pars[i][0]).trim() : '';
+    const isOldK = /-K\d+$/.test(id);
+    const isOrphan = par && missionIds.size && !missionIds.has(par);
+    if (!id || isOldK || isOrphan) { tSheet.deleteRow(i + 2); removed++; }
+  }
+  SpreadsheetApp.flush();
+  console.log('[cleanup] 削除 ' + removed + ' 行（旧-K採番・孤児・空）');
 }
 
 // Task の追加（3層目）。親は Mission一覽 の編號。-K{n} で自動採番。
