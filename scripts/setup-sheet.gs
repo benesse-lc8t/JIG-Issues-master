@@ -36,7 +36,7 @@
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 // 再公開が反映されたか確認するための目印。doGet が返す。変更のたびに上げる。
-const CODE_VERSION = 'gs-2026-06-02-issuemodal5';
+const CODE_VERSION = 'gs-2026-06-02-taskdef1';
 
 // ===== 状態（2026-06-01 リデザイン：Mission/Task は7状態）=====
 // REDESIGN-PLAN.md D3。Issue は7状態を付けない（D2）。
@@ -80,9 +80,10 @@ const TASK_HEADERS = [
   '狀態',     // F（7状態）
   '進度',     // G（一行・短文）
   '更新日',   // H
-  '連結'      // I（名前|URL を複数）
+  '連結',     // I（名前|URL を複数）
+  'Task定義'  // J（2026-06-02 追加：カスケード健全性＝Mission定義の下位整合）
 ];
-const TASK_COL_WIDTHS = { 1: 130, 2: 300, 3: 110, 4: 90, 5: 120, 6: 80, 7: 240, 8: 100, 9: 240 };
+const TASK_COL_WIDTHS = { 1: 130, 2: 300, 3: 110, 4: 90, 5: 120, 6: 80, 7: 240, 8: 100, 9: 240, 10: 320 };
 
 // ===== Mission進度ログ（追記専用ログ）=====
 // 本人が週1で書く進度を 1 記入＝1 行で溜める。上書きしない。
@@ -530,7 +531,8 @@ function _handleAddTask(ss, data) {
     '狀態': status,
     '進度': String(data['進度'] || ''),
     '更新日': new Date(),
-    '連結': String(data['連結'] || data['Confluence URL'] || '')
+    '連結': String(data['連結'] || data['Confluence URL'] || ''),
+    'Task定義': String(data['Task定義'] || '')
   };
   const r = _appendByHeaders(sheet, vmap);
   SpreadsheetApp.flush();
@@ -588,7 +590,7 @@ function _handleUpdate(ss, data, sheetName) {
   const vmap = {};
   // Issue/Mission/Task で使い得るフィールドを一括許容（対象シートに無い列は colOf=-1 でスキップ）
   ['Issue', 'Mission', 'Task', '擔當', '戰略負責人', 'DRI', '協作', '處', '組',
-   '狀態', 'Confluence URL', '連結', '進度', 'Issue定義', 'Mission定義', '事務局備註'].forEach(k => {
+   '狀態', 'Confluence URL', '連結', '進度', 'Issue定義', 'Mission定義', 'Task定義', '事務局備註'].forEach(k => {
     if (Object.prototype.hasOwnProperty.call(data, k)) vmap[k] = String(data[k]);
   });
   vmap['更新日'] = new Date();
