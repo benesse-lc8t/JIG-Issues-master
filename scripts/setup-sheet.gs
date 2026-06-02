@@ -36,7 +36,7 @@
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 // 再公開が反映されたか確認するための目印。doGet が返す。変更のたびに上げる。
-const CODE_VERSION = 'gs-2026-06-02-issuemodal4';
+const CODE_VERSION = 'gs-2026-06-02-issuemodal5';
 
 // ===== 状態（2026-06-01 リデザイン：Mission/Task は7状態）=====
 // REDESIGN-PLAN.md D3。Issue は7状態を付けない（D2）。
@@ -724,6 +724,7 @@ function _handleAddIssue(ss, data) {
 }
 
 // 次の Issue 連番（数字ゼロ詰め 3 桁）。数字のみの編號から最大＋1。
+// 次の Issue 編號（I + 数字ゼロ詰め。例 I001）。数値化を避けるため接頭辞 I を付ける。
 function _nextIssueNo(sheet) {
   const last = sheet.getLastRow();
   let max = 0;
@@ -732,12 +733,12 @@ function _nextIssueNo(sheet) {
     const c = head.indexOf('編號');
     if (c >= 0) {
       sheet.getRange(2, c + 1, last - 1, 1).getValues().forEach(r => {
-        const m = String(r[0]).trim().match(/^0*(\d+)$/);
+        const m = String(r[0]).trim().match(/(\d+)$/); // I001 / 001 / 戰略-1 いずれも末尾数字
         if (m) max = Math.max(max, parseInt(m[1], 10));
       });
     }
   }
-  return String(max + 1).padStart(3, '0');
+  return 'I' + String(max + 1).padStart(3, '0');
 }
 
 // Mission進度ログへ1行追記（Issue/Mission/Task 共通。編號でぶら下げる）。
@@ -767,8 +768,10 @@ function migrateNumbers() {
   if (!iSheet) { console.log('[migrate] no Issue主檔'); return; }
   const colOf = (sh, name) => sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(h => String(h).trim()).indexOf(name);
 
-  // --- Issues → 001.. ---
-  const issueMap = {};
+  // --- Issues → I001.. ---
+  const issueMap = {}, issueMapByNum = {};
+  // 末尾数字で正規化（"001"/"1"/"039" のズレを吸収）
+  const _numKey = s => { const m = String(s).trim().match(/(\d+)$/); return m ? String(parseInt(m[1], 10)) : ''; };
   const iNumC = colOf(iSheet, '編號'), iLast = iSheet.getLastRow();
   if (iNumC >= 0 && iLast >= 2) {
     const col = iSheet.getRange(2, iNumC + 1, iLast - 1, 1).getValues();
@@ -776,10 +779,13 @@ function migrateNumbers() {
     const out = col.map(r => {
       const old = String(r[0]).trim();
       if (!old) return [''];
-      seq++; const nw = String(seq).padStart(3, '0'); issueMap[old] = nw; return [nw];
+      seq++; const nw = 'I' + String(seq).padStart(3, '0');
+      issueMap[old] = nw; const nk = _numKey(old); if (nk) issueMapByNum[nk] = nw; // 接頭辞 I で数値化を防ぐ
+      return [nw];
     });
     iSheet.getRange(2, iNumC + 1, out.length, 1).setNumberFormat("@").setValues(out);
   }
+  const _issueNew = old => issueMap[old] || issueMapByNum[_numKey(old)] || old; // 親編號の正規化照合
 
   // --- Missions ---
   const missionMap = {};
@@ -794,8 +800,8 @@ function migrateNumbers() {
       const oldP = pars ? String(pars[i][0]).trim() : '';
       const mm = oldM.match(/^(.*)-M(\d+)$/);
       let newM = oldM, newP = oldP;
-      if (mm) { const nb = issueMap[mm[1]] || mm[1]; newM = nb + '-M' + mm[2]; newP = issueMap[oldP] || nb; }
-      else { newP = issueMap[oldP] || oldP; }
+      if (mm) { const nb = _issueNew(mm[1]); newM = nb + '-M' + mm[2]; newP = _issueNew(oldP) !== oldP ? _issueNew(oldP) : nb; }
+      else { newP = _issueNew(oldP); }
       if (oldM) missionMap[oldM] = newM;
       outN.push([newM]); outP.push([newP]);
     }
