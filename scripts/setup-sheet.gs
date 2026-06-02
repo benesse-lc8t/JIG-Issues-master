@@ -36,7 +36,7 @@
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 // 再公開が反映されたか確認するための目印。doGet が返す。変更のたびに上げる。
-const CODE_VERSION = 'gs-2026-06-02-issuemodal1';
+const CODE_VERSION = 'gs-2026-06-02-issuemodal2';
 
 // ===== 状態（2026-06-01 リデザイン：Mission/Task は7状態）=====
 // REDESIGN-PLAN.md D3。Issue は7状態を付けない（D2）。
@@ -591,6 +591,10 @@ function _handleUpdate(ss, data, sheetName) {
   vmap['更新日'] = new Date();
   const r = _updateRowByHeaders(sheet, rowIdx, vmap);
   SpreadsheetApp.flush();
+  // logProgress フラグ付きで 進度 が来たら進度ログへ追記（モーダルの Progress 記入）
+  if (data['logProgress'] && String(data['進度'] || '').trim()) {
+    _appendLog(ss, id, String(data['擔當'] || data['author'] || ''), String(data['進度']).trim());
+  }
   console.log('  → ' + (data.action || 'update') + ' ok:', id, 'row', rowIdx, 'changed', r.changed.join(','));
   return _writeJson({ ok: true, action: data.action, '編號': id, mission: id, row: rowIdx, changed: r.changed, warnings: r.rejected });
 }

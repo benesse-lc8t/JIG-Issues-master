@@ -1106,6 +1106,51 @@
   .dash-list-row.dl-stale .dl-days { color: #B31412; }
   .dash-list-row.dl-warn .dl-days { color: #B06000; }
   .dash-list .empty { padding: 20px; text-align: center; color: #999; font-size: 11px; }
+  /* ===== Issue モーダル（2026-06-02） ===== */
+  .im-overlay { position: fixed; inset: 0; z-index: 200; display: none; align-items: center; justify-content: center; background: rgba(20,30,50,.38); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
+  .im-overlay.open { display: flex; }
+  .im-modal { width: 560px; max-width: 94vw; max-height: 90vh; overflow: auto; background: #fff; border-radius: 14px; box-shadow: 0 18px 60px rgba(0,0,0,.3); position: relative; }
+  .im-band { height: 6px; background: #3282ED; border-radius: 14px 14px 0 0; }
+  .im-head { display: flex; align-items: center; gap: 9px; padding: 12px 16px 10px; border-bottom: 1px solid #EEF0F3; }
+  .im-badge { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #3282ED; color: #fff; font-weight: 800; font-size: 11px; flex-shrink: 0; }
+  .im-title { font-size: 15px; font-weight: 700; color: #1A2733; flex: 1; }
+  .im-status { position: relative; }
+  .im-status-trigger { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 16px; border: 1px solid #DADCE0; background: #fff; cursor: pointer; color: #1967D2; white-space: nowrap; }
+  .im-status-menu { min-width: 120px; }
+  .im-status-menu .im-st-opt { display: block; width: 100%; text-align: left; border: none; background: none; padding: 6px 10px; font-size: 12px; cursor: pointer; border-radius: 6px; }
+  .im-status-menu .im-st-opt:hover { background: #E8F0FE; }
+  .im-close { border: none; background: none; font-size: 22px; line-height: 1; color: #9AA0A6; cursor: pointer; padding: 0 2px; }
+  .im-close:hover { color: #5F6368; }
+  .im-body { padding: 12px 16px; }
+  .im-field { margin-bottom: 11px; }
+  .im-field > label { display: block; font-size: 11px; font-weight: 700; color: #5F6368; margin-bottom: 4px; letter-spacing: .02em; }
+  .im-field .im-sub { font-weight: 400; color: #9AA0A6; margin-left: 6px; }
+  .im-inp { width: 100%; box-sizing: border-box; padding: 7px 10px; font-size: 13px; font-family: inherit; border: 1px solid #DADCE0; border-radius: 8px; color: #202124; }
+  .im-inp:focus { outline: none; border-color: #4285F4; box-shadow: 0 0 0 3px rgba(66,133,244,.15); }
+  textarea.im-inp { resize: vertical; line-height: 1.5; }
+  .im-people { display: flex; gap: 10px; }
+  .im-people .im-field { flex: 1; min-width: 0; }
+  .im-people .np-trigger { width: 100%; min-height: 30px; }
+  .im-link-row { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+  .im-link-row select { font-size: 11px; padding: 5px 4px; border: 1px solid #DADCE0; border-radius: 7px; background: #fff; max-width: 120px; }
+  .im-link-row input { flex: 1; min-width: 0; padding: 6px 9px; font-size: 12px; border: 1px solid #DADCE0; border-radius: 7px; font-family: inherit; }
+  .im-link-row .im-lk-open, .im-link-row .im-lk-del { border: 1px solid #DADCE0; background: #fff; border-radius: 6px; cursor: pointer; width: 26px; height: 28px; font-size: 13px; color: #5F6368; flex-shrink: 0; }
+  .im-link-row .im-lk-open:hover { color: #1967D2; border-color: #4285F4; }
+  .im-link-row .im-lk-del:hover { color: #C5221F; border-color: #EA4335; background: #FCE8E6; }
+  .im-addurl { display: inline-block; margin-top: 2px; font-size: 12px; color: #1967D2; cursor: pointer; }
+  .im-addurl:hover { text-decoration: underline; }
+  .im-history-wrap { margin-top: 6px; border-top: 1px dashed #E0E3E7; padding-top: 8px; }
+  .im-history { max-height: 150px; overflow: auto; }
+  .im-hist-row { font-size: 11px; line-height: 1.5; padding: 4px 0; border-bottom: 1px solid #F1F3F4; }
+  .im-hist-row .im-hist-meta { color: #80868B; font-size: 10px; margin-right: 6px; }
+  .im-foot { display: flex; align-items: center; gap: 8px; padding: 11px 16px 14px; border-top: 1px solid #EEF0F3; }
+  .im-foot .im-hint { font-size: 10px; color: #9AA0A6; }
+  .im-foot .im-foot-sp { flex: 1; }
+  .im-cancel { padding: 7px 16px; font-size: 13px; border: 1px solid #DADCE0; background: #fff; border-radius: 8px; cursor: pointer; color: #3C4043; }
+  .im-cancel:hover { background: #F5F5F7; }
+  .im-primary { padding: 7px 18px; font-size: 13px; font-weight: 600; border: none; background: #3282ED; color: #fff; border-radius: 8px; cursor: pointer; }
+  .im-primary:hover { filter: brightness(1.06); }
+  .im-primary:disabled { opacity: .6; cursor: default; }
 </style>
 </head>
 <body>
@@ -1297,6 +1342,65 @@
   </div>
 </div>
 
+<!-- ===== Issue モーダル（新規／修正・2026-06-02 リデザイン） ===== -->
+<div class="im-overlay" id="issueModalOverlay" role="dialog" aria-modal="true">
+  <div class="im-modal" id="issueModal">
+    <div class="im-band"></div>
+    <div class="im-head">
+      <span class="im-badge">I</span>
+      <span class="im-title" id="imTitle">+add Issue #</span>
+      <span class="np-wrap im-status" id="imStatusWrap">
+        <button type="button" class="im-status-trigger np-trigger" id="imStatusTrigger">Status ▾</button>
+        <div class="author-menu np-menu im-status-menu" id="imStatusMenu"></div>
+      </span>
+      <button type="button" class="im-close" id="imClose" title="取消（Esc）">×</button>
+    </div>
+    <div class="im-body">
+      <div class="im-field">
+        <label>Issue名稱</label>
+        <input type="text" class="im-inp" id="imName" maxlength="120" placeholder="例：新BCL註冊用戶擴大">
+      </div>
+      <div class="im-field">
+        <label>Issue定義</label>
+        <textarea class="im-inp" id="imDef" rows="3" placeholder="この Issue が達成したいこと／判断基準を 1〜数行で。"></textarea>
+      </div>
+      <div class="im-people">
+        <div class="im-field"><label>DRI</label>
+          <span class="np-wrap"><button type="button" class="author-trigger np-trigger is-placeholder" id="imDriTrigger" data-placeholder="選擇 DRI"></button>
+            <div class="author-menu np-menu" id="imDriMenu"><input type="text" class="author-menu-search" id="imDriSearch" placeholder="🔍 搜尋…"><div class="author-menu-chips" id="imDriChips"></div></div></span>
+        </div>
+        <div class="im-field"><label>Collaborator</label>
+          <span class="np-wrap"><button type="button" class="author-trigger np-trigger is-placeholder" id="imCollabTrigger" data-placeholder="選擇協作（可複選）"></button>
+            <div class="author-menu np-menu" id="imCollabMenu"><input type="text" class="author-menu-search" id="imCollabSearch" placeholder="🔍 搜尋…"><div class="author-menu-chips" id="imCollabChips"></div></div></span>
+        </div>
+        <div class="im-field"><label>Supporter</label>
+          <span class="np-wrap"><button type="button" class="author-trigger np-trigger is-placeholder" id="imSupTrigger" data-placeholder="選擇 Supporter"></button>
+            <div class="author-menu np-menu" id="imSupMenu"><input type="text" class="author-menu-search" id="imSupSearch" placeholder="🔍 搜尋…"><div class="author-menu-chips" id="imSupChips"></div></div></span>
+        </div>
+      </div>
+      <div class="im-field">
+        <label>Progress<span class="im-sub">（今回の進捗・一行。記録は履歴に残ります）</span></label>
+        <input type="text" class="im-inp" id="imProg" maxlength="200" placeholder="例：團隊已完成跨通路素材的整合與排期。">
+      </div>
+      <div class="im-field">
+        <label>Link</label>
+        <div id="imLinks"></div>
+        <a class="im-addurl" id="imAddUrl">＋add_URL</a>
+      </div>
+      <div class="im-history-wrap" id="imHistoryWrap" style="display:none;">
+        <label>Progress の履歴（歷來記錄）</label>
+        <div class="im-history" id="imHistory"></div>
+      </div>
+    </div>
+    <div class="im-foot">
+      <span class="im-hint">Ctrl + Enter 儲存 ／ Esc 取消</span>
+      <span class="im-foot-sp"></span>
+      <button type="button" class="im-cancel" id="imCancel">cancel</button>
+      <button type="button" class="im-primary" id="imSave">+add Issue</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 個人備註モーダル（詩雅／育菱の私的メモ） ===== -->
 <div class="remark-modal-overlay" id="memoModalOverlay" role="dialog" aria-modal="true">
   <div class="remark-modal" id="memoModal" style="width:min(480px,94vw);">
@@ -1404,6 +1508,7 @@
     <label class="my-slide"><span>Issue</span><span class="ios-sw"><input type="checkbox" id="myLvIssue" checked><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>Mission</span><span class="ios-sw"><input type="checkbox" id="myLvMission" checked><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>Task</span><span class="ios-sw"><input type="checkbox" id="myLvTask" checked><span class="ios-track"></span></span></label>
+    <button type="button" class="my-reset-col" id="myAddIssue">＋ Issue</button>
     <button type="button" class="my-reset-col" id="myResetCol">Reset columns</button>
     <span class="ctrl-count" id="myCount"></span>
   </div>
@@ -1766,7 +1871,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.44.2';
+const APP_VERSION = '0.45.0';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
@@ -4983,7 +5088,11 @@ function _myWire() {
     const addT = e.target.closest('.my-add-t');
     if (addT) { e.stopPropagation(); await _myAddTask(addT.dataset.id); return; }
     const nm = e.target.closest('.my-name');
-    if (nm) { if (typeof openEditEntryModal === 'function') openEditEntryModal(nm.dataset.kind, nm.dataset.id); return; }
+    if (nm) {
+      if (nm.dataset.kind === 'issue') openIssueModal('edit', nm.dataset.id);
+      else if (typeof openEditEntryModal === 'function') openEditEntryModal(nm.dataset.kind, nm.dataset.id);
+      return;
+    }
     const lk = e.target.closest('.my-link-count');
     if (lk) { if (lk.dataset.kind === 'task') toast('Task 的連結請於試算表「連結」欄維護', 'info'); else if (typeof openConfLinks === 'function') openConfLinks(lk.dataset.id); return; }
     const pcell = e.target.closest('.my-c-dri, .my-c-collab, .my-c-lead');
@@ -5596,6 +5705,131 @@ function _fitBrandSub() {
   let guard = 60;
   while (s.scrollWidth > tw && fs > 4 && guard-- > 0) { fs -= 0.3; s.style.fontSize = fs.toFixed(1) + 'px'; }
 }
+
+// ===== Issue モーダル（新規／修正・2026-06-02）=====
+const ISSUE_STATUS = ['進行中', '結案', '凍結', '中止'];
+const LINK_TYPES = ['Confluence', 'Canva', 'mindmap', 'ChatGPT', 'Claude', 'Gemini', 'NotebookLM', 'SharePoint', 'Other'];
+let _imMode = 'add', _imId = '', _imStatus = '進行中';
+function _imIssueDispNo(id) {
+  const list = issueData.filter(r => (r['種別'] || 'Issue') !== 'Mission');
+  const i = list.findIndex(r => (r['編號'] || '').trim() === id);
+  return i >= 0 ? '#' + String(i + 1).padStart(3, '0') : '#';
+}
+function _imParseLinks(v) {
+  return String(v || '').split(/[\n]+/).map(s => s.trim()).filter(Boolean).map(line => {
+    const bar = line.indexOf('|');
+    if (bar >= 0) return { type: line.slice(0, bar).trim(), url: line.slice(bar + 1).trim() };
+    return { type: '', url: line };
+  });
+}
+function _imRenderLinks(rows) {
+  const box = document.getElementById('imLinks');
+  box.innerHTML = (rows && rows.length ? rows : [{ type: '', url: '' }]).map(r => {
+    const opts = LINK_TYPES.map(t => `<option${t === (r.type || '') || (!LINK_TYPES.includes(r.type) && t === 'Other') ? ' selected' : ''}>${t}</option>`).join('');
+    return `<div class="im-link-row"><select class="im-lk-type">${opts}</select>`
+      + `<input type="text" class="im-lk-url" value="${escapeAttr(r.url || '')}" placeholder="https://…">`
+      + `<button type="button" class="im-lk-open" title="開く">↗</button>`
+      + `<button type="button" class="im-lk-del" title="削除">×</button></div>`;
+  }).join('');
+}
+function _imCollectLinks() {
+  return Array.from(document.querySelectorAll('#imLinks .im-link-row')).map(row => {
+    const t = row.querySelector('.im-lk-type').value;
+    const u = row.querySelector('.im-lk-url').value.trim();
+    return u ? `${t}|${u}` : '';
+  }).filter(Boolean).join('\n');
+}
+function _imBuildStatusMenu() {
+  const menu = document.getElementById('imStatusMenu');
+  menu.innerHTML = ISSUE_STATUS.map(v => `<button type="button" class="im-st-opt" data-v="${escapeAttr(v)}">${statusBadge(v, false)} ${escapeHtml(v)}</button>`).join('');
+}
+function _imSetStatus(v) { _imStatus = v; document.getElementById('imStatusTrigger').innerHTML = statusBadge(v, false) + ' ▾'; }
+function _imRenderHistory(id) {
+  const wrap = document.getElementById('imHistoryWrap'), box = document.getElementById('imHistory');
+  const log = (window.missionLog || {})[id] || [];
+  if (!log.length) { wrap.style.display = 'none'; box.innerHTML = ''; return; }
+  wrap.style.display = '';
+  box.innerHTML = log.map(e => `<div class="im-hist-row"><span class="im-hist-meta">${escapeHtml(e.date || '')}${e.author ? ' · ' + escapeHtml(e.author) : ''}</span>${escapeHtml(e.text || '')}</div>`).join('');
+}
+function openIssueModal(mode, id) {
+  _imMode = mode; _imId = (id || '').trim();
+  ['imDri', 'imCollab', 'imSup'].forEach(setupNamePicker);
+  _imBuildStatusMenu();
+  const row = (mode === 'edit') ? _myFindIssue(_imId) : null;
+  document.getElementById('imName').value = row ? (row['Issue'] || '') : '';
+  document.getElementById('imDef').value = row ? (row['Issue定義'] || '') : '';
+  document.getElementById('imProg').value = '';
+  resetNamePicker('imDri', row ? (row['擔當'] || '') : '', false);
+  resetNamePicker('imCollab', row ? (row['協作'] || '') : '', true);
+  resetNamePicker('imSup', row ? (row['戰略負責人'] || '') : '', false);
+  _imSetStatus(row ? (normalizeStatus(row['狀態']) || '進行中') : '進行中');
+  _imRenderLinks(row ? _imParseLinks(row['Confluence URL']) : [{ type: '', url: '' }]);
+  document.getElementById('imTitle').textContent = (mode === 'edit') ? `+add Issue ${_imIssueDispNo(_imId)}` : '+add Issue #(自動発番)';
+  document.getElementById('imSave').textContent = (mode === 'edit') ? 'Up date' : '+add Issue';
+  if (mode === 'edit') _imRenderHistory(_imId); else { document.getElementById('imHistoryWrap').style.display = 'none'; }
+  document.getElementById('issueModalOverlay').classList.add('open');
+  document.body.classList.add('modal-open');
+  setTimeout(() => document.getElementById('imName').focus(), 50);
+}
+function closeIssueModal() {
+  if (typeof _closeNamePickers === 'function') _closeNamePickers();
+  document.getElementById('issueModalOverlay').classList.remove('open');
+  document.body.classList.remove('modal-open');
+}
+async function _imSave() {
+  const name = document.getElementById('imName').value.trim();
+  if (!name) { toast('請輸入 Issue 名稱', 'error'); return; }
+  const btn = document.getElementById('imSave'); btn.disabled = true;
+  const def = document.getElementById('imDef').value.trim();
+  const prog = document.getElementById('imProg').value.trim();
+  const links = _imCollectLinks();
+  const base = {
+    'Issue': name, 'Issue定義': def, '狀態': _imStatus,
+    '擔當': namePickValue('imDri'), '協作': namePickValue('imCollab'), '戰略負責人': namePickValue('imSup'),
+    'Confluence URL': links
+  };
+  let payload;
+  if (_imMode === 'edit') {
+    payload = Object.assign({ token: WRITE_TOKEN, action: 'updateIssue', '編號': _imId }, base);
+    if (prog) { payload['進度'] = prog; payload['logProgress'] = '1'; payload['擔當'] = namePickValue('imDri'); }
+  } else {
+    payload = Object.assign({ token: WRITE_TOKEN, action: 'addIssue' }, base);
+    if (prog) payload['進度'] = prog;
+  }
+  const data = await _postWrite(payload);
+  btn.disabled = false;
+  if (!data) return;
+  toast(_imMode === 'edit' ? `已更新：${data['編號'] || _imId}` : `已新增 Issue：${data['編號'] || ''}`, 'success');
+  closeIssueModal();
+  await loadFromSheet();
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('imClose')?.addEventListener('click', closeIssueModal);
+  document.getElementById('imCancel')?.addEventListener('click', closeIssueModal);
+  document.getElementById('imSave')?.addEventListener('click', _imSave);
+  document.getElementById('imAddUrl')?.addEventListener('click', () => {
+    const rows = _imCollectLinks().split('\n').filter(Boolean).map(l => { const b = l.indexOf('|'); return { type: l.slice(0, b), url: l.slice(b + 1) }; });
+    rows.push({ type: '', url: '' }); _imRenderLinks(rows);
+  });
+  // 種別ピッカー（Status）
+  const st = document.getElementById('imStatusTrigger'), stm = document.getElementById('imStatusMenu');
+  st?.addEventListener('click', e => { e.stopPropagation(); stm.classList.toggle('open'); });
+  stm?.addEventListener('click', e => { const o = e.target.closest('.im-st-opt'); if (o) { _imSetStatus(o.dataset.v); stm.classList.remove('open'); } });
+  // Link 行：開く／削除（委譲）
+  document.getElementById('imLinks')?.addEventListener('click', e => {
+    const op = e.target.closest('.im-lk-open'); if (op) { const u = op.closest('.im-link-row').querySelector('.im-lk-url').value.trim(); if (u) window.open(u, '_blank', 'noopener'); return; }
+    const del = e.target.closest('.im-lk-del'); if (del) { del.closest('.im-link-row').remove(); if (!document.querySelector('#imLinks .im-link-row')) _imRenderLinks([{ type: '', url: '' }]); }
+  });
+  // オーバーレイ背景クリック・Esc・Ctrl+Enter
+  document.getElementById('issueModalOverlay')?.addEventListener('mousedown', e => { if (e.target.id === 'issueModalOverlay') closeIssueModal(); });
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('issueModalOverlay')?.classList.contains('open')) return;
+    if (e.key === 'Escape') closeIssueModal();
+    else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); _imSave(); }
+  });
+  // ＋ Issue ボタン（My Work）
+  document.getElementById('myAddIssue')?.addEventListener('click', () => openIssueModal('add'));
+});
 
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', async () => {
