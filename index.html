@@ -576,7 +576,7 @@
   .my-table.hide-issue   tr.my-row-issue { display: none; }
   .my-table.hide-mission tr.my-row-mission { display: none; }
   .my-table.hide-task    tr.my-row-task { display: none; }
-  .my-table.only-dri tr.my-row:not(.my-mine) { display: none; } /* ⑤ 自分が DRI の行のみ */
+  .my-table.only-dri tr.my-row:not(.my-is-dri) { display: none; } /* 僅我DRI：自分が DRI（擔當/DRI）の行のみ */
   /* Item 列：レベルでインデント（開始位置を変えて階層表現） */
   .my-c-item.lvl-1 { padding-left: 18px; }
   .my-c-item.lvl-2 { padding-left: 34px; }
@@ -633,7 +633,8 @@
   .my-c-dri:hover, .my-c-collab:hover, .my-c-lead:hover { outline: 1px dashed var(--g-blue); outline-offset: -1px; }
   /* 上部 DRI ピッカー（モーダルと同じチップ選択） */
   .my-who-np { display: inline-block; position: relative; min-width: 150px; vertical-align: middle; }
-  .my-who-np .np-trigger { width: 100%; min-height: 26px; padding: 3px 9px; font-size: var(--fs-sm); }
+  .my-who-np .np-trigger { width: 100%; min-height: 20px; padding: 1px 8px; font-size: var(--fs-sm); }
+  .my-search { flex: 0 1 240px; min-width: 160px; }
   /* 各行セル編集用の浮遊ピッカー（固定配置で任意位置に出す） */
   .my-cell-pop { position: fixed; left: 0; top: 0; right: auto; width: 240px; z-index: 60; }
   /* ⑥ NO.列は省略しない（全文表示） */
@@ -746,7 +747,7 @@
   .np-wrap .author-trigger { width: 100%; }
   .np-wrap .np-menu { left: 0; right: 0; }
   /* 名前ピッカーのトリガ：選択（単数/複数）をタグで表示 */
-  .np-trigger.has-sel { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; background: #fff !important; border-color: #DADCE0 !important; padding-top: 5px; padding-bottom: 5px; }
+  .np-trigger.has-sel { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; background: #fff !important; border-color: #DADCE0 !important; padding-top: 2px; padding-bottom: 2px; }
   .np-trigger .np-ph { color: #BCC0C6; font-weight: 500; }
   .np-trigger .np-tag { font-size: 11px; font-weight: 600; padding: 1px 6px 1px 8px; border-radius: 10px; white-space: nowrap; line-height: 1.7; display: inline-flex; align-items: center; }
   .np-trigger .np-x { margin-left: 4px; cursor: pointer; font-weight: 700; opacity: 0.55; font-size: 13px; line-height: 1; }
@@ -959,10 +960,17 @@
   .author-menu.open { display: block; }
   .author-menu-search {
     width: 100%; box-sizing: border-box; font-family: var(--font-cjk); font-size: 12px;
-    padding: 6px 9px; border: 1px solid #E0E0E0; border-radius: 6px; margin-bottom: 8px; outline: none;
+    padding: 6px 9px 6px 30px; border: 1px solid #E0E0E0; border-radius: 6px; margin-bottom: 8px; outline: none;
+    background: #fff url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239AA0A6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='8'/><path d='m21 21-4.3-4.3'/></svg>") no-repeat 9px center;
+    background-size: 13px;
   }
   .author-menu-search:focus { border-color: var(--g-blue); }
   .author-menu-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  /* ④ チーム（處）ごとのグループ：1行=1チーム、先頭に處ラベル */
+  .author-menu-chips .anp-grp { display: flex; align-items: baseline; gap: 6px; width: 100%; padding: 2px 0; }
+  .author-menu-chips .anp-grp + .anp-grp { border-top: 1px solid #F1F3F4; }
+  .anp-grp-lbl { flex-shrink: 0; width: 64px; text-align: right; font-size: 10px; font-weight: 700; opacity: 0.9; }
+  .anp-grp-chips { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; min-width: 0; }
   .author-chip {
     font-family: var(--font-cjk); font-size: 11px; font-weight: 600; cursor: pointer;
     padding: 2px 8px; border-radius: 11px; border: 1px solid transparent;
@@ -1244,7 +1252,7 @@
           <div class="remark-modal-author-dd" id="remarkModalAuthor">
             <button type="button" class="author-trigger" id="authorTrigger" aria-haspopup="listbox" aria-expanded="false"></button>
             <div class="author-menu" id="authorMenu" role="listbox" aria-label="填寫者">
-              <input type="text" class="author-menu-search" id="authorSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
+              <input type="text" class="author-menu-search" id="authorSearch" placeholder="" autocomplete="off">
               <div class="author-menu-chips" id="authorMenuChips"></div>
             </div>
           </div>
@@ -1306,7 +1314,7 @@
             <div class="np-wrap">
               <button type="button" class="author-trigger np-trigger is-placeholder" id="addMOwnerTrigger" data-placeholder="選擇擔當（可複選）"></button>
               <div class="author-menu np-menu" id="addMOwnerMenu">
-                <input type="text" class="author-menu-search" id="addMOwnerSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
+                <input type="text" class="author-menu-search" id="addMOwnerSearch" placeholder="" autocomplete="off">
                 <div class="author-menu-chips" id="addMOwnerChips"></div>
               </div>
             </div>
@@ -1316,7 +1324,7 @@
             <div class="np-wrap">
               <button type="button" class="author-trigger np-trigger is-placeholder" id="addMLeadTrigger" data-placeholder="留空繼承（可複選）"></button>
               <div class="author-menu np-menu" id="addMLeadMenu">
-                <input type="text" class="author-menu-search" id="addMLeadSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
+                <input type="text" class="author-menu-search" id="addMLeadSearch" placeholder="" autocomplete="off">
                 <div class="author-menu-chips" id="addMLeadChips"></div>
               </div>
             </div>
@@ -1351,7 +1359,7 @@
             <div class="np-wrap">
               <button type="button" class="author-trigger np-trigger is-placeholder" id="addIOwnerTrigger" data-placeholder="選擇擔當（可複選）"></button>
               <div class="author-menu np-menu" id="addIOwnerMenu">
-                <input type="text" class="author-menu-search" id="addIOwnerSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
+                <input type="text" class="author-menu-search" id="addIOwnerSearch" placeholder="" autocomplete="off">
                 <div class="author-menu-chips" id="addIOwnerChips"></div>
               </div>
             </div>
@@ -1361,7 +1369,7 @@
             <div class="np-wrap">
               <button type="button" class="author-trigger np-trigger is-placeholder" id="addILeadTrigger" data-placeholder="選擇負責人（可複選）"></button>
               <div class="author-menu np-menu" id="addILeadMenu">
-                <input type="text" class="author-menu-search" id="addILeadSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
+                <input type="text" class="author-menu-search" id="addILeadSearch" placeholder="" autocomplete="off">
                 <div class="author-menu-chips" id="addILeadChips"></div>
               </div>
             </div>
@@ -1540,12 +1548,13 @@
     <span class="np-wrap my-who-np" id="myWhoPickWrap">
       <button type="button" class="author-trigger np-trigger is-placeholder" id="myWhoPickTrigger" data-placeholder="Select name"></button>
       <div class="author-menu np-menu" id="myWhoPickMenu">
-        <input type="text" class="author-menu-search" id="myWhoPickSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
+        <input type="text" class="author-menu-search" id="myWhoPickSearch" placeholder="" autocomplete="off">
         <div class="author-menu-chips" id="myWhoPickChips"></div>
       </div>
     </span>
+    <input type="search" id="mySearch" class="my-search" placeholder="搜尋 Issue／Mission／Task／姓名…" autocomplete="off">
     <span class="ctrl-sep"></span>
-    <label class="my-slide"><span>僅我負責</span><span class="ios-sw"><input type="checkbox" id="myOnlyDri"><span class="ios-track"></span></span></label>
+    <label class="my-slide"><span>僅我DRI</span><span class="ios-sw"><input type="checkbox" id="myOnlyDri"><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>顯示全部</span><span class="ios-sw"><input type="checkbox" id="myShowAll" checked><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>顯示結案</span><span class="ios-sw"><input type="checkbox" id="myShowClosed"><span class="ios-track"></span></span></label>
     <span class="ctrl-sep"></span>
@@ -1562,7 +1571,7 @@
   </div>
   <!-- 各行のDRI/協作/戰略組擔當セル編集用：共有チップピッカー（モーダルと同仕様） -->
   <div class="author-menu np-menu my-cell-pop" id="myCellMenu">
-    <input type="text" class="author-menu-search" id="myCellSearch" placeholder="🔍 搜尋姓名…" autocomplete="off">
+    <input type="text" class="author-menu-search" id="myCellSearch" placeholder="" autocomplete="off">
     <div class="author-menu-chips" id="myCellChips"></div>
   </div>
 </div>
@@ -1621,7 +1630,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.49.2';
+const APP_VERSION = '0.50.0';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
@@ -2764,7 +2773,7 @@ function _namePickerChipData() {
     if (oa !== ob) return oa - ob;
     return a.localeCompare(b, 'zh-Hant');
   });
-  return names.map(n => { const c = deptChipColor(deptMap[n] || ''); return { name: n, bg: c.bg, fg: c.fg }; });
+  return names.map(n => { const c = deptChipColor(deptMap[n] || ''); return { name: n, bg: c.bg, fg: c.fg, dept: (deptMap[n] || '').trim() }; });
 }
 function _namePickColor(name, data) {
   const d = (data || _namePickerChipData()).find(x => x.name === name);
@@ -2819,10 +2828,22 @@ function renderNamePickerChips(prefix, filter) {
   const list = q ? base.filter(d => d.name.toLowerCase().includes(q)) : base;
   const sel = window._namePickSel[prefix] || [];
   if (!list.length) { wrap.innerHTML = '<div class="author-menu-empty">查無符合的姓名</div>'; return; }
-  wrap.innerHTML = list.map(d => {
+  // ④ チーム（處）ごとにグループ化して改行。各グループ先頭に處ラベル（處カラー）。
+  const chipHtml = d => {
     const active = sel.includes(d.name) ? ' active' : '';
     return `<button type="button" class="author-chip${active}" data-name="${escapeAttr(d.name)}" style="--chip-bg:${d.bg};--chip-fg:${d.fg}">${escapeHtml(d.name)}</button>`;
-  }).join('');
+  };
+  const groups = [];
+  const idx = {};
+  list.forEach(d => {
+    const key = d.dept || '其他';
+    if (idx[key] == null) { idx[key] = groups.length; groups.push({ dept: key, fg: d.fg, items: [] }); }
+    groups[idx[key]].items.push(d);
+  });
+  wrap.innerHTML = groups.map(g =>
+    `<div class="anp-grp"><span class="anp-grp-lbl" style="color:${g.fg}">${escapeHtml(g.dept)}</span>`
+    + `<span class="anp-grp-chips">${g.items.map(chipHtml).join('')}</span></div>`
+  ).join('');
   wrap.querySelectorAll('.author-chip').forEach(chip => {
     chip.addEventListener('click', () => {
       const name = chip.dataset.name;
@@ -4733,11 +4754,16 @@ function renderMyView() {
     (missionsByParent[p] = missionsByParent[p] || []).push(m);
   });
   const M = (field) => _myNameMatch(field, who);
+  // ③ テキスト検索（IMT名／人名／狀態／編號に対する部分一致）。空ならすべて通過。
+  const Q = (document.getElementById('mySearch')?.value || '').trim().toLowerCase();
+  const qHit = (...parts) => !Q || parts.map(x => String(x || '')).join(' ').toLowerCase().includes(Q);
 
-  let rows = '', mineCount = 0, totalCount = 0;
+  let rows = '', mineCount = 0, totalCount = 0, driCount = 0;
   issues.forEach((iss, ii) => {
     const inum = (iss['編號'] || '').trim();
     const issMine = !showAll && (M(iss['擔當']) || M(iss['戰略負責人']));
+    const issDri  = !showAll && M(iss['擔當']);  // ② 僅我DRI 用：DRI（擔當）のみ
+    const issQ = qHit(iss['Issue'], iss['擔當'], iss['戰略負責人'], iss['狀態'], inum);
     const missions = (missionsByParent[inum] || []).slice().sort((a, b) => {
       const na = (String(a['編號']).match(/-M(\d+)/) || [])[1], nb = (String(b['編號']).match(/-M(\d+)/) || [])[1];
       return (+na || 0) - (+nb || 0);
@@ -4746,26 +4772,33 @@ function renderMyView() {
     missions.forEach(m => {
       const mid = (m['編號'] || '').trim();
       const mMine = !showAll && (M(m['擔當']) || M(m['戰略負責人']));
+      const mDri  = !showAll && M(m['擔當']);
+      const mQ = qHit(m['Mission'] || m['Issue'], m['擔當'], m['戰略負責人'], m['狀態'], mid);
       const tasks = (tasksByParent[mid] || []);
       const tRows = [];
       tasks.forEach(t => {
         const tMine = !showAll && (M(t['DRI']) || M(t['協作']));
+        const tDri  = !showAll && M(t['DRI']);
+        const tQ = qHit(t['Task'], t['DRI'], t['協作'], t['狀態'], t['編號']);
         let vis = showAll || issMine || mMine || tMine;
         if (vis && !showClosed && isClosed(t['狀態']) && !tMine) vis = false;
-        if (vis) tRows.push({ t, tMine });
+        if (vis && !(issQ || mQ || tQ)) vis = false; // ③ 検索で絞り込み
+        if (vis) tRows.push({ t, tMine, tDri });
       });
       let mVis = showAll || issMine || mMine || tRows.length > 0;
       if (mVis && !showClosed && isClosed(m['狀態']) && !mMine && tRows.length === 0) mVis = false;
-      if (mVis) mBlocks.push({ m, mMine, tRows });
+      if (mVis && !(issQ || mQ || tRows.length > 0)) mVis = false; // ③
+      if (mVis) mBlocks.push({ m, mMine, mDri, tRows });
     });
     const issueRelevant = showAll || issMine || mBlocks.length > 0;
     if (!issueRelevant) return;
     if (issueRelevant && !showClosed && isClosed(iss['狀態']) && !issMine && mBlocks.length === 0) return;
+    if (!(issQ || mBlocks.length > 0)) return; // ③ 検索で絞り込み
 
     // Issue 行
-    rows += `<tr class="my-row my-row-issue${issMine ? ' my-mine' : ''}" data-kind="issue" data-id="${escapeAttr(inum)}">`
+    rows += `<tr class="my-row my-row-issue${issMine ? ' my-mine' : ''}${issDri ? ' my-is-dri' : ''}" data-kind="issue" data-id="${escapeAttr(inum)}">`
       + `<td class="my-c-no">${_myDispNo(ii, null, null)}</td>`
-      + `<td class="my-c-name my-c-item my-name lvl-0" data-kind="issue" data-id="${escapeAttr(inum)}" data-iref="${ii}" title="點擊：定義／編輯"><span class="my-lvl-badge lv-i">I</span>${issMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(iss['Issue'] || '')}<span class="my-add my-add-m" data-id="${escapeAttr(inum)}" title="新增 Mission">＋M</span></td>`
+      + `<td class="my-c-name my-c-item my-name lvl-0" data-kind="issue" data-id="${escapeAttr(inum)}" data-iref="${ii}" title="點擊：定義／編輯"><span class="my-lvl-badge lv-i">I</span>${escapeHtml(iss['Issue'] || '')}<span class="my-add my-add-m" data-id="${escapeAttr(inum)}" title="新增 Mission">＋M</span></td>`
       + `<td class="my-c-dri">${_myChips(iss['擔當'])}</td>`
       + _myLinkCell(iss['Confluence URL'], inum, 'issue')
       + `<td class="my-c-folder"></td>`
@@ -4775,14 +4808,14 @@ function renderMyView() {
       + `<td class="my-c-lead">${_myChips(iss['戰略負責人'])}</td>`
       + _myDateCell(iss['更新日'])
       + `</tr>`;
-    totalCount++; if (issMine) mineCount++;
+    totalCount++; if (issMine) mineCount++; if (issDri) driCount++;
 
     mBlocks.forEach(mb => {
       const mid = (mb.m['編號'] || '').trim();
       const mn = +((String(mid).match(/-M(\d+)/) || [])[1]) || 0;
-      rows += `<tr class="my-row my-row-mission${mb.mMine ? ' my-mine' : ''}" data-kind="mission" data-id="${escapeAttr(mid)}">`
+      rows += `<tr class="my-row my-row-mission${mb.mMine ? ' my-mine' : ''}${mb.mDri ? ' my-is-dri' : ''}" data-kind="mission" data-id="${escapeAttr(mid)}">`
         + `<td class="my-c-no">${_myDispNo(ii, mn, null)}</td>`
-        + `<td class="my-c-name my-c-item my-name lvl-1" data-kind="mission" data-id="${escapeAttr(mid)}" title="點擊：定義／編輯"><span class="my-lvl-badge lv-m">M</span>${mb.mMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(mb.m['Mission'] || mb.m['Issue'] || '')}<span class="my-add my-add-t" data-id="${escapeAttr(mid)}" title="新增 Task">＋T</span></td>`
+        + `<td class="my-c-name my-c-item my-name lvl-1" data-kind="mission" data-id="${escapeAttr(mid)}" title="點擊：定義／編輯"><span class="my-lvl-badge lv-m">M</span>${escapeHtml(mb.m['Mission'] || mb.m['Issue'] || '')}<span class="my-add my-add-t" data-id="${escapeAttr(mid)}" title="新增 Task">＋T</span></td>`
         + `<td class="my-c-dri">${_myChips(mb.m['擔當'])}</td>`
         + _myLinkCell(mb.m['Confluence URL自身'] || mb.m['Confluence URL'], mid, 'mission')
         + `<td class="my-c-folder"></td>`
@@ -4792,13 +4825,13 @@ function renderMyView() {
         + `<td class="my-c-lead">${_myChips(mb.m['戰略負責人'])}</td>`
         + _myDateCell(mb.m['更新日'])
         + `</tr>`;
-      totalCount++; if (mb.mMine) mineCount++;
+      totalCount++; if (mb.mMine) mineCount++; if (mb.mDri) driCount++;
       mb.tRows.forEach(tr => {
         const tid = (tr.t['編號'] || '').trim();
         const tn = +((String(tid).match(/-[KT](\d+)/) || [])[1]) || 0;
-        rows += `<tr class="my-row my-row-task${tr.tMine ? ' my-mine' : ''}" data-kind="task" data-id="${escapeAttr(tid)}">`
+        rows += `<tr class="my-row my-row-task${tr.tMine ? ' my-mine' : ''}${tr.tDri ? ' my-is-dri' : ''}" data-kind="task" data-id="${escapeAttr(tid)}">`
           + `<td class="my-c-no">${_myDispNo(ii, mn, tn)}</td>`
-          + `<td class="my-c-name my-c-item my-task-name lvl-2" data-id="${escapeAttr(tid)}" title="點兩下改名"><span class="my-lvl-badge lv-t">T</span>${tr.tMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(tr.t['Task'] || '')}</td>`
+          + `<td class="my-c-name my-c-item my-task-name lvl-2" data-id="${escapeAttr(tid)}" title="點兩下改名"><span class="my-lvl-badge lv-t">T</span>${escapeHtml(tr.t['Task'] || '')}</td>`
           + `<td class="my-c-dri">${_myChips(tr.t['DRI'])}</td>`
           + _myLinkCell(tr.t['連結'], tid, 'task')
           + `<td class="my-c-folder"></td>`
@@ -4808,7 +4841,7 @@ function renderMyView() {
           + `<td class="my-c-lead"></td>`
           + _myDateCell(tr.t['更新日'])
           + `</tr>`;
-        totalCount++; if (tr.tMine) mineCount++;
+        totalCount++; if (tr.tMine) mineCount++; if (tr.tDri) driCount++;
       });
     });
   });
@@ -4825,7 +4858,7 @@ function renderMyView() {
     + `<th>NO.${rz}</th><th>IMT${rz}</th><th>DRI${rz}</th><th>連結${rz}</th><th>資料夾${rz}</th>`
     + `<th>狀態${rz}</th><th>進度${rz}</th><th>協作${rz}</th><th>戰略支援${rz}</th><th>更新日${rz}</th>`
     + `</tr></thead><tbody>${rows}</tbody></table>`;
-  if (countEl) countEl.textContent = showAll ? `全部 ${totalCount}` : (onlyDri ? `僅我負責 ${mineCount}` : `DRI ${mineCount}（含上下層 ${totalCount}）`);
+  if (countEl) countEl.textContent = showAll ? `全部 ${totalCount}` : (onlyDri ? `僅我DRI ${driCount}` : `DRI ${mineCount}（含上下層 ${totalCount}）`);
   _myWireColResize();
   _myWire();
 }
@@ -4992,6 +5025,9 @@ async function _mySavePerson(kind, id, field, val) {
 document.addEventListener('DOMContentLoaded', () => {
   const cs = document.getElementById('myCellSearch');
   if (cs) cs.addEventListener('input', () => renderNamePickerChips('myCell', cs.value));
+  // ③ メインテーブルの検索（入力で再描画）
+  const ms = document.getElementById('mySearch');
+  if (ms) { let _mt = null; ms.addEventListener('input', () => { clearTimeout(_mt); _mt = setTimeout(renderMyView, 120); }); }
   document.getElementById('myShowClosed')?.addEventListener('change', renderMyView);
   document.getElementById('myShowAll')?.addEventListener('change', (e) => {
     if (e.target.checked) { const o = document.getElementById('myOnlyDri'); if (o) o.checked = false; } // Show all と Only my DRI は排他
