@@ -980,7 +980,8 @@
   #myWhoPickChips .anp-grp-chips { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   /* ② 處カラーは小さなドットで示し、人名・部門名は黒文字（赤文字タブー回避） */
   .anp-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-  .anp-nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  /* 名前は省略でなく長体（scaleX）で収めるため ellipsis は付けない */
+  .anp-nm { overflow: hidden; white-space: nowrap; min-width: 0; }
   .author-chip {
     font-family: var(--font-cjk); font-size: 11px; font-weight: 500; cursor: pointer;
     display: inline-flex; align-items: center; gap: 4px; width: 100%; justify-content: flex-start;
@@ -1641,7 +1642,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.50.2';
+const APP_VERSION = '0.50.3';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
@@ -2873,6 +2874,21 @@ function renderNamePickerChips(prefix, filter) {
         _npFire(prefix);
       }
     });
+  });
+  _fitCondenseNames(wrap); // 4文字以上などはみ出す名前だけ長体（scaleX）で収める
+}
+// オートフィット長体：はみ出す名前だけ、収まる分だけ横方向に圧縮（下限0.7）。
+// 対象要素は flex item（display blockified）なので transform が効く。可視時のみ測定。
+function _fitCondenseNames(wrap, floor) {
+  if (!wrap) return;
+  floor = floor || 0.7;
+  wrap.querySelectorAll('.anp-nm').forEach(el => {
+    el.style.transform = '';
+    const have = el.clientWidth, need = el.scrollWidth;
+    if (have > 0 && need > have + 0.5) {
+      el.style.transformOrigin = 'left center';
+      el.style.transform = `scaleX(${Math.max(floor, have / need).toFixed(3)})`;
+    }
   });
 }
 function _closeNamePickers() {
