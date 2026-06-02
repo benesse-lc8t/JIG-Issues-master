@@ -36,7 +36,7 @@
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 // 再公開が反映されたか確認するための目印。doGet が返す。変更のたびに上げる。
-const CODE_VERSION = 'gs-2026-06-02-issuemodal3';
+const CODE_VERSION = 'gs-2026-06-02-issuemodal4';
 
 // ===== 状態（2026-06-01 リデザイン：Mission/Task は7状態）=====
 // REDESIGN-PLAN.md D3。Issue は7状態を付けない（D2）。
@@ -575,8 +575,11 @@ function _handleUpdate(ss, data, sheetName) {
   const numC = head0.indexOf('編號');
   if (numC < 0) return _writeJson({ ok: false, error: 'no_id_column', sheetName: sheetName });
   const ids = sheet.getRange(2, numC + 1, last - 1, 1).getValues();
+  // 編號は先頭ゼロ（"039"）と数値化（39）が混在し得るので正規化して照合
+  const _normId = s => { s = String(s == null ? '' : s).trim(); return /^\d+$/.test(s) ? String(parseInt(s, 10)) : s; };
+  const idN = _normId(id);
   let rowIdx = -1;
-  for (let i = 0; i < ids.length; i++) { if (String(ids[i][0]).trim() === id) { rowIdx = i + 2; break; } }
+  for (let i = 0; i < ids.length; i++) { const c = String(ids[i][0]).trim(); if (c === id || _normId(c) === idN) { rowIdx = i + 2; break; } }
   if (rowIdx < 0) return _writeJson({ ok: false, error: 'not_found', id: id });
 
   const status = String(data['狀態'] || '').trim();
