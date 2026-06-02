@@ -612,7 +612,8 @@
   .my-table .my-c-name { font-size: var(--fs-xs); }
   /* Issue/Mission の名称ウェイトを Task と同じ（標準）に揃える */
   .my-table tr.my-row-task .my-c-name { color: #3C4043; }
-  .my-table tr.my-row:hover > td { filter: brightness(0.96); }
+  /* 行ホバー：グレーの暗転ではなく薄ピンクのウォッシュ（地色を残してピンクを重ねる） */
+  .my-table tr.my-row:hover > td { box-shadow: inset 0 0 0 9999px rgba(233, 30, 99, 0.08); }
   /* 選択中の自分のチップを光らせる */
   .person-chip.my-chip-me { font-weight: 700; position: relative; animation: chipGlow 1.5s ease-in-out infinite; }
   @keyframes chipGlow {
@@ -1656,7 +1657,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.50.10';
+const APP_VERSION = '0.50.11';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
