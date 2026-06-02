@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ローディング演出 比較プレビュー（①カスケード ⑤オーロラ ③シーン）</title>
+<style>
+  *{box-sizing:border-box;}
+  body{font-family:'Noto Sans TC',system-ui,sans-serif; margin:0; padding:22px; background:#0f1115; color:#e8eaed;}
+  h1{font-size:16px; margin:0 0 4px; font-weight:700;}
+  .lead{font-size:12px; color:#9aa0a6; margin:0 0 18px;}
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  @media(max-width:1000px){ .grid{grid-template-columns:1fr;} }
+  .card{border-radius:14px; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,.4); border:1px solid #23262d;}
+  .stage{position:relative; height:300px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(160deg,#EAF2FF 0%,#EAF6F4 38%,#F3F1FA 70%,#FCF3EC 100%);}
+  .cap{background:#14171c; padding:9px 12px;}
+  .cap b{font-size:13px;} .cap span{display:block; font-size:11px; color:#9aa0a6; margin-top:2px;}
+  .box{ text-align:center; }
+  .logo{ width:52px; height:46px; filter:drop-shadow(0 4px 12px rgba(26,115,232,.22)); }
+
+  /* ===== ① カスケード・ビルド ===== */
+  .casc{ display:flex; align-items:center; justify-content:center; gap:0; margin-top:16px; }
+  .casc .node{ width:13px; height:13px; border-radius:50%; }
+  .casc .n1{ background:#3282ED; } .casc .n2{ background:#629EEF; } .casc .n3{ background:#C3DBF8; }
+  .casc .link{ width:30px; height:3px; border-radius:2px; background:rgba(26,103,210,.18); position:relative; overflow:hidden; }
+  .casc .link::after{ content:""; position:absolute; inset:0; width:100%; transform:scaleX(0); transform-origin:left;
+    background:linear-gradient(90deg,#3282ED,#629EEF); }
+  .casc .node{ transform:scale(.6); opacity:.25; animation:nodePulse 2.6s infinite; }
+  .casc .n1{ animation-delay:0s; } .casc .l1::after{ animation:linkFill 2.6s infinite; animation-delay:.25s; }
+  .casc .n2{ animation-delay:.5s; } .casc .l2::after{ animation:linkFill 2.6s infinite; animation-delay:.75s; background:linear-gradient(90deg,#629EEF,#C3DBF8);}
+  .casc .n3{ animation-delay:1s; }
+  @keyframes nodePulse{ 0%,100%{transform:scale(.6); opacity:.25;} 8%{transform:scale(1.25); opacity:1;} 30%,70%{transform:scale(1); opacity:1;} }
+  @keyframes linkFill{ 0%,100%{transform:scaleX(0);} 10%{transform:scaleX(0);} 22%,90%{transform:scaleX(1);} }
+  .casc-label{ margin-top:12px; font-size:10px; letter-spacing:.28em; color:#5F6368; font-weight:600; }
+  .logo-casc{ animation:logoGlow 2.6s infinite; }
+  @keyframes logoGlow{ 0%,55%,100%{filter:drop-shadow(0 4px 12px rgba(26,115,232,.18));} 75%{filter:drop-shadow(0 0 16px rgba(38,132,255,.8));} }
+
+  /* ===== ⑤ オーロラ背景 ===== */
+  .aurora{ position:absolute; inset:-30%; z-index:0; filter:blur(38px); opacity:.85;
+    background:
+      radial-gradient(40% 40% at 25% 30%, rgba(110,170,255,.85), transparent 60%),
+      radial-gradient(38% 38% at 75% 35%, rgba(150,130,255,.7), transparent 60%),
+      radial-gradient(45% 45% at 60% 75%, rgba(120,215,190,.7), transparent 60%),
+      radial-gradient(40% 40% at 30% 80%, rgba(255,200,170,.6), transparent 60%);
+    animation:auroraMove 9s ease-in-out infinite alternate; }
+  @keyframes auroraMove{
+    0%{ transform:translate(-4%,-3%) scale(1); }
+    50%{ transform:translate(4%,2%) scale(1.12); }
+    100%{ transform:translate(-2%,4%) scale(1.05); } }
+  .aurora-box{ position:relative; z-index:1; }
+  .aurora-bar{ width:130px; height:3px; margin:16px auto 0; border-radius:99px; background:rgba(26,103,210,.18); overflow:hidden; }
+  .aurora-bar i{ display:block; height:100%; width:35%; border-radius:99px; background:#1967D2;
+    opacity:.7; animation:auroraPulse 2.2s ease-in-out infinite; }
+  @keyframes auroraPulse{ 0%,100%{opacity:.35; transform:translateX(-10%);} 50%{opacity:.9; transform:translateX(10%);} }
+
+  /* ===== ③ シーン・スイープ ===== */
+  .sheen-wrap{ position:relative; display:inline-block; overflow:hidden; border-radius:8px; }
+  .sheen-wrap::after{ content:""; position:absolute; top:-20%; left:-60%; width:40%; height:140%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.85), transparent);
+    transform:skewX(-18deg); animation:sheen 2.6s ease-in-out infinite; }
+  @keyframes sheen{ 0%{left:-60%;} 55%{left:120%;} 100%{left:120%;} }
+  .sheen-bar{ width:130px; height:3px; margin:16px auto 0; border-radius:99px; background:rgba(26,103,210,.18); overflow:hidden; }
+  .sheen-bar i{ display:block; height:100%; width:0; border-radius:99px; background:#1967D2; animation:sheenFill 2.6s cubic-bezier(.15,.7,.2,1) infinite; }
+  @keyframes sheenFill{ 0%{width:0;} 70%,100%{width:100%;} }
+</style>
+</head>
+<body>
+  <h1>ローディング演出 比較プレビュー</h1>
+  <p class="lead">実際の起動背景・ロゴでループ再生。本番では ①③ は「一度だけ」再生（ここでは見やすいよう繰り返し）。⑤ は常時ゆっくり。</p>
+
+  <div class="grid">
+
+    <!-- ① カスケード・ビルド -->
+    <div class="card">
+      <div class="stage">
+        <div class="box">
+          <img class="logo logo-casc" src="../IMT_favicon.png" alt="IMT">
+          <div class="casc">
+            <span class="node n1"></span>
+            <span class="link l1"></span>
+            <span class="node n2"></span>
+            <span class="link l2"></span>
+            <span class="node n3"></span>
+          </div>
+          <div class="casc-label">ISSUE &nbsp;›&nbsp; MISSION &nbsp;›&nbsp; TASK</div>
+        </div>
+      </div>
+      <div class="cap"><b>① カスケード・ビルド</b><span>I→M→T が順に点灯＆繋がる。プロダクトの3層思想を起動演出に。</span></div>
+    </div>
+
+    <!-- ⑤ オーロラ背景 -->
+    <div class="card">
+      <div class="stage">
+        <div class="aurora"></div>
+        <div class="box aurora-box">
+          <img class="logo" src="../IMT_favicon.png" alt="IMT">
+          <div class="aurora-bar"><i></i></div>
+        </div>
+      </div>
+      <div class="cap"><b>⑤ オーロラ背景</b><span>背景がゆっくり移ろう。最も静かで上品な高級SaaS感。</span></div>
+    </div>
+
+    <!-- ③ シーン・スイープ -->
+    <div class="card">
+      <div class="stage">
+        <div class="box">
+          <span class="sheen-wrap"><img class="logo" src="../IMT_favicon.png" alt="IMT"></span>
+          <div class="sheen-bar"><i></i></div>
+        </div>
+      </div>
+      <div class="cap"><b>③ シーン・スイープ</b><span>ロゴに光のスジが一度通過＋極細バーが満ちる。軽くて高級。</span></div>
+    </div>
+
+  </div>
+</body>
+</html>
