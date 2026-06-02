@@ -80,7 +80,7 @@
     --fw-bold:     700;  /* 表ヘッダ・大見出しのみ */
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font); font-weight: var(--fw-normal); font-size: var(--fs-base); color: #1D1D1F; padding: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  body { font-family: var(--font); font-weight: var(--fw-normal); font-size: var(--fs-base); color: #1D1D1F; padding: 8px 10px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
     /* リキッドグラスが透ける下地：淡い青〜緑〜暖色のグラデ（固定） */
     background: linear-gradient(160deg, #EAF2FF 0%, #EAF6F4 32%, #F3F1FA 60%, #FCF3EC 100%) fixed, var(--body-bg); }
   /* 起動ローディング・オーバーレイ */
@@ -105,7 +105,7 @@
   code { font-family: var(--font); font-weight: 500; font-size: 0.92em; background: var(--g-grey-bg); color: #3C4043; padding: 1px 6px; border-radius: 4px; letter-spacing: 0.01em; }
   h1 { font-size: var(--fs-h); font-weight: var(--fw-semibold); color: #1D1D1F; margin: 0; letter-spacing: -0.01em; }
   .topbar { display: flex; align-items: center; justify-content: space-between; gap: 14px;
-    position: sticky; top: 8px; z-index: 50; padding: 9px 16px; margin-bottom: 14px; overflow: hidden;
+    position: sticky; top: 6px; z-index: 50; padding: 8px 16px; margin-bottom: 8px; overflow: hidden;
     background: rgba(255,255,255,0.55); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
     border: none; border-radius: 16px; box-shadow: var(--glass-edge), var(--shadow-md); }
   /* ⑥ 屈折ハイライト（光源を左上に） */
@@ -175,8 +175,8 @@
   .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: #fff; }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .stats { font-size: 12px; color: #3C4043; padding: 6px 10px; background: var(--g-grey-bg); border-radius: 4px; display: inline-block; }
-  /* 2026-06-02 タブバー撤去（高さ約50px）に合わせて余白分を縮小（旧 150px）。 */
-  .panel { display: none; border: 1px solid var(--hairline); background: #fff; border-radius: var(--radius-card); overflow: auto; max-height: calc(100vh - 100px); box-shadow: var(--shadow-md); }
+  /* 2026-06-02 タブバー撤去＋外周/ヘッダー余白の圧縮に合わせて調整（旧 150px→100px→84px）。 */
+  .panel { display: none; border: 1px solid var(--hairline); background: #fff; border-radius: var(--radius-card); overflow: auto; max-height: calc(100vh - 84px); box-shadow: var(--shadow-md); }
   /* スクロール時もフィルタ行＋ヘッダー行を固定（パネル内部スクロール）*/
   .panel > .ctrl-bar { position: sticky; top: 0; z-index: 6; }
   .panel table thead th { position: sticky; top: var(--ctrlbar-h, 0px); z-index: 5; box-shadow: inset 0 -1px 0 var(--border); }
@@ -557,7 +557,7 @@
   .my-link { font-size: var(--fs-2xs); color: var(--g-blue); text-decoration: none; margin-left: 4px; }
   .my-link:hover { text-decoration: underline; }
   /* 我的：階層テーブル */
-  .my-wrap { padding: 10px 12px 40px; max-width: none; }
+  .my-wrap { padding: 6px 10px 12px; max-width: none; }
   /* border-collapse:separate にして sticky ヘッダーの枠線が剥がれて裏が透ける現象を防ぐ */
   table.my-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--fs-xs); table-layout: fixed; background: #fff; }
   .my-table th { position: sticky; top: -1px; z-index: 2; background: #EEF3FA; color: #1F4E8C; padding: 3px 5px; text-align: center; font-weight: var(--fw-bold); border-right: 1px solid #DCE3EC; border-bottom: 1px solid #1967D2; font-size: var(--fs-2xs); white-space: nowrap; box-shadow: 0 -3px 0 #EEF3FA; }
@@ -1616,7 +1616,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.48.3';
+const APP_VERSION = '0.48.4';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
