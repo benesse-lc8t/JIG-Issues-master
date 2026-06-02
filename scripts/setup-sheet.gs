@@ -36,7 +36,7 @@
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 // 再公開が反映されたか確認するための目印。doGet が返す。変更のたびに上げる。
-const CODE_VERSION = 'gs-2026-06-01-cascade1';
+const CODE_VERSION = 'gs-2026-06-02-issuemodal1';
 
 // ===== 状態（2026-06-01 リデザイン：Mission/Task は7状態）=====
 // REDESIGN-PLAN.md D3。Issue は7状態を付けない（D2）。
@@ -53,7 +53,7 @@ const STATUS_COLORS = {
 };
 // 旧状態（移行期の互換。ドロップダウンには出さないが、書込は許容して弾かない）
 const LEGACY_STATUS = ['未開始', '需確認'];
-const ISSUE_NEW_COLS = ['Confluence URL', '狀態', '事務局備註', '更新日', 'Issue定義'];
+const ISSUE_NEW_COLS = ['Confluence URL', '狀態', '事務局備註', '更新日', 'Issue定義', '協作'];
 const MISSION_HEADERS = [
   '編號',          // A
   'Mission',       // B
@@ -643,15 +643,17 @@ function _handleSaveAnnounce(ss, data) {
 }
 
 function _handleAddIssue(ss, data) {
-  const id   = String(data['編號'] || '').trim();
   const name = String(data['Issue'] || '').trim();
-  if (!id)   return _writeJson({ ok: false, error: 'issue_id_required' });
   if (!name) return _writeJson({ ok: false, error: 'issue_name_required' });
   const status = String(data['狀態'] || '').trim();
   if (status && !ALLOWED_STATUS.has(status)) return _writeJson({ ok: false, error: 'invalid_status', value: status });
 
   const sheet = ss.getSheetByName(ISSUE_SHEET_FOR_WRITE);
   if (!sheet) return _writeJson({ ok: false, error: 'issue_sheet_not_found', sheetName: ISSUE_SHEET_FOR_WRITE });
+
+  // 自動採番（指定があれば尊重、無ければ連番 001…）
+  let id = String(data['編號'] || '').trim();
+  if (!id) id = _nextIssueNo(sheet);
 
   // 編號の一意チェック
   const last = sheet.getLastRow();
@@ -669,6 +671,7 @@ function _handleAddIssue(ss, data) {
     '組': String(data['組'] || ''),
     '擔當': String(data['擔當'] || ''),
     '戰略負責人': String(data['戰略負責人'] || ''),
+    '協作': String(data['協作'] || ''),
     '狀態': status,
     '更新日': new Date(),
     'Confluence URL': String(data['Confluence URL'] || ''),
@@ -676,8 +679,126 @@ function _handleAddIssue(ss, data) {
   };
   const r = _appendByHeaders(sheet, vmap);
   SpreadsheetApp.flush();
+  // 初回 Progress があればログへ追記
+  const prog = String(data['進度'] || data['備註'] || '').trim();
+  if (prog) _appendLog(ss, id, String(data['擔當'] || data['author'] || ''), prog);
   console.log('  → addIssue ok:', id, 'row', r.row);
   return _writeJson({ ok: true, action: 'addIssue', '編號': id, mission: id, row: r.row, warnings: r.rejected });
+}
+
+// 次の Issue 連番（数字ゼロ詰め 3 桁）。数字のみの編號から最大＋1。
+function _nextIssueNo(sheet) {
+  const last = sheet.getLastRow();
+  let max = 0;
+  if (last >= 2) {
+    const head = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => String(h).trim());
+    const c = head.indexOf('編號');
+    if (c >= 0) {
+      sheet.getRange(2, c + 1, last - 1, 1).getValues().forEach(r => {
+        const m = String(r[0]).trim().match(/^0*(\d+)$/);
+        if (m) max = Math.max(max, parseInt(m[1], 10));
+      });
+    }
+  }
+  return String(max + 1).padStart(3, '0');
+}
+
+// Mission進度ログへ1行追記（Issue/Mission/Task 共通。編號でぶら下げる）。
+function _appendLog(ss, id, who, text) {
+  text = String(text || '').trim();
+  if (!text) return;
+  let sh = ss.getSheetByName(LOG_SHEET_NAME);
+  if (!sh) {
+    sh = ss.insertSheet(LOG_SHEET_NAME);
+    sh.getRange(1, 1, 1, LOG_HEADERS.length).setValues([LOG_HEADERS]).setFontWeight('bold').setBackground('#F7F4EC');
+    sh.setFrozenRows(1);
+  }
+  const tz = (typeof Session !== 'undefined' && Session.getScriptTimeZone()) ? Session.getScriptTimeZone() : 'Asia/Taipei';
+  const now = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm');
+  sh.appendRow([String(id), now, String(who || ''), text]); // LOG_HEADERS: 編號/日時/擔當/進度
+}
+
+// ===== 連番への一括移行（一度だけ実行）=====
+// Issue を 001,002… に振り直し、Mission(親-M{n})・Task(親-M{n}-T{k}) の編號/親編號、
+// 進度ログ・個人備註の編號参照も連動更新する。全ダミー前提・非可逆なので注意。
+function migrateNumbers() {
+  const ss = _getSpreadsheet();
+  if (!ss) { console.log('[migrate] no spreadsheet'); return; }
+  const iSheet = ss.getSheetByName(ISSUE_SHEET_FOR_WRITE);
+  const mSheet = ss.getSheetByName(MISSION_SHEET_FOR_WRITE);
+  const tSheet = ss.getSheetByName(TASK_SHEET_NAME);
+  if (!iSheet) { console.log('[migrate] no Issue主檔'); return; }
+  const colOf = (sh, name) => sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(h => String(h).trim()).indexOf(name);
+
+  // --- Issues → 001.. ---
+  const issueMap = {};
+  const iNumC = colOf(iSheet, '編號'), iLast = iSheet.getLastRow();
+  if (iNumC >= 0 && iLast >= 2) {
+    const col = iSheet.getRange(2, iNumC + 1, iLast - 1, 1).getValues();
+    let seq = 0;
+    const out = col.map(r => {
+      const old = String(r[0]).trim();
+      if (!old) return [''];
+      seq++; const nw = String(seq).padStart(3, '0'); issueMap[old] = nw; return [nw];
+    });
+    iSheet.getRange(2, iNumC + 1, out.length, 1).setValues(out);
+  }
+
+  // --- Missions ---
+  const missionMap = {};
+  if (mSheet && mSheet.getLastRow() >= 2) {
+    const mNumC = colOf(mSheet, '編號'), mParC = colOf(mSheet, '親編號'), mLast = mSheet.getLastRow();
+    const parAF = mParC >= 0 && /^=\s*ARRAYFORMULA/i.test(String(mSheet.getRange(2, mParC + 1).getFormula() || ''));
+    const nums = mSheet.getRange(2, mNumC + 1, mLast - 1, 1).getValues();
+    const pars = mParC >= 0 ? mSheet.getRange(2, mParC + 1, mLast - 1, 1).getValues() : null;
+    const outN = [], outP = [];
+    for (let i = 0; i < nums.length; i++) {
+      const oldM = String(nums[i][0]).trim();
+      const oldP = pars ? String(pars[i][0]).trim() : '';
+      const mm = oldM.match(/^(.*)-M(\d+)$/);
+      let newM = oldM, newP = oldP;
+      if (mm) { const nb = issueMap[mm[1]] || mm[1]; newM = nb + '-M' + mm[2]; newP = issueMap[oldP] || nb; }
+      else { newP = issueMap[oldP] || oldP; }
+      if (oldM) missionMap[oldM] = newM;
+      outN.push([newM]); outP.push([newP]);
+    }
+    mSheet.getRange(2, mNumC + 1, outN.length, 1).setValues(outN);
+    if (mParC >= 0 && !parAF) mSheet.getRange(2, mParC + 1, outP.length, 1).setValues(outP); // ARRAYFORMULA 列は編號から自動再計算に任せる
+  }
+
+  // --- Tasks ---
+  const taskMap = {};
+  if (tSheet && tSheet.getLastRow() >= 2) {
+    const tNumC = colOf(tSheet, '編號'), tParC = colOf(tSheet, '親編號'), tLast = tSheet.getLastRow();
+    const nums = tSheet.getRange(2, tNumC + 1, tLast - 1, 1).getValues();
+    const pars = tParC >= 0 ? tSheet.getRange(2, tParC + 1, tLast - 1, 1).getValues() : null;
+    const outN = [], outP = [];
+    for (let i = 0; i < nums.length; i++) {
+      const oldT = String(nums[i][0]).trim();
+      const oldPM = pars ? String(pars[i][0]).trim() : '';
+      const tm = oldT.match(/^(.*)-T(\d+)$/);
+      let newT = oldT, newPM = oldPM;
+      if (tm) { const nbm = missionMap[tm[1]] || tm[1]; newT = nbm + '-T' + tm[2]; newPM = missionMap[oldPM] || nbm; }
+      else { newPM = missionMap[oldPM] || oldPM; }
+      if (oldT) taskMap[oldT] = newT;
+      outN.push([newT]); outP.push([newPM]);
+    }
+    tSheet.getRange(2, tNumC + 1, outN.length, 1).setValues(outN);
+    if (tParC >= 0) tSheet.getRange(2, tParC + 1, outP.length, 1).setValues(outP);
+  }
+
+  // --- ログ・個人備註の編號参照 ---
+  const all = Object.assign({}, issueMap, missionMap, taskMap);
+  [LOG_SHEET_NAME, MEMO_SHEET_NAME].forEach(nm => {
+    const sh = ss.getSheetByName(nm);
+    if (!sh || sh.getLastRow() < 2) return;
+    const c = colOf(sh, '編號'); if (c < 0) return;
+    const col = sh.getRange(2, c + 1, sh.getLastRow() - 1, 1).getValues();
+    const out = col.map(r => { const o = String(r[0]).trim(); return [all[o] || o]; });
+    sh.getRange(2, c + 1, out.length, 1).setValues(out);
+  });
+  SpreadsheetApp.flush();
+  console.log('[migrate] 完了：Issue ' + Object.keys(issueMap).length + ' / Mission ' + Object.keys(missionMap).length + ' / Task ' + Object.keys(taskMap).length);
 }
 
 // 診断用：ブラウザで Web App URL を開くと、デプロイ済みコードが実際に見ている
