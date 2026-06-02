@@ -597,16 +597,16 @@
   .my-lvl-badge.lv-t { background: #C3DBF8; color: #1A3A6B; } /* 薄い地色のため頭文字は濃紺で可読性確保 */
   /* 名前・狀態チップは表内で約 70% サイズ */
   /* 人名＝B案（處カラーのドット＋黒文字・枠なし）。赤文字タブー回避＋地色になじむ。 */
-  .my-table .person-chip { display: inline-flex; align-items: center; font-size: 10.5px; font-weight: 500; color: #3C4043; background: none; padding: 0; margin: 1px 7px 1px 0; line-height: 1.5; border-radius: 0; }
+  .my-table .person-chip { display: inline-flex; align-items: center; font-size: 10.5px; font-weight: var(--fw-normal); color: #3C4043; background: none; padding: 0; margin: 1px 7px 1px 0; line-height: 1.5; border-radius: 0; }
   .my-table .pc-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; flex-shrink: 0; }
   /* 自分（me）＝ドットだけ光らせる（ピル背景なし・チップ枠の光彩は無効化） */
-  .my-table .person-chip.my-chip-me { font-weight: 500; color: #3C4043; background: none; padding: 0; border-radius: 0; animation: none; box-shadow: none; }
+  .my-table .person-chip.my-chip-me { font-weight: var(--fw-normal); color: #3C4043; background: none; padding: 0; border-radius: 0; animation: none; box-shadow: none; }
   .my-table .person-chip.my-chip-me .pc-dot { animation: dotGlow 2.8s ease-in-out infinite; }
   @keyframes dotGlow {
     0%, 100% { box-shadow: 0 0 0 0 transparent; }
     50%      { box-shadow: 0 0 4px 0.5px var(--dc, #1A73E8); }
   }
-  .my-table .st-badge { font-size: 9.5px; padding: 1px 7px; line-height: 1.4; }
+  .my-table .st-badge { font-size: 9.5px; padding: 1px 7px; line-height: 1.4; font-weight: var(--fw-normal); }
   .my-table .st-type { font-size: 6px; padding: 1px 4px; }
   /* フォントサイズは3層で統一（Mission の大きさ＝--fs-xs）。ウェイトのみ差を残す */
   .my-table .my-c-name { font-size: var(--fs-xs); }
@@ -1656,7 +1656,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.50.8';
+const APP_VERSION = '0.50.9';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
