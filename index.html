@@ -83,8 +83,6 @@
   body { font-family: var(--font); font-weight: var(--fw-normal); font-size: var(--fs-base); color: #1D1D1F; padding: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
     /* リキッドグラスが透ける下地：淡い青〜緑〜暖色のグラデ（固定） */
     background: linear-gradient(160deg, #EAF2FF 0%, #EAF6F4 32%, #F3F1FA 60%, #FCF3EC 100%) fixed, var(--body-bg); }
-  /* 既定表示は 150%（社内ツール・Chrome 前提の zoom） */
-  body { zoom: 1.5; }
   /* 起動ローディング・オーバーレイ */
   #bootOverlay { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center;
     background: linear-gradient(160deg, #EAF2FF 0%, #EAF6F4 38%, #F3F1FA 70%, #FCF3EC 100%);
@@ -500,7 +498,7 @@
   .conf-edit-del:hover { background: #FCE8E6; color: #C5221F; border-color: #EA4335; }
 
   /* ===== 我的（名前起点メイン画面・2026-06-01 リデザイン P2）===== */
-  #panel-My.active { border-top: 3px solid #1A73E8; }
+  /* My パネルは上部アクセント無し（青ライン撤去） */
   .my-wrap { padding: 14px 16px 40px; max-width: 1040px; margin: 0 auto; }
   .my-who-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
   .my-who-bar .my-who-label { font-size: var(--fs-lg); font-weight: var(--fw-bold); color: #202124; }
@@ -552,10 +550,12 @@
   .my-link:hover { text-decoration: underline; }
   /* 我的：階層テーブル */
   .my-wrap { padding: 10px 12px 40px; max-width: none; }
-  table.my-table { width: 100%; border-collapse: collapse; font-size: var(--fs-xs); table-layout: fixed; }
-  .my-table th { position: sticky; top: 0; z-index: 2; background: #EEF3FA; color: #1F4E8C; padding: 3px 5px; text-align: center; font-weight: var(--fw-bold); border: 1px solid #DCE3EC; border-bottom: 2px solid #1967D2; font-size: var(--fs-2xs); white-space: nowrap; }
+  /* border-collapse:separate にして sticky ヘッダーの枠線が剥がれて裏が透ける現象を防ぐ */
+  table.my-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--fs-xs); table-layout: fixed; background: #fff; }
+  .my-table th { position: sticky; top: 0; z-index: 2; background: #EEF3FA; color: #1F4E8C; padding: 3px 5px; text-align: center; font-weight: var(--fw-bold); border-right: 1px solid #DCE3EC; border-bottom: 2px solid #1967D2; font-size: var(--fs-2xs); white-space: nowrap; }
   .my-table th .ios-sw { margin-left: 5px; }
-  .my-table td { padding: 3px 8px; border: 1px solid #E6EAF0; vertical-align: middle; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .my-table td { padding: 3px 8px; border-right: 1px solid #E6EAF0; border-bottom: 1px solid #E6EAF0; vertical-align: middle; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .my-table th:first-child, .my-table td:first-child { border-left: 1px solid #E6EAF0; }
   /* 行レベルの地色（薄め2色ブルー） */
   .my-table tr.my-row-issue   > td { background: #C8DAF4; } /* Issue=濃いめ */
   .my-table tr.my-row-mission > td { background: #E5EEFB; } /* Mission=薄い */
@@ -1751,7 +1751,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.42.0';
+const APP_VERSION = '0.42.1';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
