@@ -348,10 +348,11 @@
   .ver:hover { background: #D8EAFF; }
   /* ブランド表示（ロゴ右）：タイトル＝League Spartan／サブ＝Noto Sans TC */
   .brand-text { display: flex; flex-direction: column; justify-content: center; line-height: 0.98; gap: 0; }
-  .brand-title { font-family: 'League Spartan', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: 0.005em; color: #111418; }
-  .brand-sub { font-family: 'Noto Sans TC', sans-serif; font-size: 9px; color: #202124; letter-spacing: 0.02em; }
+  .brand-title { font-family: 'League Spartan', sans-serif; font-weight: 800; font-size: 14.4px; letter-spacing: 0.005em; color: #111418; white-space: nowrap; }
+  .brand-sub { font-family: 'Noto Sans TC', sans-serif; font-size: 9px; color: #202124; letter-spacing: 0.02em; white-space: nowrap; display: inline-block; }
   .brand-sub .brand-imt { color: #1A3A6B; font-weight: 600; margin-right: 2px; }
   .ver-admin::before { content: '⚙ '; opacity: 0.85; }
+  .ver-admin { font-size: 9px; padding: 3px 9px; }
 
   /* Issue expand toggle (for missions) */
   .num-cell { position: relative; }
@@ -1760,7 +1761,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.44.0';
+const APP_VERSION = '0.44.1';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
@@ -5579,6 +5580,18 @@ function initColumnResizers() {
   document.querySelectorAll('table.resizable').forEach(attachColumnResizers);
 }
 
+// brand-sub のフォントサイズを縮めて brand-title 幅に収める
+function _fitBrandSub() {
+  const t = document.querySelector('.brand-title');
+  const s = document.querySelector('.brand-sub');
+  if (!t || !s) return;
+  const tw = t.getBoundingClientRect().width;
+  if (!tw) return;
+  let fs = 11; s.style.fontSize = fs + 'px';
+  let guard = 60;
+  while (s.scrollWidth > tw && fs > 4 && guard-- > 0) { fs -= 0.3; s.style.fontSize = fs.toFixed(1) + 'px'; }
+}
+
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', async () => {
   // バージョンバッジを反映（デプロイ確認用）
@@ -5587,6 +5600,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     verEl.textContent = `v${APP_VERSION}`;
     verEl.title = `v${APP_VERSION} · build ${APP_BUILD}\n${APP_NOTE}`;
   }
+  // ② 二行目（brand-sub）を一行目（Cascade Work Hub）の幅に収める
+  _fitBrandSub();
+  window.addEventListener('resize', _fitBrandSub);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(_fitBrandSub);
+  setTimeout(_fitBrandSub, 600);
   // 各タブ（DASHBOARD 以外）のテーブルに列幅ドラッグ調整を付与
   initColumnResizers();
   issueData = parseInitialTable();
