@@ -536,7 +536,7 @@
   /* 我的：階層テーブル */
   .my-wrap { padding: 10px 12px 40px; max-width: none; }
   table.my-table { width: 100%; border-collapse: collapse; font-size: var(--fs-xs); table-layout: fixed; }
-  .my-table th { position: sticky; top: 0; z-index: 2; background: #1967D2; color: #fff; padding: 3px 5px; text-align: center; font-weight: var(--fw-bold); border: 1px solid #185ABC; font-size: var(--fs-2xs); white-space: nowrap; }
+  .my-table th { position: sticky; top: 0; z-index: 2; background: #EEF3FA; color: #1F4E8C; padding: 3px 5px; text-align: center; font-weight: var(--fw-bold); border: 1px solid #DCE3EC; border-bottom: 2px solid #1967D2; font-size: var(--fs-2xs); white-space: nowrap; }
   .my-table th .ios-sw { margin-left: 5px; }
   .my-table td { padding: 3px 8px; border: 1px solid #E6EAF0; vertical-align: middle; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* 行レベルの地色（薄め2色ブルー） */
@@ -1725,7 +1725,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.41.2';
+const APP_VERSION = '0.41.3';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
