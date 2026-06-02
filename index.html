@@ -560,6 +560,12 @@
   table.my-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--fs-xs); table-layout: fixed; background: #fff; }
   .my-table th { position: sticky; top: -1px; z-index: 2; background: #EEF3FA; color: #1F4E8C; padding: 3px 5px; text-align: center; font-weight: var(--fw-bold); border-right: 1px solid #DCE3EC; border-bottom: 1px solid #1967D2; font-size: var(--fs-2xs); white-space: nowrap; box-shadow: 0 -3px 0 #EEF3FA; }
   .my-table th .ios-sw { margin-left: 5px; }
+  /* ヘッダー固定（確実版）：フィルタ行の高さ分だけ下げ、継ぎ目を1px重ねて裏抜けを防止。
+     ID 指定で汎用ルールより優先。ctrl-bar(z6) より下の z5 にして重なり1pxは ctrl-bar が覆う。 */
+  #panel-My .my-table thead th {
+    position: sticky; top: calc(var(--ctrlbar-h, 0px) - 1px); z-index: 5;
+    background: #EEF3FA; box-shadow: inset 0 -1px 0 #1967D2;
+  }
   .my-table td { padding: 3px 8px; border-right: 1px solid #E6EAF0; border-bottom: 1px solid #E6EAF0; vertical-align: middle; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .my-table th:first-child, .my-table td:first-child { border-left: 1px solid #E6EAF0; }
   /* 行レベルの地色（薄め2色ブルー） */
@@ -1646,7 +1652,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.50.4';
+const APP_VERSION = '0.50.5';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
@@ -4893,6 +4899,7 @@ function renderMyView() {
   if (countEl) countEl.textContent = showAll ? `全部 ${totalCount}` : (onlyDri ? `僅我DRI ${driCount}` : `DRI ${mineCount}（含上下層 ${totalCount}）`);
   _myWireColResize();
   _myWire();
+  requestAnimationFrame(updateStickyOffsets); // フィルタ行の高さを測りヘッダー固定位置(--ctrlbar-h)を更新
 }
 
 // ===== イベント委譲（一度だけ配線）=====
