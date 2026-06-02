@@ -85,15 +85,15 @@
     background: linear-gradient(160deg, #EAF2FF 0%, #EAF6F4 32%, #F3F1FA 60%, #FCF3EC 100%) fixed, var(--body-bg); }
   /* 起動ローディング・オーバーレイ */
   #bootOverlay { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; overflow: hidden;
-    background: linear-gradient(160deg, #EAF2FF 0%, #EAF6F4 38%, #F3F1FA 70%, #FCF3EC 100%);
+    background: #EFF3FA;
     transition: opacity .45s ease; }
-  /* ⑤ オーロラ：背景でパステルがゆっくり移ろう */
-  .boot-aurora { position: absolute; inset: -30%; z-index: 0; filter: blur(46px); opacity: .8; pointer-events: none;
+  /* ⑤ オーロラのみ：パステルが画面いっぱいにゆっくり移ろう */
+  .boot-aurora { position: absolute; inset: -30%; z-index: 0; filter: blur(52px); opacity: 1; pointer-events: none;
     background:
-      radial-gradient(40% 40% at 25% 30%, rgba(110,170,255,.85), transparent 60%),
-      radial-gradient(38% 38% at 75% 35%, rgba(150,130,255,.7), transparent 60%),
-      radial-gradient(45% 45% at 60% 75%, rgba(120,215,190,.7), transparent 60%),
-      radial-gradient(40% 40% at 30% 80%, rgba(255,200,170,.6), transparent 60%);
+      radial-gradient(58% 58% at 20% 22%, rgba(110,170,255,.95), transparent 66%),
+      radial-gradient(54% 58% at 82% 30%, rgba(150,130,255,.85), transparent 66%),
+      radial-gradient(62% 62% at 65% 82%, rgba(120,215,190,.85), transparent 66%),
+      radial-gradient(56% 56% at 24% 86%, rgba(255,200,170,.78), transparent 66%);
     animation: bootAurora 9s ease-in-out infinite alternate; }
   @keyframes bootAurora {
     0%   { transform: translate(-4%,-3%) scale(1); }
@@ -1671,7 +1671,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.51.0';
+const APP_VERSION = '0.51.1';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
