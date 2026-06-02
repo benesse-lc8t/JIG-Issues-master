@@ -57,7 +57,7 @@
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.05), 0 1px 1px rgba(0,0,0,0.04);
     --shadow-md: 0 4px 14px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);
     --shadow-lg: 0 12px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
-    --radius-card: 12px;
+    --radius-card: 8px;
     --radius-ctl: 7px;
 
     /* ===== タイポグラフィ・トークン（typography tokens）=====
@@ -104,7 +104,7 @@
   .topbar { display: flex; align-items: center; justify-content: space-between; gap: 14px;
     position: sticky; top: 6px; z-index: 50; padding: 8px 16px; margin-bottom: 8px; overflow: hidden;
     background: rgba(255,255,255,0.55); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
-    border: none; border-radius: 16px; box-shadow: var(--glass-edge), var(--shadow-md); }
+    border: none; border-radius: 10px; box-shadow: var(--glass-edge), var(--shadow-md); }
   /* ⑥ 屈折ハイライト（光源を左上に） */
   .topbar::before { content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; z-index:0;
     background: linear-gradient(135deg, rgba(255,255,255,0.5), rgba(255,255,255,0) 42%); }
@@ -1611,7 +1611,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.48.6';
+const APP_VERSION = '0.48.7';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
