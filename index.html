@@ -1527,10 +1527,6 @@
 <div class="tabs">
   <div class="tab-thumb" id="tabThumb"></div>
   <div class="tab active" onclick="show('My',event)">我的</div>
-  <div class="tab" onclick="show('A',event)">Issue &amp; Mission</div>
-  <div class="tab" onclick="show('C',event)">Mission進度</div>
-  <div class="tab" onclick="show('B',event)">會議議程</div>
-  <div class="tab" onclick="show('F',event)">DASHBOARD</div>
 </div>
 
 <!-- ===== My：我的（名前起点メイン画面・2026-06-01 リデザイン P2） ===== -->
@@ -1567,303 +1563,10 @@
   </div>
 </div>
 
-<!-- ===== A ===== -->
-<div class="panel" id="panel-A">
-<div class="ctrl-bar" id="ctrlBarA">
-  <input type="search" id="searchA" placeholder="🔍 搜尋 Issue / Mission / 擔當 / 組..." autocomplete="off">
-  <select id="filterDeptA"><option value="">處：全部</option></select>
-  <select id="filterGroupA"><option value="">組：全部</option></select>
-  <select id="filterOwnerA"><option value="">擔當：全部</option></select>
-  <span class="ctrl-sep"></span>
-  <button type="button" class="ctrl-clear" id="expandAllA">▶ 全部展開</button>
-  <label><input type="checkbox" id="toggleMtgA">顯示會議欄</label>
-  <span class="ctrl-sep"></span>
-  <label class="ctrl-toggle"><input type="checkbox" class="toggle-closed">顯示結案</label>
-    <span class="ctrl-sep"></span>
-    <button type="button" class="ctrl-clear" id="clearFilterA">清除</button>
-  <span class="ctrl-count" id="filterCountA"></span>
-  <span class="ctrl-spring"></span>
-  <button type="button" class="ctrl-add" id="addEntryBtn" title="新增 Issue／Mission（事務局用）">＋ 新增</button>
-</div>
-<table id="tableA" class="hide-mtg resizable">
-<thead>
-  <tr>
-    <th style="width:74px;">編號</th>
-    <th style="min-width:160px;">Issue / Mission</th>
-    <th style="width:74px;">處</th>
-    <th style="width:74px;">組</th>
-    <th style="width:60px;">擔當</th>
-    <th style="width:60px;">戰略負責人</th>
-    <th style="width:54px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
-    <th class="mtg-col" style="width:110px;">確認會議</th>
-    <th class="mtg-col" style="width:70px;">會議時間</th>
-    <th style="width:74px;">狀態</th>
-    <th style="min-width:140px;">Mission進度</th>
-    <th style="width:64px;">更新</th>
-  </tr>
-</thead>
-<tbody>
-<tr><td colspan="12" style="text-align:center; color:#80868B; padding:20px; font-size:11px;">正在從雲端載入資料…<div class="load-bar"></div></td></tr>
-</tbody>
-</table>
-</div>
-
-<!-- ===== B：會議議程（Mission 専用） ===== -->
-<div class="panel" id="panel-B">
-  <div class="ctrl-bar">
-    <select id="filterDeptB"><option value="">處：全部</option></select>
-    <select id="filterGroupB"><option value="">組：全部</option></select>
-    <select id="filterOwnerB"><option value="">擔當：全部</option></select>
-    <select id="filterStatusB">
-      <option value="">狀態：全部</option>
-      <option value="未開始">未開始</option>
-      <option value="策劃中">策劃中</option>
-      <option value="需確認">需確認</option>
-      <option value="進行中">進行中</option>
-      <option value="結案">結案</option>
-    </select>
-    <select id="filterStaleB">
-      <option value="">更新：全部</option>
-      <option value="14">&gt;14 天無更新</option>
-      <option value="7">8-14 天無更新</option>
-      <option value="fresh">≤7 天</option>
-      <option value="none">未設定</option>
-    </select>
-    <span class="ctrl-sep"></span>
-    <label class="ctrl-toggle"><input type="checkbox" class="toggle-closed">顯示結案</label>
-    <span class="ctrl-sep"></span>
-    <button type="button" class="ctrl-clear" id="clearFilterB">清除</button>
-    <span class="ctrl-count" id="filterCountB"></span>
-  </div>
-  <table class="simple-table resizable">
-    <thead>
-      <tr>
-        <th style="width:160px;">親 Issue</th>
-        <th style="width:88px;">編號</th>
-        <th>Mission</th>
-        <th style="width:76px;">處</th>
-        <th style="width:90px;">組</th>
-        <th style="width:76px;">擔當</th>
-        <th style="min-width:120px;">Mission進度</th>
-        <th style="width:80px;">狀態</th>
-        <th style="width:64px;">更新</th>
-        <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-<!-- ===== C：Mission進度（Mission 専用・インライン編集対応） ===== -->
-<div class="panel" id="panel-C">
-  <div class="ctrl-bar">
-    <select id="filterDeptC"><option value="">處：全部</option></select>
-    <select id="filterGroupC"><option value="">組：全部</option></select>
-    <select id="filterOwnerC"><option value="">擔當：全部</option></select>
-    <select id="filterStatusC">
-      <option value="">狀態：全部</option>
-      <option value="未開始">未開始</option>
-      <option value="策劃中">策劃中</option>
-      <option value="需確認">需確認</option>
-      <option value="進行中">進行中</option>
-      <option value="結案">結案</option>
-    </select>
-    <select id="filterStaleC">
-      <option value="">更新：全部</option>
-      <option value="14">&gt;14 天無更新</option>
-      <option value="7">8-14 天無更新</option>
-      <option value="fresh">≤7 天</option>
-      <option value="none">未設定</option>
-    </select>
-    <span class="ctrl-sep"></span>
-    <label class="ctrl-toggle"><input type="checkbox" class="toggle-closed">顯示結案</label>
-    <span class="ctrl-sep"></span>
-    <button type="button" class="ctrl-clear" id="clearFilterC">清除</button>
-    <span class="ctrl-count" id="filterCountC"></span>
-  </div>
-  <table class="simple-table resizable">
-    <thead>
-      <tr>
-        <th style="width:150px;">親 Issue</th>
-        <th style="width:80px;">編號</th>
-        <th style="width:180px;">Mission</th>
-        <th style="width:100%; min-width:240px;">Mission進度</th>
-        <th style="width:80px;">狀態</th>
-        <th style="width:104px;">更新</th>
-        <th style="width:44px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
-        <th style="width:70px;">處</th>
-        <th style="width:80px;">組</th>
-        <th style="width:70px;">擔當</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-<!-- ===== D：詩雅（Mission 専用） ===== -->
-<div class="panel" id="panel-D">
-  <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    詩雅 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單（關聯 Issue 數見上方摘要）· 上方為「需對應」，其下依<b>處</b>分組 · <svg class="ico" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg> 可直接編輯 · 最右「私的備註」為只給自己看的備忘
-  </div>
-  <div class="ctrl-bar">
-    <select id="filterDeptD"><option value="">處：全部</option></select>
-    <select id="filterGroupD"><option value="">組：全部</option></select>
-    <select id="filterRoleD">
-      <option value="">角色：全部</option>
-      <option value="owner">擔當</option>
-      <option value="strategic">戰略負責人</option>
-      <option value="both">兩者</option>
-    </select>
-    <select id="filterStatusD">
-      <option value="">狀態：全部</option>
-      <option value="未開始">未開始</option>
-      <option value="策劃中">策劃中</option>
-      <option value="需確認">需確認</option>
-      <option value="進行中">進行中</option>
-      <option value="結案">結案</option>
-    </select>
-    <select id="filterStaleD">
-      <option value="">更新：全部</option>
-      <option value="14">&gt;14 天無更新</option>
-      <option value="7">8-14 天無更新</option>
-      <option value="fresh">≤7 天</option>
-      <option value="none">未設定</option>
-    </select>
-    <span class="ctrl-sep"></span>
-    <label class="ctrl-toggle"><input type="checkbox" class="toggle-closed">顯示結案</label>
-    <label class="ctrl-toggle"><input type="checkbox" id="filterImportantD"><svg class="ico" viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg> 只看重要</label>
-    <button type="button" class="ctrl-clear" id="importantListD"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg> 重要清單</button>
-    <span class="ctrl-sep"></span>
-    <button type="button" class="ctrl-clear" id="clearFilterD">清除</button>
-    <span class="ctrl-count" id="filterCountD"></span>
-  </div>
-  <table class="simple-table resizable">
-    <thead>
-      <tr>
-        <th style="width:160px;">親 Issue</th>
-        <th style="width:88px;">編號</th>
-        <th>Mission</th>
-        <th style="width:76px;">處</th>
-        <th style="width:90px;">組</th>
-        <th style="width:110px;">角色</th>
-        <th style="min-width:140px;">Mission進度</th>
-        <th style="width:80px;">狀態</th>
-        <th style="width:64px;">更新</th>
-        <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
-        <th style="width:62px;" title="重要 / 私的備註 / 小沼留言"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg></th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-<!-- ===== E：育菱（Mission 専用） ===== -->
-<div class="panel" id="panel-E">
-  <div style="padding:10px 14px; background:var(--hdr-bg); border-bottom:1px solid var(--border); font-size:11px; color:var(--g-grey);">
-    育菱 為 <b>擔當</b> 或 <b>戰略負責人</b> 的 <b>Mission</b> 清單（關聯 Issue 數見上方摘要）· 上方為「需對應」，其下依<b>處</b>分組 · <svg class="ico" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg> 可直接編輯 · 最右「私的備註」為只給自己看的備忘
-  </div>
-  <div class="ctrl-bar">
-    <select id="filterDeptE"><option value="">處：全部</option></select>
-    <select id="filterGroupE"><option value="">組：全部</option></select>
-    <select id="filterRoleE">
-      <option value="">角色：全部</option>
-      <option value="owner">擔當</option>
-      <option value="strategic">戰略負責人</option>
-      <option value="both">兩者</option>
-    </select>
-    <select id="filterStatusE">
-      <option value="">狀態：全部</option>
-      <option value="未開始">未開始</option>
-      <option value="策劃中">策劃中</option>
-      <option value="需確認">需確認</option>
-      <option value="進行中">進行中</option>
-      <option value="結案">結案</option>
-    </select>
-    <select id="filterStaleE">
-      <option value="">更新:全部</option>
-      <option value="14">&gt;14 天無更新</option>
-      <option value="7">8-14 天無更新</option>
-      <option value="fresh">≤7 天</option>
-      <option value="none">未設定</option>
-    </select>
-    <span class="ctrl-sep"></span>
-    <label class="ctrl-toggle"><input type="checkbox" class="toggle-closed">顯示結案</label>
-    <label class="ctrl-toggle"><input type="checkbox" id="filterImportantE"><svg class="ico" viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg> 只看重要</label>
-    <button type="button" class="ctrl-clear" id="importantListE"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg> 重要清單</button>
-    <span class="ctrl-sep"></span>
-    <button type="button" class="ctrl-clear" id="clearFilterE">清除</button>
-    <span class="ctrl-count" id="filterCountE"></span>
-  </div>
-  <table class="simple-table resizable">
-    <thead>
-      <tr>
-        <th style="width:160px;">親 Issue</th>
-        <th style="width:88px;">編號</th>
-        <th>Mission</th>
-        <th style="width:76px;">處</th>
-        <th style="width:90px;">組</th>
-        <th style="width:110px;">角色</th>
-        <th style="min-width:140px;">Mission進度</th>
-        <th style="width:80px;">狀態</th>
-        <th style="width:64px;">更新</th>
-        <th style="width:34px;"><span class="conf-th-icon" title="Confluence 頁面"></span></th>
-        <th style="width:62px;" title="重要 / 私的備註 / 小沼留言"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 17.3l5.15 3.1-1.37-5.86 4.55-3.94-6-.51L12 4.5 9.67 10.1l-6 .51 4.55 3.94-1.37 5.86z"/></svg></th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-<!-- ===== F：DASHBOARD（Mission 専用） ===== -->
-<div class="panel" id="panel-F">
-  <div class="dash-container">
-
-    <!-- 1. Pipeline 可視化（横スタックバー） -->
-    <div class="dash-section">
-      <h3>Mission Pipeline — 全 Mission の進度分布</h3>
-      <div class="dash-pipeline" id="dashPipeline"></div>
-    </div>
-
-    <!-- 2. 健康指標 -->
-    <div class="dash-section">
-      <h3>健康指標</h3>
-      <div class="dash-grid dash-grid-kpi">
-        <div class="dash-card dash-blue">
-          <div class="dash-num" id="kpiTotal">-</div>
-          <div class="dash-label">Mission 總數</div>
-        </div>
-        <div class="dash-card dash-yellow">
-          <div class="dash-num" id="kpiActiveRate">-</div>
-          <div class="dash-label">活躍率（進行+結案 ÷ 總數）</div>
-        </div>
-        <div class="dash-card dash-green">
-          <div class="dash-num" id="kpiClosedRate">-</div>
-          <div class="dash-label">結案率</div>
-        </div>
-        <div class="dash-card dash-red">
-          <div class="dash-num" id="kpiStaleRate">-</div>
-          <div class="dash-label">停滯率（&gt;14 天 ÷ 總數）</div>
-        </div>
-        <div class="dash-card dash-grey">
-          <div class="dash-num" id="kpiNoOwner">-</div>
-          <div class="dash-label">擔當未割当</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. 須關注：停滞 Top 10 -->
-    <div class="dash-section">
-      <h3>須關注 — 停滯 Top 10（更新日が古い順）</h3>
-      <div class="dash-list" id="dashStalledList"></div>
-    </div>
-
-    <!-- 4. 最近活躍 Top 10 -->
-    <div class="dash-section">
-      <h3>最近活躍 — 直近 10 件（更新日が新しい順）</h3>
-      <div class="dash-list" id="dashActiveList"></div>
-    </div>
-  </div>
-</div>
+<!-- ===== 旧タブ撤去（2026-06-02）：A=Issue&Mission / B=會議議程 / C=Mission進度 /
+     D=詩雅 / E=育菱 / F=DASHBOARD の各パネルを削除し、メイン画面を「我的（My Work）」へ一本化。
+     これらが参照していたレガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）は
+     稼働コードから外れたため、スプレッドシート側で削除可能。対照は docs/data-dictionary.md。 -->
 
 <!-- ===== Admin：資料來源 Console（タブ行には出さず、⚙ ボタンから開く） ===== -->
 <div class="panel" id="panel-Admin">
@@ -1905,28 +1608,28 @@
       </div>
     </div>
 
-    <button type="button" class="ssm-toggle" id="ssmToggle" title="展開" onclick="this.classList.toggle('open');document.getElementById('ssmBox').classList.toggle('open')">▶</button>
-    <div class="ssm-box" id="ssmBox">
-      <button type="button" class="person-btn btn-shiya" onclick="show('D',event)" title="詩雅"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>詩雅</span></button>
-      <button type="button" class="person-btn btn-yuling" onclick="show('E',event)" title="育菱"><svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>育菱</span></button>
-    </div>
+    <!-- 詩雅/育菱（旧 Tab D/E）の呼び出しは 2026-06-02 の旧タブ撤去で削除。
+         俯瞰/管理ビューは P3 で My Work ベースに作り直す予定。 -->
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.47.0';
-const APP_BUILD = '2026-06-01';
-const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
+const APP_VERSION = '0.48.0';
+const APP_BUILD = '2026-06-02';
+const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
 // ===== Tab switch =====
 function show(id, e) {
+  // 撤去済みパネル（旧 A/B/C/D/E/F）への切替要求は無視（DOM が無いため null 安全に）。
+  const target = document.getElementById('panel-' + id);
+  if (!target) return;
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab, .person-btn').forEach(t => t.classList.remove('active'));
   const admin = document.getElementById('verBadge');
   if (admin) admin.classList.remove('active');
-  document.getElementById('panel-' + id).classList.add('active');
+  target.classList.add('active');
   if (e && e.target) {
     e.target.classList.add('active');
   } else {
@@ -5309,15 +5012,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function renderAll() {
   _personDeptMap = buildPersonDeptMap(); // 人物チップ配色キャッシュを更新
   renderAnnounceBoard();                 // お知らせボード
-  renderMyView();                        // 我的（名前起点メイン画面）
-  renderTableA();
-  renderTableB();
-  renderTableC();
-  renderPersonView('D', '詩雅');
-  renderPersonView('E', '育菱');
-  renderTabF();
-  wireClosedToggles();
-  wireTabCEditing();
+  renderMyView();                        // 我的（名前起点メイン画面・唯一のメインビュー）
+  // 旧タブ（A/B/C/D/E/F）は 2026-06-02 に撤去。描画は My Work に一本化。
   updateStickyOffsets();
 }
 
@@ -5341,7 +5037,9 @@ function rowsToData(rows) {
     if (i < 0 && c === '管理頁面') i = headers.findIndex(h => h.startsWith('管理頁面'));
     colIdx[c] = i;
   });
-  const required = ['區分','軸','編號','Issue'];
+  // 區分/軸 は旧タブ撤去（2026-06-02）で不要になったため必須から除外。
+  // 列がシートから削除されても読込が止まらないよう、編號/Issue のみ必須。
+  const required = ['編號','Issue'];
   const missing = required.filter(c => colIdx[c] < 0);
   if (missing.length) throw new Error('缺少必要欄位：' + missing.join(', '));
 
@@ -5350,7 +5048,7 @@ function rowsToData(rows) {
   for (let r = hIdx + 1; r < rows.length; r++) {
     const row = rows[r];
     if (!row || row.every(v => v === '' || v == null)) continue;
-    const gRaw = String(row[colIdx['區分']] || '').trim();
+    const gRaw = colIdx['區分'] >= 0 ? String(row[colIdx['區分']] || '').trim() : '';
     if (gRaw) lastGroup = gRaw;
     const obj = {};
     allCols.forEach(c => {
