@@ -1916,7 +1916,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.46.2';
+const APP_VERSION = '0.46.3';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
@@ -5013,6 +5013,7 @@ function renderMyView() {
   const tasksByParent = window.tasksByParent || {};
   const isClosed = s => CLOSED_STATES.has(normalizeStatus(s));
   const issues = issueData.filter(r => (r['種別'] || 'Issue') !== 'Mission');
+  window._myIssuesRendered = issues; // 編號重複でも“その行”を直接開くための参照
   const missionsByParent = {};
   issueData.filter(r => r['種別'] === 'Mission').forEach(m => {
     const p = (m['親編號'] || '').trim();
@@ -5051,7 +5052,7 @@ function renderMyView() {
     // Issue 行
     rows += `<tr class="my-row my-row-issue${issMine ? ' my-mine' : ''}" data-kind="issue" data-id="${escapeAttr(inum)}">`
       + `<td class="my-c-no">${_myDispNo(ii, null, null)}</td>`
-      + `<td class="my-c-name my-c-item my-name lvl-0" data-kind="issue" data-id="${escapeAttr(inum)}" title="Click: definition / edit"><span class="my-lvl-badge lv-i">I</span>${issMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(iss['Issue'] || '')}<span class="my-add my-add-m" data-id="${escapeAttr(inum)}" title="Add Mission">＋M</span></td>`
+      + `<td class="my-c-name my-c-item my-name lvl-0" data-kind="issue" data-id="${escapeAttr(inum)}" data-iref="${ii}" title="Click: definition / edit"><span class="my-lvl-badge lv-i">I</span>${issMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(iss['Issue'] || '')}<span class="my-add my-add-m" data-id="${escapeAttr(inum)}" title="Add Mission">＋M</span></td>`
       + `<td class="my-c-dri">${_myChips(iss['擔當'])}</td>`
       + _myLinkCell(iss['Confluence URL'], inum, 'issue')
       + `<td class="my-c-folder"></td>`
@@ -5133,7 +5134,7 @@ function _myWire() {
     if (addT) { e.stopPropagation(); await _myAddTask(addT.dataset.id); return; }
     const nm = e.target.closest('.my-name');
     if (nm) {
-      if (nm.dataset.kind === 'issue') openIssueModal('edit', nm.dataset.id);
+      if (nm.dataset.kind === 'issue') openIssueModal('edit', nm.dataset.id, nm.dataset.iref);
       else if (typeof openEditEntryModal === 'function') openEditEntryModal(nm.dataset.kind, nm.dataset.id);
       return;
     }
@@ -5812,11 +5813,17 @@ function _imViews() {
   set('imDefView', document.getElementById('imDef').value.trim(), 'Issue Definition');
   set('imProgView', '', 'Progress'); // Progress は常に新規記入（履歴は下に表示）
 }
-function openIssueModal(mode, id) {
-  _imMode = mode; _imId = (id || '').trim();
+function openIssueModal(mode, id, iref) {
+  _imMode = mode;
   ['imDri', 'imCollab', 'imSup', 'imAuthor'].forEach(setupNamePicker);
   _imBuildStatusMenu();
-  const row = (mode === 'edit') ? _myFindIssue(_imId) : null;
+  // 編集は“クリックした行”を直接参照（編號重複/空でも正しい行を開く）
+  let row = null;
+  if (mode === 'edit') {
+    const arr = window._myIssuesRendered || [];
+    row = (iref != null && arr[+iref]) ? arr[+iref] : _myFindIssue((id || '').trim());
+    _imId = row ? (row['編號'] || '').trim() : (id || '').trim();
+  } else { _imId = ''; }
   document.getElementById('imName').value = row ? (row['Issue'] || '') : '';
   document.getElementById('imDef').value = row ? (row['Issue定義'] || '') : '';
   document.getElementById('imProg').value = '';
