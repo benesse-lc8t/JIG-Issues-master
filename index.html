@@ -1393,55 +1393,55 @@
       <span class="im-badge">I</span>
       <span class="im-title" id="imTitle">+add Issue #</span>
       <span class="np-wrap im-author-hd">
-        <button type="button" class="author-trigger np-trigger is-placeholder" id="imAuthorTrigger" data-placeholder="Author"></button>
-        <div class="author-menu np-menu" id="imAuthorMenu"><input type="text" class="author-menu-search" id="imAuthorSearch" placeholder="search…"><div class="author-menu-chips" id="imAuthorChips"></div></div>
+        <button type="button" class="author-trigger np-trigger is-placeholder" id="imAuthorTrigger" data-placeholder="記錄者"></button>
+        <div class="author-menu np-menu" id="imAuthorMenu"><input type="text" class="author-menu-search" id="imAuthorSearch" placeholder="搜尋…"><div class="author-menu-chips" id="imAuthorChips"></div></div>
       </span>
       <span class="np-wrap im-status" id="imStatusWrap">
-        <button type="button" class="im-status-trigger np-trigger" id="imStatusTrigger">Status ▾</button>
+        <button type="button" class="im-status-trigger np-trigger" id="imStatusTrigger">狀態 ▾</button>
         <div class="author-menu np-menu im-status-menu" id="imStatusMenu"></div>
       </span>
       <button type="button" class="im-close" id="imClose" title="取消（Esc）">×</button>
     </div>
     <div class="im-body">
       <div class="im-ef" data-f="name">
-        <div class="im-ef-view"><span class="im-ef-val im-ef-ph" id="imNameView">Issue名稱</span><button type="button" class="im-ef-pen" data-f="name" title="edit">✎</button></div>
+        <div class="im-ef-view"><span class="im-ef-val im-ef-ph" id="imNameView">Issue名稱</span><button type="button" class="im-ef-pen" data-f="name" title="編輯">✎</button></div>
         <input type="text" class="im-ef-in im-inp" id="imName" maxlength="120" placeholder="Issue名稱">
       </div>
       <div class="im-ef" data-f="def">
-        <div class="im-ef-view"><span class="im-ef-val im-ef-ph" id="imDefView">Issue定義</span><button type="button" class="im-ef-pen" data-f="def" title="edit">✎</button></div>
+        <div class="im-ef-view"><span class="im-ef-val im-ef-ph" id="imDefView">Issue定義</span><button type="button" class="im-ef-pen" data-f="def" title="編輯">✎</button></div>
         <textarea class="im-ef-in im-inp" id="imDef" rows="3" placeholder="Issue定義"></textarea>
       </div>
       <div class="im-people">
         <div><label>DRI</label>
           <span class="np-wrap"><button type="button" class="author-trigger np-trigger is-placeholder" id="imDriTrigger" data-placeholder=""></button>
-            <div class="author-menu np-menu" id="imDriMenu"><input type="text" class="author-menu-search" id="imDriSearch" placeholder="search…"><div class="author-menu-chips" id="imDriChips"></div></div></span>
+            <div class="author-menu np-menu" id="imDriMenu"><input type="text" class="author-menu-search" id="imDriSearch" placeholder="搜尋…"><div class="author-menu-chips" id="imDriChips"></div></div></span>
         </div>
-        <div><label>Collaborator</label>
+        <div><label>協作</label>
           <span class="np-wrap"><button type="button" class="author-trigger np-trigger is-placeholder" id="imCollabTrigger" data-placeholder=""></button>
-            <div class="author-menu np-menu" id="imCollabMenu"><input type="text" class="author-menu-search" id="imCollabSearch" placeholder="search…"><div class="author-menu-chips" id="imCollabChips"></div></div></span>
+            <div class="author-menu np-menu" id="imCollabMenu"><input type="text" class="author-menu-search" id="imCollabSearch" placeholder="搜尋…"><div class="author-menu-chips" id="imCollabChips"></div></div></span>
         </div>
-        <div><label>Supporter</label>
+        <div><label>戰略支援</label>
           <span class="np-wrap"><button type="button" class="author-trigger np-trigger is-placeholder" id="imSupTrigger" data-placeholder=""></button>
-            <div class="author-menu np-menu" id="imSupMenu"><input type="text" class="author-menu-search" id="imSupSearch" placeholder="search…"><div class="author-menu-chips" id="imSupChips"></div></div></span>
+            <div class="author-menu np-menu" id="imSupMenu"><input type="text" class="author-menu-search" id="imSupSearch" placeholder="搜尋…"><div class="author-menu-chips" id="imSupChips"></div></div></span>
         </div>
       </div>
       <div class="im-ef" data-f="prog">
-        <div class="im-ef-view"><span class="im-ef-val im-ef-ph" id="imProgView">Progress</span><button type="button" class="im-ef-pen" data-f="prog" title="edit">✎</button></div>
-        <input type="text" class="im-ef-in im-inp" id="imProg" maxlength="200" placeholder="Progress">
+        <div class="im-ef-view"><span class="im-ef-val im-ef-ph" id="imProgView">進度</span><button type="button" class="im-ef-pen" data-f="prog" title="編輯">✎</button></div>
+        <input type="text" class="im-ef-in im-inp" id="imProg" maxlength="200" placeholder="進度">
       </div>
-      <div class="im-sect">Link</div>
+      <div class="im-sect">連結</div>
       <div id="imLinks"></div>
       <a class="im-addurl" id="imAddUrl">＋add_URL</a>
       <div class="im-history-wrap" id="imHistoryWrap" style="display:none;">
-        <div class="im-sect">Progress History</div>
+        <div class="im-sect">歷來記錄</div>
         <div class="im-history" id="imHistory"></div>
       </div>
     </div>
     <div class="im-foot">
       <span class="im-hint">Ctrl + Enter 儲存 ／ Esc 取消</span>
       <span class="im-foot-sp"></span>
-      <button type="button" class="im-cancel" id="imCancel">cancel</button>
-      <button type="button" class="im-primary" id="imSave">+add Issue</button>
+      <button type="button" class="im-cancel" id="imCancel">取消</button>
+      <button type="button" class="im-primary" id="imSave">新增 Issue</button>
     </div>
   </div>
 </div>
@@ -1526,7 +1526,7 @@
 
 <div class="tabs">
   <div class="tab-thumb" id="tabThumb"></div>
-  <div class="tab active" onclick="show('My',event)">My Work</div>
+  <div class="tab active" onclick="show('My',event)">我的</div>
   <div class="tab" onclick="show('A',event)">Issue &amp; Mission</div>
   <div class="tab" onclick="show('C',event)">Mission進度</div>
   <div class="tab" onclick="show('B',event)">會議議程</div>
@@ -1545,20 +1545,20 @@
       </div>
     </span>
     <span class="ctrl-sep"></span>
-    <label class="my-slide"><span>Only my DRI</span><span class="ios-sw"><input type="checkbox" id="myOnlyDri"><span class="ios-track"></span></span></label>
-    <label class="my-slide"><span>Show all</span><span class="ios-sw"><input type="checkbox" id="myShowAll" checked><span class="ios-track"></span></span></label>
-    <label class="my-slide"><span>Show closed</span><span class="ios-sw"><input type="checkbox" id="myShowClosed"><span class="ios-track"></span></span></label>
+    <label class="my-slide"><span>僅我負責</span><span class="ios-sw"><input type="checkbox" id="myOnlyDri"><span class="ios-track"></span></span></label>
+    <label class="my-slide"><span>顯示全部</span><span class="ios-sw"><input type="checkbox" id="myShowAll" checked><span class="ios-track"></span></span></label>
+    <label class="my-slide"><span>顯示結案</span><span class="ios-sw"><input type="checkbox" id="myShowClosed"><span class="ios-track"></span></span></label>
     <span class="ctrl-sep"></span>
-    <span class="my-lv-label">Columns</span>
+    <span class="my-lv-label">層級</span>
     <label class="my-slide"><span>Issue</span><span class="ios-sw"><input type="checkbox" id="myLvIssue" checked><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>Mission</span><span class="ios-sw"><input type="checkbox" id="myLvMission" checked><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>Task</span><span class="ios-sw"><input type="checkbox" id="myLvTask" checked><span class="ios-track"></span></span></label>
     <button type="button" class="my-reset-col" id="myAddIssue">＋ Issue</button>
-    <button type="button" class="my-reset-col" id="myResetCol">Reset columns</button>
+    <button type="button" class="my-reset-col" id="myResetCol">重設欄寬</button>
     <span class="ctrl-count" id="myCount"></span>
   </div>
   <div class="my-wrap" id="myWrap">
-    <div class="my-empty">Select your DRI name above to see your Issues / Missions / Tasks.</div>
+    <div class="my-empty">請先在上方選擇你的 DRI 名字，以顯示與你相關的 Issue／Mission／Task。</div>
   </div>
   <!-- 各行のDRI/協作/戰略組擔當セル編集用：共有チップピッカー（モーダルと同仕様） -->
   <div class="author-menu np-menu my-cell-pop" id="myCellMenu">
@@ -1916,7 +1916,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.46.3';
+const APP_VERSION = '0.47.0';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
@@ -5005,7 +5005,7 @@ function renderMyView() {
   const showClosed = !!document.getElementById('myShowClosed')?.checked;
   const countEl = document.getElementById('myCount');
   if (!who && !showAll) {
-    wrap.innerHTML = '<div class="my-empty">Select your DRI name above to show your items (with up/down context), or turn on “Show all”.</div>';
+    wrap.innerHTML = '<div class="my-empty">請先在上方選擇你的 DRI 名字，以顯示「你負責（含上下層）」的項目；或開啟「顯示全部」。</div>';
     if (countEl) countEl.textContent = '';
     _myWire();
     return;
@@ -5052,7 +5052,7 @@ function renderMyView() {
     // Issue 行
     rows += `<tr class="my-row my-row-issue${issMine ? ' my-mine' : ''}" data-kind="issue" data-id="${escapeAttr(inum)}">`
       + `<td class="my-c-no">${_myDispNo(ii, null, null)}</td>`
-      + `<td class="my-c-name my-c-item my-name lvl-0" data-kind="issue" data-id="${escapeAttr(inum)}" data-iref="${ii}" title="Click: definition / edit"><span class="my-lvl-badge lv-i">I</span>${issMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(iss['Issue'] || '')}<span class="my-add my-add-m" data-id="${escapeAttr(inum)}" title="Add Mission">＋M</span></td>`
+      + `<td class="my-c-name my-c-item my-name lvl-0" data-kind="issue" data-id="${escapeAttr(inum)}" data-iref="${ii}" title="點擊：定義／編輯"><span class="my-lvl-badge lv-i">I</span>${issMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(iss['Issue'] || '')}<span class="my-add my-add-m" data-id="${escapeAttr(inum)}" title="新增 Mission">＋M</span></td>`
       + `<td class="my-c-dri">${_myChips(iss['擔當'])}</td>`
       + _myLinkCell(iss['Confluence URL'], inum, 'issue')
       + `<td class="my-c-folder"></td>`
@@ -5069,7 +5069,7 @@ function renderMyView() {
       const mn = +((String(mid).match(/-M(\d+)/) || [])[1]) || 0;
       rows += `<tr class="my-row my-row-mission${mb.mMine ? ' my-mine' : ''}" data-kind="mission" data-id="${escapeAttr(mid)}">`
         + `<td class="my-c-no">${_myDispNo(ii, mn, null)}</td>`
-        + `<td class="my-c-name my-c-item my-name lvl-1" data-kind="mission" data-id="${escapeAttr(mid)}" title="Click: definition / edit"><span class="my-lvl-badge lv-m">M</span>${mb.mMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(mb.m['Mission'] || mb.m['Issue'] || '')}<span class="my-add my-add-t" data-id="${escapeAttr(mid)}" title="Add Task">＋T</span></td>`
+        + `<td class="my-c-name my-c-item my-name lvl-1" data-kind="mission" data-id="${escapeAttr(mid)}" title="點擊：定義／編輯"><span class="my-lvl-badge lv-m">M</span>${mb.mMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(mb.m['Mission'] || mb.m['Issue'] || '')}<span class="my-add my-add-t" data-id="${escapeAttr(mid)}" title="新增 Task">＋T</span></td>`
         + `<td class="my-c-dri">${_myChips(mb.m['擔當'])}</td>`
         + _myLinkCell(mb.m['Confluence URL自身'] || mb.m['Confluence URL'], mid, 'mission')
         + `<td class="my-c-folder"></td>`
@@ -5085,7 +5085,7 @@ function renderMyView() {
         const tn = +((String(tid).match(/-[KT](\d+)/) || [])[1]) || 0;
         rows += `<tr class="my-row my-row-task${tr.tMine ? ' my-mine' : ''}" data-kind="task" data-id="${escapeAttr(tid)}">`
           + `<td class="my-c-no">${_myDispNo(ii, mn, tn)}</td>`
-          + `<td class="my-c-name my-c-item my-task-name lvl-2" data-id="${escapeAttr(tid)}" title="Double-click to rename"><span class="my-lvl-badge lv-t">T</span>${tr.tMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(tr.t['Task'] || '')}</td>`
+          + `<td class="my-c-name my-c-item my-task-name lvl-2" data-id="${escapeAttr(tid)}" title="點兩下改名"><span class="my-lvl-badge lv-t">T</span>${tr.tMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(tr.t['Task'] || '')}</td>`
           + `<td class="my-c-dri">${_myChips(tr.t['DRI'])}</td>`
           + _myLinkCell(tr.t['連結'], tid, 'task')
           + `<td class="my-c-folder"></td>`
@@ -5100,7 +5100,7 @@ function renderMyView() {
     });
   });
 
-  if (!rows) rows = `<tr><td colspan="10" class="my-empty">No matching items${showAll ? '' : ' (try “Show all”)'}.</td></tr>`;
+  if (!rows) rows = `<tr><td colspan="10" class="my-empty">沒有符合的項目${showAll ? '' : '（試試「顯示全部」）'}。</td></tr>`;
   const LV = window._myLevelShow;
   const onlyDri = !!document.getElementById('myOnlyDri')?.checked;
   const tcls = 'my-table' + (LV.issue === false ? ' hide-issue' : '') + (LV.mission === false ? ' hide-mission' : '') + (LV.task === false ? ' hide-task' : '') + (onlyDri ? ' only-dri' : '');
@@ -5109,10 +5109,10 @@ function renderMyView() {
   wrap.innerHTML = `<table class="${tcls}">`
     + `<colgroup>${cols}</colgroup>`
     + `<thead><tr>`
-    + `<th>NO.${rz}</th><th>IMT${rz}</th><th>DRI${rz}</th><th>Link${rz}</th><th>folder${rz}</th>`
-    + `<th>Status${rz}</th><th>Progress${rz}</th><th>Collaborator${rz}</th><th>Supporter${rz}</th><th>Updated${rz}</th>`
+    + `<th>NO.${rz}</th><th>IMT${rz}</th><th>DRI${rz}</th><th>連結${rz}</th><th>資料夾${rz}</th>`
+    + `<th>狀態${rz}</th><th>進度${rz}</th><th>協作${rz}</th><th>戰略支援${rz}</th><th>更新日${rz}</th>`
     + `</tr></thead><tbody>${rows}</tbody></table>`;
-  if (countEl) countEl.textContent = showAll ? `All ${totalCount}` : (onlyDri ? `My DRI ${mineCount}` : `DRI ${mineCount} (with context ${totalCount})`);
+  if (countEl) countEl.textContent = showAll ? `全部 ${totalCount}` : (onlyDri ? `僅我負責 ${mineCount}` : `DRI ${mineCount}（含上下層 ${totalCount}）`);
   _myWireColResize();
   _myWire();
 }
@@ -5775,8 +5775,8 @@ function _imRenderLinks(rows) {
     const saved = (r.url || '').trim() ? ' im-lk-saved' : ''; // ⑥ 保存済みは地色
     return `<div class="im-link-row${saved}"><select class="im-lk-type">${opts}</select>`
       + `<input type="text" class="im-lk-url" value="${escapeAttr(r.url || '')}" placeholder="https://…">`
-      + `<button type="button" class="im-lk-open" title="open">↗</button>`
-      + `<button type="button" class="im-lk-del" title="delete">×</button></div>`;
+      + `<button type="button" class="im-lk-open" title="開啟">↗</button>`
+      + `<button type="button" class="im-lk-del" title="刪除">×</button></div>`;
   }).join('');
 }
 function _imCollectLinks() {
@@ -5792,7 +5792,7 @@ function _imBuildStatusMenu() {
 }
 function _imSetStatus(v) {
   _imStatus = v || '';
-  document.getElementById('imStatusTrigger').innerHTML = v ? statusBadge(v, false) + ' ▾' : '<span class="im-st-ph">Status</span> ▾';
+  document.getElementById('imStatusTrigger').innerHTML = v ? statusBadge(v, false) + ' ▾' : '<span class="im-st-ph">狀態</span> ▾';
 }
 function _imRenderHistory(id) {
   const wrap = document.getElementById('imHistoryWrap'), box = document.getElementById('imHistory');
@@ -5809,9 +5809,9 @@ function _imSetEf(f, editing) {
 function _imViews() {
   // ロック表示（view）のテキストを入力値から更新。空なら欄名を淡色で。
   const set = (id, val, ph) => { const el = document.getElementById(id); el.textContent = val || ph; el.classList.toggle('im-ef-ph', !val); };
-  set('imNameView', document.getElementById('imName').value.trim(), 'Issue Name');
-  set('imDefView', document.getElementById('imDef').value.trim(), 'Issue Definition');
-  set('imProgView', '', 'Progress'); // Progress は常に新規記入（履歴は下に表示）
+  set('imNameView', document.getElementById('imName').value.trim(), 'Issue名稱');
+  set('imDefView', document.getElementById('imDef').value.trim(), 'Issue定義');
+  set('imProgView', '', '進度'); // Progress は常に新規記入（履歴は下に表示）
 }
 function openIssueModal(mode, id, iref) {
   _imMode = mode;
@@ -5833,8 +5833,8 @@ function openIssueModal(mode, id, iref) {
   resetNamePicker('imAuthor', (typeof _myGetWho === 'function' ? _myGetWho() : ''), false); // 記入者の既定＝My Work で選択中の名前
   _imSetStatus(row ? normalizeStatus(row['狀態']) : ''); // 新規は空欄
   _imRenderLinks(row ? _imParseLinks(row['Confluence URL']) : [{ type: '', url: '' }]);
-  document.getElementById('imTitle').textContent = (mode === 'edit') ? `Issue ${_imIssueDispNo(_imId)}` : 'add Issue #(auto)';
-  document.getElementById('imSave').textContent = (mode === 'edit') ? 'Update' : '+add Issue';
+  document.getElementById('imTitle').textContent = (mode === 'edit') ? `Issue ${_imIssueDispNo(_imId)}` : '新增 Issue';
+  document.getElementById('imSave').textContent = (mode === 'edit') ? '更新' : '新增 Issue';
   // 差分判定用の元値
   _imOrig = {
     'Issue': row ? (row['Issue'] || '') : '', 'Issue定義': row ? (row['Issue定義'] || '') : '',
@@ -5858,7 +5858,7 @@ function closeIssueModal() {
 }
 async function _imSave() {
   const name = document.getElementById('imName').value.trim();
-  if (!name) { toast('Issue name is required', 'error'); return; }
+  if (!name) { toast('請輸入 Issue 名稱', 'error'); return; }
   const btn = document.getElementById('imSave');
   btn.disabled = true; btn.classList.add('is-saving'); // ラベル・サイズは保持
   const author = namePickValue('imAuthor');
@@ -5883,7 +5883,7 @@ async function _imSave() {
   }
   btn.disabled = false; btn.classList.remove("is-saving");
   if (!data) return;
-  toast(_imMode === 'edit' ? `Updated: ${data['編號'] || _imId}` : `Added Issue: ${data['編號'] || ''}`, 'success');
+  toast(_imMode === 'edit' ? `已更新：${data['編號'] || _imId}` : `已新增 Issue：${data['編號'] || ''}`, 'success');
   closeIssueModal();
   await loadFromSheet();
 }
