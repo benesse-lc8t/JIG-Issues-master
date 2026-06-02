@@ -1524,10 +1524,8 @@
   </div>
 </div>
 
-<div class="tabs">
-  <div class="tab-thumb" id="tabThumb"></div>
-  <div class="tab active" onclick="show('My',event)">我的</div>
-</div>
+<!-- 旧タブバーは 2026-06-02 に撤去。メインビューは「我的（My Work）」のみで、
+     panel-My は既定 active で表示。管理者 Console は右上 ⚙ バッジから開く。 -->
 
 <!-- ===== My：我的（名前起点メイン画面・2026-06-01 リデザイン P2） ===== -->
 <div class="panel active" id="panel-My">
@@ -1571,10 +1569,11 @@
 <!-- ===== Admin：資料來源 Console（タブ行には出さず、⚙ ボタンから開く） ===== -->
 <div class="panel" id="panel-Admin">
   <div class="console">
+    <button type="button" class="btn" onclick="show('My')" style="margin-bottom:12px;">← 返回 我的</button>
     <h2>Issue管理主檔 — 資料來源</h2>
     <div class="desc">
       本頁的所有資料皆來自共用的 <b>Google 試算表</b>。在試算表中新增或修改 Issue 後，重新整理本頁（或按下方按鈕）即可讓全員看到最新內容。<br>
-      試算表欄位順序：<code>區分 / 軸 / 編號 / Issue / Issue短縮 / 處 / 組 / 擔當 / 戰略負責人 / 管理頁面(JIG-組名) / 確認會議 / 會議時間 / Confluence URL / 狀態 / 事務局備註 / 更新日</code>
+      <code>Issue主檔</code> 主要欄位：<code>編號 / Issue / 擔當(DRI) / 戰略負責人 / Confluence URL / 狀態 / 事務局備註 / 更新日 / Issue定義 / 協作</code>（完整對照見 docs/data-dictionary.md）。
     </div>
 
     <!-- Cloud source -->
@@ -1616,7 +1615,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.48.1';
+const APP_VERSION = '0.48.2';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
