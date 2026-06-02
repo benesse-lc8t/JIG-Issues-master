@@ -347,10 +347,11 @@
   .ver { display: inline-block; margin-left: 10px; padding: 2px 9px; font-size: 10px; font-weight: 600; color: var(--accent); background: var(--accent-bg); border: none; border-radius: 20px; vertical-align: middle; letter-spacing: 0.02em; cursor: help; }
   .ver:hover { background: #D8EAFF; }
   /* ブランド表示（ロゴ右）：タイトル＝League Spartan／サブ＝Noto Sans TC */
-  .brand-text { display: flex; flex-direction: column; justify-content: center; line-height: 1.04; gap: 3px; }
-  .brand-title { font-family: 'League Spartan', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: 0.005em; color: #111418; }
-  .brand-sub { font-family: 'Noto Sans TC', sans-serif; font-size: 13px; color: #202124; letter-spacing: 0.02em; }
+  .brand-text { display: flex; flex-direction: column; justify-content: center; line-height: 0.98; gap: 0; }
+  .brand-title { font-family: 'League Spartan', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: 0.005em; color: #111418; }
+  .brand-sub { font-family: 'Noto Sans TC', sans-serif; font-size: 9px; color: #202124; letter-spacing: 0.02em; }
   .brand-sub .brand-imt { color: #1A3A6B; font-weight: 600; margin-right: 2px; }
+  .ver-admin::before { content: '⚙ '; opacity: 0.85; }
 
   /* Issue expand toggle (for missions) */
   .num-cell { position: relative; }
@@ -562,13 +563,13 @@
   .my-table td { padding: 3px 8px; border-right: 1px solid #E6EAF0; border-bottom: 1px solid #E6EAF0; vertical-align: middle; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .my-table th:first-child, .my-table td:first-child { border-left: 1px solid #E6EAF0; }
   /* 行レベルの地色（薄め2色ブルー） */
-  .my-table tr.my-row-issue   > td { background: #C8DAF4; } /* Issue=濃いめ */
-  .my-table tr.my-row-mission > td { background: #E5EEFB; } /* Mission=薄い */
+  .my-table tr.my-row-issue   > td { background: #E3F0FA; } /* Issue=濃いめ */
+  .my-table tr.my-row-mission > td { background: #E8F5FE; } /* Mission=薄い */
   .my-table tr.my-row-task    > td { background: #FFFFFF; } /* Task=白 */
   /* 列ベースの色付け：NO.・Issue 列は常に Issue 色／Mission 列は Issue 行以外で Mission 色（重複はテキスト無し） */
   .my-table tr.my-row td.my-c-no,
-  .my-table tr.my-row td.my-col-issue   { background: #C8DAF4; }
-  .my-table tr.my-row td.my-col-mission { background: #E5EEFB; }
+  .my-table tr.my-row td.my-col-issue   { background: #E3F0FA; }
+  .my-table tr.my-row td.my-col-mission { background: #E8F5FE; }
   /* ヘッダートグルによるレベル表示切替（mission を隠すと配下 task も隠す） */
   /* レベルトグル OFF → その層の行を隠し、かつ列ごと消す（① 列ごと非表示） */
   /* レベルトグル OFF → その層の行を隠す（列統合後は行のみ。Mission OFF でも Task は残す） */
@@ -1353,9 +1354,9 @@
 
 <div class="topbar">
   <h1 style="display:flex; align-items:center; gap:12px; margin:0;">
-    <img src="IMT_favicon.png" alt="IMT for TBBS" width="50" height="44" style="vertical-align:middle; flex-shrink:0;">
+    <img src="IMT_favicon.png" alt="IMT for TBBS" width="36" height="32" style="vertical-align:middle; flex-shrink:0;">
     <span class="brand-text">
-      <span class="brand-title">Cascade Work Hub<span class="ver" id="verBadge" title="">v?.?.?</span></span>
+      <span class="brand-title">Cascade Work Hub</span>
       <span class="brand-sub"><span class="brand-imt">Issue_Mission_Task</span>　全公司業務管理平台</span>
     </span>
   </h1>
@@ -1364,7 +1365,7 @@
     <span class="nb-text"></span>
   </div>
   <div class="topbar-actions">
-    <button id="adminBtn" class="admin-btn" onclick="show('Admin',event)" title="僅供管理者使用：資料來源設定">⚙ 管理者專用</button>
+    <button id="verBadge" class="admin-btn ver-admin" onclick="show('Admin',event)" title="管理者專用（按一下進入：資料來源設定）">v?.?.?</button>
   </div>
 </div>
 
@@ -1759,7 +1760,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.43.2';
+const APP_VERSION = '0.44.0';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
@@ -1767,7 +1768,7 @@ const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（
 function show(id, e) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab, .person-btn').forEach(t => t.classList.remove('active'));
-  const admin = document.getElementById('adminBtn');
+  const admin = document.getElementById('verBadge');
   if (admin) admin.classList.remove('active');
   document.getElementById('panel-' + id).classList.add('active');
   if (e && e.target) {
