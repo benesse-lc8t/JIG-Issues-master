@@ -1467,3 +1467,122 @@ function clearJIGDummy() {
   SpreadsheetApp.flush();
   console.log(`[clearDummy] ${removed} 行を削除（〔範例〕で始まる行）`);
 }
+
+// =====================================================================
+// 全 Issue に対し 2 Mission × 2 Task を生成（定義つき・2026-06-02）
+//   各 Issue に Issue定義、各 Mission に Mission定義、各 Task に Task定義 を入れる。
+//   定義は Issue 名を織り込んだカスケード整合のテンプレ（判斷基準／完成判斷／完成＝）。
+//   使い方：setupJIG → seedFullDummy → migrateNumbers（→ リロード）。
+//   既存の〔範例〕Mission/Task は実行時に一旦掃除してから作り直す（重複防止）。
+// =====================================================================
+const FD_POOL = ['王詩雅','張育菱','陳少琪','陳瓊芳','于安平','陳勝朋','陳乃菁','謝惠琪','劉玉珊','陳伊柔',
+  '沈美君','藍靜儀','林欣亭','陳筱昀','鍾明雯','陳思嘉','曹舒涵','周宜柔','郭怡梅','張菀庭',
+  '賴純美','郭姿伶','鄭心怡','傅貞甄','許珮珊','吳家慶','戴詠','鄧宏毅','蔡品媛','林昀萱'];
+
+function _fdClearDummyMT(ss) {
+  let removed = 0;
+  [[MISSION_SHEET_FOR_WRITE, 'Mission進度'], [TASK_SHEET_NAME, '進度']].forEach(([name, col]) => {
+    const sh = ss.getSheetByName(name);
+    if (!sh || sh.getLastRow() < 2) return;
+    const headers = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(h => String(h).trim());
+    const ci = headers.indexOf(col);
+    if (ci < 0) return;
+    const vals = sh.getRange(2, ci + 1, sh.getLastRow() - 1, 1).getValues();
+    for (let i = vals.length - 1; i >= 0; i--) {
+      if (String(vals[i][0] || '').indexOf(DUMMY_MARK) === 0) { sh.deleteRow(i + 2); removed++; }
+    }
+  });
+  return removed;
+}
+
+function seedFullDummy() {
+  const ss = _getSpreadsheet();
+  if (!ss) { console.log('[full] SHEET_ID 未設定'); return; }
+  const iSheet = ss.getSheetByName(ISSUE_SHEET_FOR_WRITE);
+  const mSheet = ss.getSheetByName(MISSION_SHEET_FOR_WRITE);
+  if (!iSheet || !mSheet) { console.log('[full] Issue主檔/Mission一覽 が無い。先に setupJIG'); return; }
+  let tSheet = ss.getSheetByName(TASK_SHEET_NAME);
+  if (!tSheet) {
+    tSheet = ss.insertSheet(TASK_SHEET_NAME);
+    tSheet.getRange(1, 1, 1, TASK_HEADERS.length).setValues([TASK_HEADERS]).setFontWeight('bold').setBackground('#F7F4EC');
+    Object.keys(TASK_COL_WIDTHS).forEach(k => tSheet.setColumnWidth(Number(k), TASK_COL_WIDTHS[k]));
+    tSheet.setFrozenRows(1);
+  }
+  // 旧〔範例〕Mission/Task を掃除
+  const cleared = _fdClearDummyMT(ss);
+
+  // 全 Issue を読む
+  const ih = iSheet.getRange(1, 1, 1, iSheet.getLastColumn()).getValues()[0].map(h => String(h).trim());
+  const ci = { num: ih.indexOf('編號'), name: ih.indexOf('Issue'), lead: ih.indexOf('戰略負責人'),
+    dept: ih.indexOf('處'), def: ih.indexOf('Issue定義') };
+  const iLast = iSheet.getLastRow();
+  if (ci.num < 0 || iLast < 2) { console.log('[full] Issue 行なし'); return; }
+  const irows = iSheet.getRange(2, 1, iLast - 1, iSheet.getLastColumn()).getValues();
+
+  let np = 0, si = 0;
+  const pick = () => FD_POOL[np++ % FD_POOL.length];
+  const nextStatus = () => STATUS_VALUES[si++ % STATUS_VALUES.length];
+  const ages = [1, 3, 6, 10, 16, 30];
+  let ai = 0;
+  const nextAge = () => ages[ai++ % ages.length];
+
+  const issueDefOut = []; // Issue定義 列の上書き
+  const missionRows = [], taskRows = [];
+  let mCount = 0, tCount = 0, iDefCount = 0;
+
+  irows.forEach(r => {
+    const issueId = String(r[ci.num]).trim();
+    const issueName = ci.name >= 0 ? String(r[ci.name]).trim() : '';
+    if (!issueId || !issueName) { issueDefOut.push([ci.def >= 0 ? String(r[ci.def] || '') : '']); return; }
+    const lead = ci.lead >= 0 ? String(r[ci.lead] || '').trim() : '';
+    // Issue定義（空なら埋める。既にあれば尊重）
+    let idef = ci.def >= 0 ? String(r[ci.def] || '').trim() : '';
+    if (!idef) { idef = `圍繞「${issueName}」建立可衡量的成果與判斷基準，並確保下層 Mission／Task 對齊落實。判斷基準：關鍵指標達標、推進節奏穩定、可追蹤。`; iDefCount++; }
+    issueDefOut.push([idef]);
+
+    // 2 Mission × 2 Task
+    const missions = [
+      { suf: 'M1', name: `${issueName}－策略與計畫`,
+        def: `在「${issueName}」之下，盤點現況、定義策略與計畫。完成判斷：策略文件與里程碑定稿、資源與 KPI 明確。`,
+        tasks: [
+          { name: '現況盤點與假設', def: `盤點現況數據與限制，提出關鍵假設與優先順位。完成＝盤點報告與假設清單交付。` },
+          { name: '方案設計與 KPI', def: `設計可執行方案並定義 KPI 與量測方式。完成＝方案與 KPI 定稿、可進入執行。` },
+        ] },
+      { suf: 'M2', name: `${issueName}－執行與優化`,
+        def: `在「${issueName}」之下，落地執行並依數據持續優化。完成判斷：上線運作、KPI 達標、形成可複用節奏。`,
+        tasks: [
+          { name: '落地執行', def: `依方案推動落地，建立執行節奏與分工。完成＝主要工作上線運作。` },
+          { name: '成效追蹤與改善', def: `追蹤 KPI、檢視成效並提出改善。完成＝成效報告與下一輪改善建議。` },
+        ] },
+    ];
+    missions.forEach(m => {
+      const missionId = issueId + '-' + m.suf;
+      const owner = pick();
+      missionRows.push({
+        '編號': missionId, 'Mission': m.name, '親編號': issueId,
+        '戰略負責人': lead, '擔當': owner, '狀態': nextStatus(),
+        'Mission進度': DUMMY_MARK + '推進中', '更新日': _dummyDate(nextAge()),
+        'Confluence URL': '', 'Mission定義': m.def
+      });
+      mCount++;
+      m.tasks.forEach((t, k) => {
+        const dri = pick();
+        const collab = (k === 0) ? pick() : '';
+        taskRows.push({
+          '編號': missionId + '-T' + (k + 1), 'Task': t.name, '親編號': missionId,
+          'DRI': dri, '協作': collab, '狀態': nextStatus(),
+          '進度': DUMMY_MARK + '作業中', '更新日': _dummyDate(nextAge()), '連結': '',
+          'Task定義': t.def
+        });
+        tCount++;
+      });
+    });
+  });
+
+  // Issue定義 列を書き戻し（無ければ列が無い→スキップ）
+  if (ci.def >= 0) iSheet.getRange(2, ci.def + 1, issueDefOut.length, 1).setValues(issueDefOut);
+  _bulkAppend(mSheet, missionRows);
+  _bulkAppend(tSheet, taskRows);
+  SpreadsheetApp.flush();
+  console.log(`[full] 完了：掃除 ${cleared} 行 → Issue定義 ${iDefCount} 件補完 / Mission ${mCount} / Task ${tCount}`);
+}
