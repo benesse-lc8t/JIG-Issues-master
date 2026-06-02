@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JIG — Mission Control</title>
+<title>IMT — Mission Control</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="shortcut icon" href="favicon.svg">
 <link rel="apple-touch-icon" href="favicon.svg">
@@ -607,7 +607,7 @@
   .my-add { font-size: var(--fs-2xs); color: var(--g-blue); margin-left: 6px; opacity: 0; cursor: pointer; border: 1px solid currentColor; border-radius: 5px; padding: 0 4px; white-space: nowrap; }
   .my-row:hover .my-add { opacity: 0.7; }
   .my-add:hover { opacity: 1; background: #E8F0FE; }
-  .my-link-count { display: inline-block; min-width: 16px; padding: 0 5px; border-radius: 8px; background: var(--g-blue); color: #fff; font-size: var(--fs-2xs); font-weight: var(--fw-bold); cursor: pointer; }
+  .my-link-count { display: inline-block; min-width: 13px; padding: 0 4px; border-radius: 8px; background: var(--g-blue); color: #fff; font-size: 7px; font-weight: var(--fw-bold); cursor: pointer; line-height: 1.5; }
   .my-cedit { width: 100%; box-sizing: border-box; padding: 3px 6px; font-size: var(--fs-sm); border: 1px solid var(--accent); border-radius: 5px; font-family: inherit; }
   .my-c-dri, .my-c-collab, .my-c-lead { white-space: nowrap; cursor: pointer; }
   .my-c-dri:hover, .my-c-collab:hover, .my-c-lead:hover { outline: 1px dashed var(--g-blue); outline-offset: -1px; }
@@ -1102,7 +1102,7 @@
 <div id="bootOverlay">
   <div class="boot-box">
     <img src="favicon.svg" alt="" width="56" height="56" class="boot-logo">
-    <div class="boot-title">JIG <span class="boot-sub">Mission Control</span></div>
+    <div class="boot-title">IMT <span class="boot-sub">Mission Control</span></div>
     <div class="boot-bar"><span></span></div>
     <div class="boot-msg" id="bootMsg">載入中… Loading</div>
   </div>
@@ -1349,7 +1349,7 @@
 <div class="topbar">
   <h1 style="display:flex; align-items:center; gap:10px;">
     <img src="favicon.svg" alt="" width="32" height="32" style="vertical-align:middle; flex-shrink:0;">
-    <span>JIG — Mission Control<span class="ver" id="verBadge" title="">v?.?.?</span></span>
+    <span>IMT — Mission Control<span class="ver" id="verBadge" title="">v?.?.?</span></span>
   </h1>
   <div class="notice-board" id="noticeBoard" style="display:none;">
     <svg class="ico nb-ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -1751,7 +1751,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.42.2';
+const APP_VERSION = '0.43.0';
 const APP_BUILD = '2026-06-01';
 const APP_NOTE  = '我的テーブル微調整2：①地色を青のグラデ（Issue濃→Mission中→Task白）②table-layout固定＋nowrap＋省略で折返し無し（DRIは1人想定）③DRIラベル＋名前はチップ選択（再クリック解除・選択は光る）④狀態編集はポップオーバー。｜My Work（名前起点・階層テーブル）。NO./Issue/Mission/Task/Link/folder/DRI/狀態/狀態紀錄/協作/戰略組擔當/記錄日 の12列。名前選択で「自分が DRI の行＋上下層」を表示、「看全部」で総覧。NO. は #01/-M01/-T01 の表示簡略化。狀態チップ=クリックで7状態／狀態紀錄=ダブルクリック直接記入・Mission はシングルでログモーダル／Task 名=ダブルクリック改名／＋M・＋T 追加／Link 件数。Issue定義・Mission定義 を編集モーダルに追加。';
 
@@ -4728,8 +4728,8 @@ function renderTabF() {
 // ===== 我的（名前起点メイン画面・2026-06-01 リデザイン P2）=====
 const MY_WHO_KEY = 'jig:myWho';
 // ⑦ 列幅（px・12列）。保存/デフォルト/リサイズ配線。
-const MY_COLW_KEY = 'jig:myColW';
-const MY_COLW_DEF = [88, 300, 40, 46, 92, 78, 220, 92, 96, 74]; // NO/Item/Link/folder/DRI/Status/Progress/Collab/Supporter/Updated
+const MY_COLW_KEY = 'imt:myColW2'; // 列順変更で旧保存幅を無効化（DRI を Item の隣へ移動）
+const MY_COLW_DEF = [88, 300, 92, 40, 46, 78, 220, 92, 96, 74]; // NO/IMT/DRI/Link/folder/Status/Progress/Collab/Supporter/Updated
 function _myColW() { try { const a = JSON.parse(localStorage.getItem(MY_COLW_KEY)); if (Array.isArray(a) && a.length === MY_COLW_DEF.length) return a; } catch (e) {} return MY_COLW_DEF.slice(); }
 function _mySaveColW(a) { localStorage.setItem(MY_COLW_KEY, JSON.stringify(a)); }
 function _myWireColResize() {
@@ -4888,9 +4888,9 @@ function renderMyView() {
     rows += `<tr class="my-row my-row-issue${issMine ? ' my-mine' : ''}" data-kind="issue" data-id="${escapeAttr(inum)}">`
       + `<td class="my-c-no">${_myDispNo(ii, null, null)}</td>`
       + `<td class="my-c-name my-c-item my-name lvl-0" data-kind="issue" data-id="${escapeAttr(inum)}" title="Click: definition / edit">${issMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(iss['Issue'] || '')}<span class="my-add my-add-m" data-id="${escapeAttr(inum)}" title="Add Mission">＋M</span></td>`
+      + `<td class="my-c-dri">${_myChips(iss['擔當'])}</td>`
       + _myLinkCell(iss['Confluence URL'], inum, 'issue')
       + `<td class="my-c-folder"></td>`
-      + `<td class="my-c-dri">${_myChips(iss['擔當'])}</td>`
       + _myStCell('issue', inum, iss['狀態'])
       + _myCommentCell('issue', inum, iss)
       + `<td class="my-c-collab"></td>`
@@ -4905,9 +4905,9 @@ function renderMyView() {
       rows += `<tr class="my-row my-row-mission${mb.mMine ? ' my-mine' : ''}" data-kind="mission" data-id="${escapeAttr(mid)}">`
         + `<td class="my-c-no">${_myDispNo(ii, mn, null)}</td>`
         + `<td class="my-c-name my-c-item my-name lvl-1" data-kind="mission" data-id="${escapeAttr(mid)}" title="Click: definition / edit">${mb.mMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(mb.m['Mission'] || mb.m['Issue'] || '')}<span class="my-add my-add-t" data-id="${escapeAttr(mid)}" title="Add Task">＋T</span></td>`
+        + `<td class="my-c-dri">${_myChips(mb.m['擔當'])}</td>`
         + _myLinkCell(mb.m['Confluence URL自身'] || mb.m['Confluence URL'], mid, 'mission')
         + `<td class="my-c-folder"></td>`
-        + `<td class="my-c-dri">${_myChips(mb.m['擔當'])}</td>`
         + _myStCell('mission', mid, mb.m['狀態'])
         + _myCommentCell('mission', mid, mb.m)
         + `<td class="my-c-collab"></td>`
@@ -4921,9 +4921,9 @@ function renderMyView() {
         rows += `<tr class="my-row my-row-task${tr.tMine ? ' my-mine' : ''}" data-kind="task" data-id="${escapeAttr(tid)}">`
           + `<td class="my-c-no">${_myDispNo(ii, mn, tn)}</td>`
           + `<td class="my-c-name my-c-item my-task-name lvl-2" data-id="${escapeAttr(tid)}" title="Double-click to rename">${tr.tMine ? '<span class="my-mine-dot"></span>' : ''}${escapeHtml(tr.t['Task'] || '')}</td>`
+          + `<td class="my-c-dri">${_myChips(tr.t['DRI'])}</td>`
           + _myLinkCell(tr.t['連結'], tid, 'task')
           + `<td class="my-c-folder"></td>`
-          + `<td class="my-c-dri">${_myChips(tr.t['DRI'])}</td>`
           + _myStCell('task', tid, tr.t['狀態'])
           + _myCommentCell('task', tid, tr.t)
           + `<td class="my-c-collab">${_myChips(tr.t['協作'])}</td>`
@@ -4944,8 +4944,8 @@ function renderMyView() {
   wrap.innerHTML = `<table class="${tcls}">`
     + `<colgroup>${cols}</colgroup>`
     + `<thead><tr>`
-    + `<th>NO.${rz}</th><th>Item${rz}</th><th>Link${rz}</th><th>folder${rz}</th>`
-    + `<th>DRI${rz}</th><th>Status${rz}</th><th>Progress${rz}</th><th>Collaborator${rz}</th><th>Supporter${rz}</th><th>Updated${rz}</th>`
+    + `<th>NO.${rz}</th><th>IMT${rz}</th><th>DRI${rz}</th><th>Link${rz}</th><th>folder${rz}</th>`
+    + `<th>Status${rz}</th><th>Progress${rz}</th><th>Collaborator${rz}</th><th>Supporter${rz}</th><th>Updated${rz}</th>`
     + `</tr></thead><tbody>${rows}</tbody></table>`;
   if (countEl) countEl.textContent = showAll ? `All ${totalCount}` : (onlyDri ? `My DRI ${mineCount}` : `DRI ${mineCount} (with context ${totalCount})`);
   _myWireColResize();
