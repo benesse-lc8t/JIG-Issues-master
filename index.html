@@ -630,6 +630,7 @@
   .my-link-count { display: inline-block; min-width: 13px; padding: 0 4px; border-radius: 8px; background: var(--g-blue); color: #fff; font-size: 7px; font-weight: var(--fw-bold); cursor: pointer; line-height: 1.5; }
   .my-cedit { width: 100%; box-sizing: border-box; padding: 3px 6px; font-size: var(--fs-sm); border: 1px solid var(--accent); border-radius: 5px; font-family: inherit; }
   .my-c-dri, .my-c-collab, .my-c-lead { white-space: nowrap; cursor: pointer; }
+  .my-table .my-c-dri { text-align: center; } /* ③ DRI は1名想定＝中央寄せ・列幅も狭め */
   .my-c-dri:hover, .my-c-collab:hover, .my-c-lead:hover { outline: 1px dashed var(--g-blue); outline-offset: -1px; }
   /* 上部 DRI ピッカー（モーダルと同じチップ選択） */
   .my-who-np { display: inline-block; position: relative; min-width: 150px; vertical-align: middle; }
@@ -642,8 +643,8 @@
   /* ① DRI ピッカーのチップを約70%／② メニューを横にも広げて全員見えるように */
   #myWhoPickTrigger .np-tag { font-size: 7px; padding: 0 4px 0 6px; line-height: 1.6; }
   #myWhoPickTrigger .np-x { font-size: 8px; margin-left: 2px; }
-  #myWhoPickMenu { right: auto; width: min(760px, 92vw); }
-  #myWhoPickChips .author-chip { font-size: 7px; padding: 1px 6px; }
+  #myWhoPickMenu { right: auto; width: min(520px, 92vw); }
+  #myWhoPickChips .author-chip { font-size: 10px; padding: 1px 7px; }
   /* ⑦ 列幅リサイズ用ハンドル */
   .my-table th { position: sticky; }
   .my-col-rz { position: absolute; top: 0; right: -3px; width: 7px; height: 100%; cursor: col-resize; z-index: 4; }
@@ -662,6 +663,9 @@
   .my-who-chip.active { box-shadow: 0 0 0 2px #fff, 0 0 0 3px #1A73E8; font-weight: 700; }
   /* 狀態の編集グリッドは固定幅セルに収まらないのでポップオーバー表示 */
   .my-table .my-c-st { overflow: visible; position: relative; }
+  /* ④ 狀態バッジは全行で同じ幅（セルの90%）・中央寄せに揃える */
+  .my-table .my-c-st .my-st-pick { display: block; }
+  .my-table .my-c-st .st-badge { display: block; width: 90%; margin: 0 auto; text-align: center; box-sizing: border-box; }
   .my-table .my-st-pick .my-st-grid { position: absolute; left: 50%; transform: translateX(-50%); top: 100%; margin-top: 3px; z-index: 6; display: flex; flex-wrap: wrap; gap: 3px; width: max-content; max-width: 240px; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 5px; box-shadow: var(--shadow-md); }
   .conf-edit-bar { display: flex; gap: 6px; align-items: center; }
   .conf-edit-add { border: 1px dashed var(--g-blue); background: var(--g-blue-bg); color: var(--g-blue); border-radius: 3px; cursor: pointer; font-size: 10px; padding: 3px 8px; }
@@ -969,16 +973,19 @@
   /* ④ チーム（處）ごとのグループ：1行=1チーム、先頭に處ラベル */
   .author-menu-chips .anp-grp { display: flex; align-items: baseline; gap: 6px; width: 100%; padding: 2px 0; }
   .author-menu-chips .anp-grp + .anp-grp { border-top: 1px solid #F1F3F4; }
-  .anp-grp-lbl { flex-shrink: 0; width: 64px; text-align: right; font-size: 10px; font-weight: 700; opacity: 0.9; }
+  .anp-grp-lbl { flex-shrink: 0; width: 64px; text-align: right; font-size: 10px; font-weight: 700; color: #3C4043; display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; }
   .anp-grp-chips { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; min-width: 0; }
+  /* ② 處カラーは小さなドットで示し、人名・部門名は黒文字（赤文字タブー回避） */
+  .anp-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
   .author-chip {
-    font-family: var(--font-cjk); font-size: 11px; font-weight: 600; cursor: pointer;
-    padding: 2px 8px; border-radius: 11px; border: 1px solid transparent;
-    background: var(--chip-bg, #F1F3F4); color: var(--chip-fg, #5F6368);
-    transition: all 0.12s; opacity: 0.7; white-space: nowrap;
+    font-family: var(--font-cjk); font-size: 11px; font-weight: 500; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 11px; border: 1px solid #E3E6EA;
+    background: #fff; color: #3C4043;
+    transition: all 0.12s; white-space: nowrap;
   }
-  .author-chip:hover { opacity: 0.95; }
-  .author-chip.active { opacity: 1; border-color: currentColor; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+  .author-chip:hover { background: #F1F3F4; }
+  .author-chip.active { font-weight: 700; border-color: var(--g-blue); background: #E8F0FE; color: #174EA6; }
   .author-menu-empty { font-size: 12px; color: #9AA0A6; padding: 6px 2px; }
   /* これまでの記録（タイムライン） */
   .remark-modal-log { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; padding-right: 4px; }
@@ -1630,7 +1637,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.50.0';
+const APP_VERSION = '0.50.1';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
@@ -2828,10 +2835,10 @@ function renderNamePickerChips(prefix, filter) {
   const list = q ? base.filter(d => d.name.toLowerCase().includes(q)) : base;
   const sel = window._namePickSel[prefix] || [];
   if (!list.length) { wrap.innerHTML = '<div class="author-menu-empty">查無符合的姓名</div>'; return; }
-  // ④ チーム（處）ごとにグループ化して改行。各グループ先頭に處ラベル（處カラー）。
+  // ④ チーム（處）ごとにグループ化して改行。② 人名・部門名は黒文字＋處カラーのドット（赤文字タブー回避）。
   const chipHtml = d => {
     const active = sel.includes(d.name) ? ' active' : '';
-    return `<button type="button" class="author-chip${active}" data-name="${escapeAttr(d.name)}" style="--chip-bg:${d.bg};--chip-fg:${d.fg}">${escapeHtml(d.name)}</button>`;
+    return `<button type="button" class="author-chip${active}" data-name="${escapeAttr(d.name)}"><span class="anp-dot" style="background:${d.fg}"></span>${escapeHtml(d.name)}</button>`;
   };
   const groups = [];
   const idx = {};
@@ -2841,7 +2848,7 @@ function renderNamePickerChips(prefix, filter) {
     groups[idx[key]].items.push(d);
   });
   wrap.innerHTML = groups.map(g =>
-    `<div class="anp-grp"><span class="anp-grp-lbl" style="color:${g.fg}">${escapeHtml(g.dept)}</span>`
+    `<div class="anp-grp"><span class="anp-grp-lbl"><span class="anp-dot" style="background:${g.fg}"></span>${escapeHtml(g.dept)}</span>`
     + `<span class="anp-grp-chips">${g.items.map(chipHtml).join('')}</span></div>`
   ).join('');
   wrap.querySelectorAll('.author-chip').forEach(chip => {
@@ -4626,7 +4633,7 @@ function renderTabF() {
 const MY_WHO_KEY = 'jig:myWho';
 // ⑦ 列幅（px・12列）。保存/デフォルト/リサイズ配線。
 const MY_COLW_KEY = 'imt:myColW2'; // 列順変更で旧保存幅を無効化（DRI を Item の隣へ移動）
-const MY_COLW_DEF = [88, 300, 92, 40, 46, 78, 220, 92, 96, 74]; // NO/IMT/DRI/Link/folder/Status/Progress/Collab/Supporter/Updated
+const MY_COLW_DEF = [88, 300, 66, 40, 46, 84, 220, 92, 96, 74]; // NO/IMT/DRI/Link/folder/Status/Progress/Collab/Supporter/Updated
 function _myColW() { try { const a = JSON.parse(localStorage.getItem(MY_COLW_KEY)); if (Array.isArray(a) && a.length === MY_COLW_DEF.length) return a; } catch (e) {} return MY_COLW_DEF.slice(); }
 function _mySaveColW(a) { localStorage.setItem(MY_COLW_KEY, JSON.stringify(a)); }
 function _myWireColResize() {
