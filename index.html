@@ -94,7 +94,7 @@
   .boot-bar { width: 150px; height: 4px; margin: 14px auto 0; border-radius: 99px; background: rgba(26,103,210,.15); overflow: hidden; }
   /* 一度だけゆっくり満ちる（無限ループはやめ、ease-out で減速しながら 0→100%） */
   .boot-bar span { display: block; width: 0; height: 100%; border-radius: 99px; background: #1967D2;
-    animation: bootFill 2.6s cubic-bezier(.15,.7,.2,1) forwards; }
+    animation: bootFill 3s cubic-bezier(.15,.7,.2,1) forwards; }
   @keyframes bootFill { from { width: 0; } to { width: 100%; } }
   body::before { content:""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
     background: radial-gradient(120% 80% at 12% 4%, rgba(110,170,255,0.28), rgba(110,170,255,0) 60%),
@@ -1658,7 +1658,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.50.12';
+const APP_VERSION = '0.50.13';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
