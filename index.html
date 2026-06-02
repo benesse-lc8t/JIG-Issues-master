@@ -1656,7 +1656,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.50.7';
+const APP_VERSION = '0.50.8';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
@@ -4668,7 +4668,7 @@ function renderTabF() {
 const MY_WHO_KEY = 'jig:myWho';
 // ⑦ 列幅（px・12列）。保存/デフォルト/リサイズ配線。
 const MY_COLW_KEY = 'imt:myColW2'; // 列順変更で旧保存幅を無効化（DRI を Item の隣へ移動）
-const MY_COLW_DEF = [88, 300, 66, 40, 46, 84, 220, 92, 96, 74]; // NO/IMT/DRI/Link/folder/Status/Progress/Collab/Supporter/Updated
+const MY_COLW_DEF = [64, 210, 64, 38, 44, 80, 200, 78, 84, 66]; // NO/IMT/DRI/Link/folder/Status/Progress(可変)/Collab/Supporter/Updated
 function _myColW() { try { const a = JSON.parse(localStorage.getItem(MY_COLW_KEY)); if (Array.isArray(a) && a.length === MY_COLW_DEF.length) return a; } catch (e) {} return MY_COLW_DEF.slice(); }
 function _mySaveColW(a) { localStorage.setItem(MY_COLW_KEY, JSON.stringify(a)); }
 function _myWireColResize() {
@@ -4893,7 +4893,8 @@ function renderMyView() {
   const onlyDri = !!document.getElementById('myOnlyDri')?.checked;
   const tcls = 'my-table' + (LV.issue === false ? ' hide-issue' : '') + (LV.mission === false ? ' hide-mission' : '') + (LV.task === false ? ' hide-task' : '') + (onlyDri ? ' only-dri' : '');
   const rz = '<span class="my-col-rz"></span>';
-  const cols = _myColW().map(w => `<col style="width:${w}px">`).join('');
+  // 進度（index 6）は幅指定なし＝残り幅を吸収する可変列。これで表は常に 100% に収まり右あふれしない。
+  const cols = _myColW().map((w, i) => i === 6 ? '<col>' : `<col style="width:${w}px">`).join('');
   wrap.innerHTML = `<table class="${tcls}">`
     + `<colgroup>${cols}</colgroup>`
     + `<thead><tr>`
