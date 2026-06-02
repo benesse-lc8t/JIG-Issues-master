@@ -1596,7 +1596,7 @@
     <input type="search" id="mySearch" class="my-search" placeholder="" autocomplete="off">
     <span class="ctrl-sep"></span>
     <label class="my-slide"><span>僅我DRI</span><span class="ios-sw"><input type="checkbox" id="myOnlyDri"><span class="ios-track"></span></span></label>
-    <label class="my-slide"><span>顯示全部</span><span class="ios-sw"><input type="checkbox" id="myShowAll" checked><span class="ios-track"></span></span></label>
+    <label class="my-slide"><span>顯示全部</span><span class="ios-sw"><input type="checkbox" id="myShowAll"><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>顯示結案</span><span class="ios-sw"><input type="checkbox" id="myShowClosed"><span class="ios-track"></span></span></label>
     <span class="ctrl-sep"></span>
     <span class="my-lv-label">層級</span>
@@ -1671,7 +1671,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.51.1';
+const APP_VERSION = '0.51.2';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
@@ -4681,6 +4681,28 @@ function renderTabF() {
 
 // ===== 我的（名前起点メイン画面・2026-06-01 リデザイン P2）=====
 const MY_WHO_KEY = 'jig:myWho';
+// 表示状態（トグル）の保存／復元：リロード時に「前回の画面」を再現する。
+const MY_VIEW_KEY = 'imt:myView';
+function _mySaveView() {
+  try {
+    const g = id => !!document.getElementById(id)?.checked;
+    const lv = window._myLevelShow || {};
+    localStorage.setItem(MY_VIEW_KEY, JSON.stringify({
+      showAll: g('myShowAll'), onlyDri: g('myOnlyDri'), showClosed: g('myShowClosed'),
+      lv: { issue: lv.issue !== false, mission: lv.mission !== false, task: lv.task !== false }
+    }));
+  } catch (e) {}
+}
+function _myRestoreView() {
+  let v = {};
+  try { v = JSON.parse(localStorage.getItem(MY_VIEW_KEY)) || {}; } catch (e) {}
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+  // 既定は前回値。初回（保存なし）は顯示全部 OFF＝自分（DRI）中心の画面。
+  set('myShowAll', v.showAll === true);
+  set('myOnlyDri', v.onlyDri === true);
+  set('myShowClosed', v.showClosed === true);
+  if (v.lv) window._myLevelShow = { issue: v.lv.issue !== false, mission: v.lv.mission !== false, task: v.lv.task !== false };
+}
 // ⑦ 列幅（px・12列）。保存/デフォルト/リサイズ配線。
 const MY_COLW_KEY = 'imt:myColW2'; // 列順変更で旧保存幅を無効化（DRI を Item の隣へ移動）
 const MY_COLW_DEF = [64, 210, 64, 38, 44, 80, 200, 78, 84, 66]; // NO/IMT/DRI/Link/folder/Status/Progress(可変)/Collab/Supporter/Updated
@@ -5087,14 +5109,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // ③ メインテーブルの検索（入力で再描画）
   const ms = document.getElementById('mySearch');
   if (ms) { let _mt = null; ms.addEventListener('input', () => { clearTimeout(_mt); _mt = setTimeout(renderMyView, 120); }); }
-  document.getElementById('myShowClosed')?.addEventListener('change', renderMyView);
+  _myRestoreView(); // リロード時に前回の表示状態（トグル）を復元
+  document.getElementById('myShowClosed')?.addEventListener('change', () => { _mySaveView(); renderMyView(); });
   document.getElementById('myShowAll')?.addEventListener('change', (e) => {
     if (e.target.checked) { const o = document.getElementById('myOnlyDri'); if (o) o.checked = false; } // Show all と Only my DRI は排他
-    renderMyView();
+    _mySaveView(); renderMyView();
   });
   document.getElementById('myOnlyDri')?.addEventListener('change', (e) => {
     if (e.target.checked) { const a = document.getElementById('myShowAll'); if (a) a.checked = false; } // ④ Only my DRI ON で Show all を OFF
-    renderMyView();
+    _mySaveView(); renderMyView();
   });
   document.getElementById('myResetCol')?.addEventListener('click', () => { localStorage.removeItem(MY_COLW_KEY); renderMyView(); });
   // レベル表示トグル（ctrl-bar に常設＝列を消しても復活できる）
@@ -5102,7 +5125,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById(id);
     if (!el) return;
     el.checked = window._myLevelShow[lv] !== false;
-    el.addEventListener('change', () => { window._myLevelShow[lv] = el.checked; renderMyView(); });
+    el.addEventListener('change', () => { window._myLevelShow[lv] = el.checked; _mySaveView(); renderMyView(); });
   });
   // 外側クリックでセル用ピッカーを閉じる→（変更があれば）再描画
   document.addEventListener('mousedown', (e) => {
