@@ -970,19 +970,23 @@
   }
   .author-menu-search:focus { border-color: var(--g-blue); }
   .author-menu-chips { display: flex; flex-wrap: wrap; gap: 4px; }
-  /* ④ チーム（處）ごとのグループ：1行=1チーム、先頭に處ラベル */
-  .author-menu-chips .anp-grp { display: flex; align-items: baseline; gap: 6px; width: 100%; padding: 2px 0; }
+  /* ④ チーム（處）ごとのグループ：1行=1チーム、左に處ラベル＋等幅グリッドのチップ */
+  .author-menu-chips .anp-grp { display: flex; align-items: start; gap: 8px; width: 100%; padding: 3px 0; }
   .author-menu-chips .anp-grp + .anp-grp { border-top: 1px solid #F1F3F4; }
-  .anp-grp-lbl { flex-shrink: 0; width: 64px; text-align: right; font-size: 10px; font-weight: 700; color: #3C4043; display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; }
-  .anp-grp-chips { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; min-width: 0; }
+  /* 處ラベル：ドットを左の固定位置に置き縦一列に揃える・文字は左揃え */
+  .anp-grp-lbl { flex-shrink: 0; width: 82px; padding-top: 4px; text-align: left; font-size: 10px; font-weight: 700; color: #3C4043; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+  /* チップ領域＝等幅グリッド（全チームで列が揃う）。既定は幅追従、DRI メニューは固定6列 */
+  .anp-grp-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 4px; flex: 1; min-width: 0; align-content: start; }
+  #myWhoPickChips .anp-grp-chips { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   /* ② 處カラーは小さなドットで示し、人名・部門名は黒文字（赤文字タブー回避） */
   .anp-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .anp-nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
   .author-chip {
     font-family: var(--font-cjk); font-size: 11px; font-weight: 500; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 4px;
+    display: inline-flex; align-items: center; gap: 4px; width: 100%; justify-content: flex-start;
     padding: 2px 8px; border-radius: 11px; border: 1px solid #E3E6EA;
-    background: #fff; color: #3C4043;
-    transition: all 0.12s; white-space: nowrap;
+    background: #fff; color: #3C4043; box-sizing: border-box;
+    transition: all 0.12s; white-space: nowrap; overflow: hidden;
   }
   .author-chip:hover { background: #F1F3F4; }
   .author-chip.active { font-weight: 700; border-color: var(--g-blue); background: #E8F0FE; color: #174EA6; }
@@ -1637,7 +1641,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.50.1';
+const APP_VERSION = '0.50.2';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
@@ -2838,7 +2842,7 @@ function renderNamePickerChips(prefix, filter) {
   // ④ チーム（處）ごとにグループ化して改行。② 人名・部門名は黒文字＋處カラーのドット（赤文字タブー回避）。
   const chipHtml = d => {
     const active = sel.includes(d.name) ? ' active' : '';
-    return `<button type="button" class="author-chip${active}" data-name="${escapeAttr(d.name)}"><span class="anp-dot" style="background:${d.fg}"></span>${escapeHtml(d.name)}</button>`;
+    return `<button type="button" class="author-chip${active}" data-name="${escapeAttr(d.name)}"><span class="anp-dot" style="background:${d.fg}"></span><span class="anp-nm">${escapeHtml(d.name)}</span></button>`;
   };
   const groups = [];
   const idx = {};
