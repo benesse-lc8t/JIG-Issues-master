@@ -279,18 +279,19 @@
 
   /* Status badge (Tab A) — solid fill / pill shape */
   .st { text-align: center; font-size: 11px; font-weight: 500; white-space: nowrap; }
-  .st-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 10px; line-height: 1.35; letter-spacing: 0.02em; }
-  .st-未開始 { background: #9AA0A6; color: #fff; }
-  .st-策劃中 { background: #00ACC1; color: #fff; }
-  .st-需確認 { background: #F9AB00; color: #202124; }
-  .st-進行中 { background: #4285F4; color: #fff; }
-  .st-結案   { background: #34A853; color: #fff; }
-  .st-完成   { background: #34A853; color: #fff; } /* 互換：旧ラベル */
-  /* 2026-06-01 リデザイン：7状態の新ラベル色 */
-  .st-構想中 { background: #9AA0A6; color: #fff; }
-  .st-待審核 { background: #F9AB00; color: #202124; }
-  .st-凍結   { background: #BDC1C6; color: #202124; }
-  .st-中止   { background: #D93025; color: #fff; }
+  /* 狀態バッジ＝A案（淡色＋うっすら枠線）。青系の行地色に溶けないよう border で輪郭を確保。 */
+  .st-badge { display: inline-block; padding: 2px 8px; border-radius: 7px; font-weight: 600; font-size: 10px; line-height: 1.35; letter-spacing: 0.02em; border: 1px solid transparent; }
+  .st-未開始 { background: #F1F3F4; color: #5F6368; border-color: #DADCE0; }
+  .st-策劃中 { background: #E0F7FA; color: #00838F; border-color: #B2EBF2; }
+  .st-需確認 { background: #FEF7E0; color: #B06000; border-color: #FDE293; }
+  .st-進行中 { background: #E8F0FE; color: #1967D2; border-color: #C6DAFC; }
+  .st-結案   { background: #E6F4EA; color: #137333; border-color: #CEEAD6; }
+  .st-完成   { background: #E6F4EA; color: #137333; border-color: #CEEAD6; } /* 互換：旧ラベル */
+  /* 2026-06-01 リデザイン：7状態の新ラベル色（淡色トーン） */
+  .st-構想中 { background: #F1F3F4; color: #5F6368; border-color: #DADCE0; }
+  .st-待審核 { background: #FEF7E0; color: #B06000; border-color: #FDE293; }
+  .st-凍結   { background: #F1F3F4; color: #9AA0A6; border-color: #E0E0E0; }
+  .st-中止   { background: #FCE8E6; color: #C5221F; border-color: #F6C6C2; }
   /* 空欄時は行種別バッジで埋める（欠落ではなく未評価と分かる） */
   .st-type   { display: inline-block; padding: 1px 6px; border-radius: 10px; font-weight: 700; font-size: 9px; line-height: 1.35; letter-spacing: 0.05em; }
   .st-type-issue { background: #E6F4EA; color: #137333; border: 1px dashed #34A853; }
@@ -585,8 +586,12 @@
   .my-lvl-badge.lv-m { background: #629EEF; }
   .my-lvl-badge.lv-t { background: #C3DBF8; color: #1A3A6B; } /* 薄い地色のため頭文字は濃紺で可読性確保 */
   /* 名前・狀態チップは表内で約 70% サイズ */
-  .my-table .person-chip { font-size: 7px; padding: 0 5px; border-radius: 7px; margin: 1px 2px 1px 0; line-height: 1.6; }
-  .my-table .st-badge { font-size: 7px; padding: 1px 6px; line-height: 1.4; }
+  /* 人名＝B案（處カラーのドット＋黒文字・枠なし）。赤文字タブー回避＋地色になじむ。 */
+  .my-table .person-chip { display: inline-flex; align-items: center; font-size: 10.5px; font-weight: 500; color: #3C4043; background: none; padding: 0; margin: 1px 7px 1px 0; line-height: 1.5; border-radius: 0; }
+  .my-table .pc-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; flex-shrink: 0; }
+  /* 自分だけは淡い青ピル＋光彩で「自分の行」を見つけやすく残す */
+  .my-table .person-chip.my-chip-me { color: #174EA6; background: #E8F0FE; padding: 1px 7px; border-radius: 8px; }
+  .my-table .st-badge { font-size: 9.5px; padding: 1px 7px; line-height: 1.4; }
   .my-table .st-type { font-size: 6px; padding: 1px 4px; }
   /* フォントサイズは3層で統一（Mission の大きさ＝--fs-xs）。ウェイトのみ差を残す */
   .my-table .my-c-name { font-size: var(--fs-xs); }
@@ -1611,7 +1616,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.48.7';
+const APP_VERSION = '0.49.0';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
@@ -4667,7 +4672,8 @@ function _myChips(v) {
   return names.map(n => {
     const c = (typeof deptChipColor === 'function') ? deptChipColor(map[n] || '') : { bg: '#eee', fg: '#333' };
     const me = (who && (n === who || n.indexOf(who) >= 0 || who.indexOf(n) >= 0)) ? ' my-chip-me' : '';
-    return `<span class="person-chip${me}" style="background:${c.bg};color:${c.fg}">${escapeHtml(n)}</span>`;
+    // B案：處カラーは小さなドットで示し、名前は黒文字（赤文字タブー回避）。
+    return `<span class="person-chip${me}"><span class="pc-dot" style="background:${c.fg}"></span>${escapeHtml(n)}</span>`;
   }).join('');
 }
 function _myLinkCount(v) {
