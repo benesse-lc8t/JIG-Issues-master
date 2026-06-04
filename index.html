@@ -677,6 +677,41 @@
   .my-table th { position: sticky; }
   .my-col-rz { position: absolute; top: 0; right: -3px; width: 7px; height: 100%; cursor: col-resize; z-index: 4; }
   .ctrl-bar .my-reset-col { padding: 3px 9px; font-size: 9px; border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer; color: var(--g-grey); }
+  /* ===== 快速一覽（俯瞰ビューワー・2026-06-04 §1.7 ③）=====
+     テキスト羅列・情報密度優先。處（組織）→ Issue → Mission をカスケードで列挙。 */
+  .qv-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(15,22,40,.55); display: none; }
+  .qv-overlay.open { display: block; }
+  .qv-panel { position: absolute; inset: 24px; background: #fff; border-radius: 12px; box-shadow: 0 24px 60px -16px rgba(0,0,0,.5); display: flex; flex-direction: column; overflow: hidden; }
+  .qv-head { flex: none; display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--border); background: #0D1B3E; color: #fff; }
+  .qv-head .qv-title { font-weight: 700; font-size: 14px; letter-spacing: .03em; }
+  .qv-head .qv-sub { font-size: 11.5px; color: #9bb0d4; }
+  .qv-head .qv-sp { flex: 1; }
+  .qv-filter { height: 26px; padding: 0 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1); color: #fff; font-size: 12px; font-family: inherit; outline: none; width: 220px; }
+  .qv-filter::placeholder { color: #9bb0d4; }
+  .qv-close { border: 1px solid rgba(255,255,255,.3); background: none; color: #dbe4f3; border-radius: 6px; width: 26px; height: 26px; cursor: pointer; font-size: 15px; line-height: 1; }
+  .qv-close:hover { background: rgba(255,255,255,.14); }
+  .qv-body { flex: 1; overflow: auto; padding: 6px 0 24px; font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.65; color: #1f2733; }
+  .qv-dept { display: flex; align-items: baseline; gap: 8px; padding: 9px 18px 3px; margin-top: 6px; position: sticky; top: 0; background: #fff; z-index: 1; border-bottom: 1px solid var(--border); }
+  .qv-dept .qv-dept-name { font-weight: 700; font-size: 13px; padding: 1px 9px; border-radius: 5px; }
+  .qv-dept .qv-dept-cnt { font-size: 11px; color: var(--g-grey); }
+  .qv-issue { padding: 2px 18px 2px 30px; }
+  .qv-issue .qv-id { color: #5F6368; }
+  .qv-issue .qv-name { font-weight: 700; }
+  .qv-mi { padding: 1px 18px 1px 56px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .qv-mi:hover { background: #E8F0FE; }
+  .qv-mi .qv-tree { color: #BDC1C6; }
+  .qv-mi .qv-id { color: #5F6368; }
+  .qv-mi.qv-closed { color: #9AA0A6; }
+  .qv-mi .qv-dri { color: #137333; }
+  .qv-mi .qv-prog { color: #80868B; }
+  .qv-tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 0 6px; border-radius: 8px; vertical-align: middle; }
+  .qv-tag.st-doing { background: #E6F4EA; color: #137333; }
+  .qv-tag.st-wait  { background: #FEF7E0; color: #B06000; }
+  .qv-tag.st-idea  { background: #F1F3F4; color: #5F6368; }
+  .qv-tag.st-plan  { background: #E8F0FE; color: #1967D2; }
+  .qv-tag.st-done  { background: #F1F3F4; color: #9AA0A6; }
+  .qv-empty { padding: 40px; text-align: center; color: var(--g-grey); }
+  .qv-hidden { display: none !important; }
   .ctrl-bar .my-reset-col:hover { background: #F5F5F7; color: #1D1D1F; }
   /* ⑤ Only my DRI スライド（明るい ctrl-bar 用の配色） */
   .my-slide { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
@@ -1604,6 +1639,7 @@
     <label class="my-slide"><span>Mission</span><span class="ios-sw"><input type="checkbox" id="myLvMission" checked><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>Task</span><span class="ios-sw"><input type="checkbox" id="myLvTask"><span class="ios-track"></span></span></label>
     <button type="button" class="my-reset-col" id="myAddIssue">＋ Issue</button>
+    <button type="button" class="my-reset-col" id="myQuickView">快速一覽</button>
     <button type="button" class="my-reset-col" id="myResetCol">重設欄寬</button>
     <span class="ctrl-count" id="myCount"></span>
   </div>
@@ -1614,6 +1650,20 @@
   <div class="author-menu np-menu my-cell-pop" id="myCellMenu">
     <input type="text" class="author-menu-search" id="myCellSearch" placeholder="" autocomplete="off">
     <div class="author-menu-chips" id="myCellChips"></div>
+  </div>
+
+  <!-- 快速一覽（俯瞰ビューワー）：處→Issue→Mission をテキストでカスケード列挙 -->
+  <div class="qv-overlay" id="qvOverlay">
+    <div class="qv-panel">
+      <div class="qv-head">
+        <span class="qv-title">快速一覽</span>
+        <span class="qv-sub">處 → Issue → Mission　全覽</span>
+        <span class="qv-sp"></span>
+        <input type="search" class="qv-filter" id="qvFilter" placeholder="篩選（名稱／編號／人名）…" autocomplete="off">
+        <button type="button" class="qv-close" id="qvClose" title="關閉">✕</button>
+      </div>
+      <div class="qv-body" id="qvBody"></div>
+    </div>
   </div>
 </div>
 
@@ -1671,7 +1721,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.53.0';
+const APP_VERSION = '0.54.0';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
@@ -4995,6 +5045,103 @@ function _myCommentPrimary(cm) {
   // 2026-06-04 §1.7：進度セルの単クリックでモーダルを開かない。インライン編集に統一（俯瞰画面を軽く保つ）。
   _myStartCommentEdit(cm);
 }
+
+// ===== 快速一覽（俯瞰ビューワー・2026-06-04 §1.7 ③）=====
+// 處（組織）→ Issue → Mission をテキストでカスケード列挙。情報密度優先・羅列。
+// Mission 行クリックで mm-app（ダミー）へ遷移＝メイン画面と同じ動線。
+const _QV_TAG = {
+  '構想中': 'st-idea', '策劃中': 'st-plan', '待審核': 'st-wait',
+  '進行中': 'st-doing', '結案': 'st-done', '凍結': 'st-done', '中止': 'st-done', '完成': 'st-done',
+};
+function _qvTag(status) {
+  const v = normalizeStatus(status);
+  if (!v) return '';
+  return `<span class="qv-tag ${_QV_TAG[v] || 'st-idea'}">${escapeHtml(v)}</span>`;
+}
+function renderQuickView() {
+  const body = document.getElementById('qvBody');
+  if (!body) return;
+  const issues = issueData.filter(r => (r['種別'] || 'Issue') !== 'Mission');
+  const missionsByParent = {};
+  issueData.filter(r => r['種別'] === 'Mission').forEach(m => {
+    const p = (m['親編號'] || '').trim();
+    (missionsByParent[p] = missionsByParent[p] || []).push(m);
+  });
+  // 處ごとにグループ化（DEPT_COLOR_MAP の並びを優先、その他は出現順、空は末尾）
+  const order = Object.keys(DEPT_COLOR_MAP);
+  const byDept = new Map();
+  issues.forEach(iss => {
+    const d = (iss['處'] || '').trim() || '（未分類）';
+    if (!byDept.has(d)) byDept.set(d, []);
+    byDept.get(d).push(iss);
+  });
+  const depts = Array.from(byDept.keys()).sort((a, b) => {
+    const ia = order.indexOf(a), ib = order.indexOf(b);
+    const ra = ia < 0 ? (a === '（未分類）' ? 9999 : 500) : ia;
+    const rb = ib < 0 ? (b === '（未分類）' ? 9999 : 500) : ib;
+    return ra - rb || a.localeCompare(b);
+  });
+  let html = '';
+  depts.forEach(dept => {
+    const list = byDept.get(dept);
+    const cc = deptChipColor(dept);
+    let mCount = 0;
+    let inner = '';
+    list.forEach(iss => {
+      const inum = (iss['編號'] || '').trim();
+      inner += `<div class="qv-issue" data-blob="${escapeAttr((inum + ' ' + (iss['Issue'] || '') + ' ' + (iss['戰略負責人'] || '')).toLowerCase())}">`
+        + `<span class="qv-id">${escapeHtml(inum)}</span> <span class="qv-name">${escapeHtml(iss['Issue'] || '')}</span></div>`;
+      const ms = (missionsByParent[inum] || []).slice().sort((a, b) => {
+        const na = (String(a['編號']).match(/-M(\d+)/) || [])[1], nb = (String(b['編號']).match(/-M(\d+)/) || [])[1];
+        return (+na || 0) - (+nb || 0);
+      });
+      ms.forEach((m, k) => {
+        mCount++;
+        const mid = (m['編號'] || '').trim();
+        const name = m['Mission'] || m['Issue'] || '';
+        const dri = (m['擔當'] || m['戰略負責人'] || '').trim();
+        const closed = CLOSED_STATES.has(normalizeStatus(m['狀態']));
+        const tree = (k === ms.length - 1) ? '└ ' : '├ ';
+        const prog = (_myCommentText(m, 'mission') || '').trim();
+        inner += `<div class="qv-mi${closed ? ' qv-closed' : ''}" data-id="${escapeAttr(mid)}" data-name="${escapeAttr(name)}"`
+          + ` data-blob="${escapeAttr((mid + ' ' + name + ' ' + dri + ' ' + prog).toLowerCase())}">`
+          + `<span class="qv-tree">${tree}</span><span class="qv-id">${escapeHtml(mid)}</span> ${escapeHtml(name)} ${_qvTag(m['狀態'])}`
+          + (dri ? ` <span class="qv-dri">@${escapeHtml(dri)}</span>` : '')
+          + (prog ? ` <span class="qv-prog">— ${escapeHtml(prog)}</span>` : '')
+          + `</div>`;
+      });
+    });
+    html += `<div class="qv-dept"><span class="qv-dept-name" style="background:${cc.bg};color:${cc.fg}">${escapeHtml(dept)}</span>`
+      + `<span class="qv-dept-cnt">Issue ${list.length}・Mission ${mCount}</span></div>` + inner;
+  });
+  body.innerHTML = html || '<div class="qv-empty">尚無資料。</div>';
+  _qvApplyFilter();
+}
+function _qvApplyFilter() {
+  const q = (document.getElementById('qvFilter')?.value || '').trim().toLowerCase();
+  const body = document.getElementById('qvBody');
+  if (!body) return;
+  body.querySelectorAll('.qv-issue, .qv-mi').forEach(el => {
+    el.classList.toggle('qv-hidden', !!q && !(el.dataset.blob || '').includes(q));
+  });
+  // 行が全て隠れた處ヘッダーも畳む
+  let cur = null, curHasVisible = false;
+  const flush = () => { if (cur) cur.classList.toggle('qv-hidden', !!q && !curHasVisible); };
+  body.querySelectorAll('.qv-dept, .qv-issue, .qv-mi').forEach(el => {
+    if (el.classList.contains('qv-dept')) { flush(); cur = el; curHasVisible = false; }
+    else if (!el.classList.contains('qv-hidden')) curHasVisible = true;
+  });
+  flush();
+}
+function openQuickView() {
+  renderQuickView();
+  const ov = document.getElementById('qvOverlay');
+  if (ov) ov.classList.add('open');
+  document.getElementById('qvFilter')?.focus();
+}
+function closeQuickView() {
+  document.getElementById('qvOverlay')?.classList.remove('open');
+}
 function _myStartCommentEdit(cm) {
   if (cm.querySelector('.my-cedit')) return;
   const kind = cm.dataset.kind, id = cm.dataset.id;
@@ -5127,6 +5274,16 @@ document.addEventListener('DOMContentLoaded', () => {
     _mySaveView(); renderMyView();
   });
   document.getElementById('myResetCol')?.addEventListener('click', () => { localStorage.removeItem(MY_COLW_KEY); renderMyView(); });
+  // 快速一覽（俯瞰ビューワー）
+  document.getElementById('myQuickView')?.addEventListener('click', openQuickView);
+  document.getElementById('qvClose')?.addEventListener('click', closeQuickView);
+  document.getElementById('qvFilter')?.addEventListener('input', _qvApplyFilter);
+  document.getElementById('qvOverlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'qvOverlay') { closeQuickView(); return; }
+    const mi = e.target.closest('.qv-mi');
+    if (mi) { _myOpenInMm('mission', mi.dataset.id, mi.dataset.name || ''); return; }
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeQuickView(); });
   // レベル表示トグル（ctrl-bar に常設＝列を消しても復活できる）
   [['myLvIssue', 'issue'], ['myLvMission', 'mission'], ['myLvTask', 'task']].forEach(([id, lv]) => {
     const el = document.getElementById(id);
