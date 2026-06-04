@@ -1671,7 +1671,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.52.0';
+const APP_VERSION = '0.53.0';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
@@ -4878,7 +4878,7 @@ function renderMyView() {
     // Issue 行
     rows += `<tr class="my-row my-row-issue${issMine ? ' my-mine' : ''}${issDri ? ' my-is-dri' : ''}" data-kind="issue" data-id="${escapeAttr(inum)}">`
       + `<td class="my-c-no">${_myDispNo(ii, null, null)}</td>`
-      + `<td class="my-c-name my-c-item my-name lvl-0" data-kind="issue" data-id="${escapeAttr(inum)}" data-iref="${ii}" title="點擊：定義／編輯"><span class="my-lvl-badge lv-i">I</span>${escapeHtml(iss['Issue'] || '')}<span class="my-add my-add-m" data-id="${escapeAttr(inum)}" title="新增 Mission">＋M</span></td>`
+      + `<td class="my-c-name my-c-item my-name lvl-0" data-kind="issue" data-id="${escapeAttr(inum)}" data-iref="${ii}" data-name="${escapeAttr(iss['Issue'] || '')}" title="在 mm-app 開啟（思考工作台）"><span class="my-lvl-badge lv-i">I</span>${escapeHtml(iss['Issue'] || '')}<span class="my-add my-add-m" data-id="${escapeAttr(inum)}" title="新增 Mission">＋M</span></td>`
       + `<td class="my-c-dri">${_myChips(iss['擔當'])}</td>`
       + _myLinkCell(iss['Confluence URL'], inum, 'issue')
       + `<td class="my-c-folder"></td>`
@@ -4895,7 +4895,7 @@ function renderMyView() {
       const mn = +((String(mid).match(/-M(\d+)/) || [])[1]) || 0;
       rows += `<tr class="my-row my-row-mission${mb.mMine ? ' my-mine' : ''}${mb.mDri ? ' my-is-dri' : ''}" data-kind="mission" data-id="${escapeAttr(mid)}">`
         + `<td class="my-c-no">${_myDispNo(ii, mn, null)}</td>`
-        + `<td class="my-c-name my-c-item my-name lvl-1" data-kind="mission" data-id="${escapeAttr(mid)}" title="點擊：定義／編輯"><span class="my-lvl-badge lv-m">M</span>${escapeHtml(mb.m['Mission'] || mb.m['Issue'] || '')}<span class="my-add my-add-t" data-id="${escapeAttr(mid)}" title="新增 Task">＋T</span></td>`
+        + `<td class="my-c-name my-c-item my-name lvl-1" data-kind="mission" data-id="${escapeAttr(mid)}" data-name="${escapeAttr(mb.m['Mission'] || mb.m['Issue'] || '')}" title="在 mm-app 開啟（思考工作台）"><span class="my-lvl-badge lv-m">M</span>${escapeHtml(mb.m['Mission'] || mb.m['Issue'] || '')}</td>`
         + `<td class="my-c-dri">${_myChips(mb.m['擔當'])}</td>`
         + _myLinkCell(mb.m['Confluence URL自身'] || mb.m['Confluence URL'], mid, 'mission')
         + `<td class="my-c-folder"></td>`
@@ -4958,12 +4958,11 @@ function _myWire() {
     if (pick && !pick.querySelector('.my-st-grid')) { pick.innerHTML = _myStatusGridHtml(); return; }
     const addM = e.target.closest('.my-add-m');
     if (addM) { e.stopPropagation(); _myAddMission(addM.dataset.id); return; }
-    const addT = e.target.closest('.my-add-t');
-    if (addT) { e.stopPropagation(); await _myAddTask(addT.dataset.id); return; }
     const nm = e.target.closest('.my-name');
     if (nm) {
-      if (nm.dataset.kind === 'issue') openIssueModal('edit', nm.dataset.id, nm.dataset.iref);
-      else if (typeof openEditEntryModal === 'function') openEditEntryModal(nm.dataset.kind, nm.dataset.id);
+      // 2026-06-04 §1.7：クリック→編集モーダルを廃止。Issue/Mission は mm-app（思考工作台）へ遷移。
+      // 当面は別タブでダミー画面（mm-demo.html）。実物 mm-app は後日この遷移先に差し替え。
+      _myOpenInMm(nm.dataset.kind, nm.dataset.id, nm.dataset.name || '');
       return;
     }
     const lk = e.target.closest('.my-link-count');
@@ -4984,10 +4983,17 @@ function _myWire() {
     if (sw) { window._myLevelShow[sw.dataset.level] = sw.checked; renderMyView(); }
   });
 }
+// mm-app（思考工作台）へ遷移。当面は別タブのダミー画面（mm-demo.html）。
+// 実物 mm-app 完成後はこの URL を差し替える（編號でディープリンク）。
+function _myOpenInMm(kind, id, name) {
+  const u = 'mm-demo.html?kind=' + encodeURIComponent(kind || 'mission')
+    + '&id=' + encodeURIComponent(id || '')
+    + '&name=' + encodeURIComponent(name || '');
+  window.open(u, '_blank', 'noopener');
+}
 function _myCommentPrimary(cm) {
-  const kind = cm.dataset.kind, id = cm.dataset.id;
-  if (kind === 'mission' && typeof window.openEditModal === 'function') window.openEditModal({ missionId: id, focusOn: 'remark' });
-  else _myStartCommentEdit(cm);
+  // 2026-06-04 §1.7：進度セルの単クリックでモーダルを開かない。インライン編集に統一（俯瞰画面を軽く保つ）。
+  _myStartCommentEdit(cm);
 }
 function _myStartCommentEdit(cm) {
   if (cm.querySelector('.my-cedit')) return;

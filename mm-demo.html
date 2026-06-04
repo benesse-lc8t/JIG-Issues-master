@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mm-app · 思考工作台（示意）</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1f2733; --muted:#6b7686; --line:#e5e9f0; --bg:#f3f6fb;
+    --imt:#00569A; --mm:#0E8A4A; --task:#B8860B; --paper:#fff;
+    --node-sh:0 6px 18px -8px rgba(20,40,80,.30);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Noto Sans TC',system-ui,sans-serif;color:var(--ink);background:var(--bg);
+    height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  /* topbar */
+  .top{height:50px;background:#0D1B3E;color:#fff;display:flex;align-items:center;gap:14px;padding:0 18px;flex:none}
+  .top .logo{font-weight:900;letter-spacing:.04em;font-size:16px}
+  .top .logo small{font-weight:500;color:#9bb0d4;font-size:12px;margin-left:6px}
+  .top .sp{flex:1}
+  .top .back{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.25);
+    border-radius:999px;padding:6px 14px;color:#dbe4f3;font-size:13px;cursor:pointer;background:none;font-family:inherit}
+  .top .back:hover{background:rgba(255,255,255,.12)}
+  /* demo banner */
+  .banner{background:#FFF6E0;border-bottom:1px solid #F0D98A;color:#7a5a00;font-size:13px;
+    padding:8px 18px;display:flex;align-items:center;gap:8px;flex:none}
+  .banner b{color:#5a4300}
+  /* layout */
+  .wrap{flex:1;display:flex;min-height:0}
+  .canvas{flex:1;position:relative;overflow:hidden;
+    background:radial-gradient(circle at 1px 1px, #dde4ef 1px, transparent 0);background-size:22px 22px}
+  .side{width:300px;flex:none;background:var(--paper);border-left:1px solid var(--line);
+    display:flex;flex-direction:column;overflow-y:auto}
+  /* mindmap nodes (CSS mock) */
+  .map{position:absolute;inset:0}
+  svg.links{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .node{position:absolute;transform:translate(-50%,-50%);background:var(--paper);border:1.5px solid var(--line);
+    border-radius:12px;box-shadow:var(--node-sh);padding:12px 16px;max-width:260px}
+  .node .k{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px}
+  .node .t{font-size:14px;font-weight:700;line-height:1.4}
+  .node .id{font-family:ui-monospace,monospace;font-size:11px;color:var(--muted);margin-top:4px}
+  .node.center{border-color:var(--mm);border-width:2px;background:#fff}
+  .node.center .k{color:var(--mm)}
+  .node.issue{border-color:var(--imt)}
+  .node.issue .k{color:var(--imt)}
+  .node.task{border-color:var(--task);padding:9px 13px}
+  .node.task .k{color:var(--task)}
+  .node.task .t{font-size:13px;font-weight:500}
+  .node.ghost{border-style:dashed;opacity:.7;background:#fafcff}
+  .node.ghost .t{color:var(--muted);font-weight:500}
+  /* side panels */
+  .panel{border-bottom:1px solid var(--line);padding:14px 16px}
+  .panel h3{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+  .panel h3 .ic{width:9px;height:9px;border-radius:2px;background:var(--mm)}
+  .ol{list-style:none;font-size:13px}
+  .ol li{padding:5px 0 5px 16px;position:relative;color:#3a4453}
+  .ol li::before{content:"";position:absolute;left:2px;top:12px;width:5px;height:5px;border-radius:50%;background:#c2ccdb}
+  .ol li.sub{padding-left:30px;color:#6b7686}
+  .ol li.sub::before{left:18px;background:#dbe2ec}
+  .lk{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 0;color:#3a4453}
+  .lk .dot{width:18px;height:18px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex:none}
+  .memo{font-size:13px;color:#3a4453;line-height:1.7;background:#fbfcfe;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .ai{background:#F1ECFE;border:1px solid #ddd0fb;border-radius:8px;padding:10px 12px;font-size:13px;color:#4b2f86;line-height:1.7}
+  .ai b{color:#3a1f73}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:6px}
+  /* footer note */
+  .foot{position:absolute;left:18px;bottom:14px;font-size:12px;color:var(--muted);
+    background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:8px;padding:8px 12px;max-width:520px}
+  .foot b{color:#3a4453}
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="logo">mindmap <small>思考工作台 · mm-app</small></div>
+    <div class="sp"></div>
+    <button class="back" onclick="goBack()">← 返回 IMT</button>
+  </div>
+  <div class="banner">⚠️ <b>這是示意畫面（placeholder）</b>　— 實際的 mm-app（即時協作的心智圖工作台）為後續開發項目。此頁僅示範「從 IMT 點 Mission → 進入 mm-app 思考」的動線。</div>
+
+  <div class="wrap">
+    <div class="canvas">
+      <div class="map" id="map">
+        <svg class="links" id="links"></svg>
+      </div>
+      <div class="foot">在這裡，<b id="footName">這個 Mission</b> 會被展開成 <b>Task</b>、討論、附上連結與 AI 脈絡。重的成果連到 Confluence／SharePoint。Task 的實體住在這裡，不放進 IMT。</div>
+    </div>
+
+    <aside class="side">
+      <div class="panel">
+        <h3><span class="ic"></span>大綱（OUTLINE）</h3>
+        <ul class="ol" id="outline"></ul>
+      </div>
+      <div class="panel">
+        <h3><span class="ic"></span>連結（URL 集）</h3>
+        <div class="lk"><span class="dot" style="background:#2684FF">C</span>Confluence — 規格頁</div>
+        <div class="lk"><span class="dot" style="background:#00C4CC">Cv</span>Canva — 提案簡報</div>
+        <div class="lk"><span class="dot" style="background:#10A37F">AI</span>ChatGPT — 討論串</div>
+        <div class="lk"><span class="dot" style="background:#1A73E8">SP</span>SharePoint — 365 資料</div>
+      </div>
+      <div class="panel">
+        <h3><span class="ic"></span>備忘（MEMO）</h3>
+        <div class="memo">這一週的重點與卡點寫在這裡（一行短句即可）。展開的 Task、討論的脈絡都留在這張圖上，方便回看。</div>
+      </div>
+      <div class="panel">
+        <h3><span class="ic" style="background:#8b5cf6"></span>AI 脈絡（CONTEXT）</h3>
+        <div class="ai"><b>匯出給 AI：</b>把這張圖的內容一鍵生成 prompt／context，丟給 Claude／ChatGPT 做摘要、抽論點。<div class="hint">＊示意：實際的自動分析在後端階段（P4）。</div></div>
+      </div>
+    </aside>
+  </div>
+
+<script>
+  var p = new URLSearchParams(location.search);
+  var kind = p.get('kind') || 'mission';
+  var id = p.get('id') || '';
+  var name = p.get('name') || (kind === 'issue' ? '某個 Issue' : '某個 Mission');
+  var isIssue = kind === 'issue';
+  document.title = (isIssue ? 'Issue' : 'Mission') + ' · ' + name + ' — mm-app（示意）';
+  document.getElementById('footName').textContent = name;
+
+  // ノード配置（中心＝選んだ Mission/Issue、子＝ダミー Task）
+  var map = document.getElementById('map');
+  var svg = document.getElementById('links');
+  var cx = 0.40, cy = 0.46; // 中心位置（割合）
+  function px(rx){ return map.clientWidth * rx; }
+  function py(ry){ return map.clientHeight * ry; }
+
+  var center = { rx:cx, ry:cy, cls:'center', k:(isIssue?'Issue':'Mission'), t:name, id:id };
+  var tasks = isIssue
+    ? [ {t:'拆解為 Mission（組長）', ry:0.20}, {t:'Mission B', ry:0.46}, {t:'Mission C', ry:0.72} ]
+    : [ {t:'Task 1 — 調查 / 準備', ry:0.18}, {t:'Task 2 — 執行', ry:0.40},
+        {t:'Task 3 — 檢核', ry:0.62}, {t:'＋ 新增節點…', ry:0.83, ghost:true} ];
+
+  function makeNode(o){
+    var n = document.createElement('div');
+    n.className = 'node ' + (o.cls || (isIssue?'issue':'task')) + (o.ghost?' ghost':'');
+    n.style.left = (o.rx*100) + '%';
+    n.style.top = (o.ry*100) + '%';
+    var kk = o.k || (isIssue ? 'Mission' : 'Task');
+    n.innerHTML = '<div class="k">'+kk+'</div><div class="t">'+esc(o.t)+'</div>' + (o.id?('<div class="id">'+esc(o.id)+'</div>'):'');
+    map.appendChild(n);
+    return n;
+  }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]);}); }
+
+  function layout(){
+    map.querySelectorAll('.node').forEach(function(n){ n.remove(); });
+    svg.innerHTML = '';
+    makeNode(center);
+    var childRx = 0.74;
+    tasks.forEach(function(tk){
+      tk.rx = childRx; tk.cls = (isIssue?'issue':'task');
+      makeNode(tk);
+      // link line
+      var x1 = px(cx), y1 = py(cy), x2 = px(childRx), y2 = py(tk.ry);
+      var mx = (x1 + x2) / 2;
+      var path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d', 'M'+x1+','+y1+' C'+mx+','+y1+' '+mx+','+y2+' '+x2+','+y2);
+      path.setAttribute('fill','none');
+      path.setAttribute('stroke', isIssue ? '#9cc0e6' : '#cdb78a');
+      path.setAttribute('stroke-width','2');
+      svg.appendChild(path);
+    });
+  }
+  layout();
+  window.addEventListener('resize', layout);
+
+  // outline
+  var ol = document.getElementById('outline');
+  ol.innerHTML = '<li>'+esc(name)+'</li>' + tasks.filter(function(t){return !t.ghost;}).map(function(t){return '<li class="sub">'+esc(t.t)+'</li>';}).join('');
+
+  function goBack(){ if (history.length > 1) history.back(); else window.close(); }
+</script>
+</body>
+</html>
