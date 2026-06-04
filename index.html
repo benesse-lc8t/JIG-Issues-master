@@ -1602,7 +1602,7 @@
     <span class="my-lv-label">層級</span>
     <label class="my-slide"><span>Issue</span><span class="ios-sw"><input type="checkbox" id="myLvIssue" checked><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>Mission</span><span class="ios-sw"><input type="checkbox" id="myLvMission" checked><span class="ios-track"></span></span></label>
-    <label class="my-slide"><span>Task</span><span class="ios-sw"><input type="checkbox" id="myLvTask" checked><span class="ios-track"></span></span></label>
+    <label class="my-slide"><span>Task</span><span class="ios-sw"><input type="checkbox" id="myLvTask"><span class="ios-track"></span></span></label>
     <button type="button" class="my-reset-col" id="myAddIssue">＋ Issue</button>
     <button type="button" class="my-reset-col" id="myResetCol">重設欄寬</button>
     <span class="ctrl-count" id="myCount"></span>
@@ -1671,7 +1671,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.51.2';
+const APP_VERSION = '0.52.0';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
@@ -4745,7 +4745,8 @@ function _myStatusGridHtml() {
     `<span class="my-st-opt" data-v="${escapeHtml(v)}">${escapeHtml(v)}</span>`).join('') + '</span>';
 }
 function _myGetWho() { return localStorage.getItem(MY_WHO_KEY) || ''; }
-window._myLevelShow = window._myLevelShow || { issue: true, mission: true, task: true };
+// ポリシー（2026-06-04 §1.7）：IMT は Issue & Mission 粒度。Task は既定で非表示（トグルは残置）。
+window._myLevelShow = window._myLevelShow || { issue: true, mission: true, task: false };
 function _mySwHtml(level) {
   const on = window._myLevelShow[level] !== false;
   return `<label class="ios-sw" title="顯示/隱藏此層"><input type="checkbox" data-level="${level}"${on ? ' checked' : ''}><span class="ios-track"></span></label>`;
