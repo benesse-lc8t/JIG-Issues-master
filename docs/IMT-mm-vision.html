@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IMT × Mindmap 整合平台 — 技術構想書</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1424; --bg2:#131c30; --ink:#1a2233; --paper:#ffffff;
+    --muted:#5b6b86; --line:#e3e8f2; --soft:#f4f7fc;
+    --imt:#2f6bff; --imt-d:#1b3f9c; --imt-bg:#eaf1ff;
+    --mm:#13b08a; --mm-d:#0a6b56; --mm-bg:#e6f7f1;
+    --ai:#8b5cf6; --ai-d:#5b2bb8; --ai-bg:#f1ecfe;
+    --be:#475569; --be-bg:#eef1f6;
+    --warn:#e08a00; --warn-bg:#fff5e3;
+    --ok:#1fa463;
+    --radius:18px; --shadow:0 10px 34px -16px rgba(20,30,60,.30);
+    --maxw:1080px;
+    font-feature-settings:"palt" 1;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; color:var(--ink);
+    font-family:"Noto Sans TC",system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:var(--soft); line-height:1.85; letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  code,.mono{font-family:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em}
+
+  /* ---------- Top nav ---------- */
+  .nav{position:sticky;top:0;z-index:50;background:rgba(14,20,36,.86);backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(255,255,255,.08)}
+  .nav-in{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;gap:18px;
+    padding:11px 22px;color:#cdd7ea;font-size:13px;overflow-x:auto}
+  .nav-in b{color:#fff;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+  .nav a{color:#9fb0cc;text-decoration:none;white-space:nowrap;transition:color .15s;font-size:12.5px}
+  .nav a:hover,.nav a.on{color:#fff}
+  .nav .sp{flex:1}
+  .nav .pr{border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:5px 13px;color:#cdd7ea;cursor:pointer;background:none;font:inherit;font-size:12px}
+  .nav .pr:hover{background:rgba(255,255,255,.12)}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative;overflow:hidden;color:#eaf0ff;
+    background:radial-gradient(1200px 500px at 78% -10%,rgba(139,92,246,.40),transparent 60%),
+               radial-gradient(900px 420px at 8% 8%,rgba(47,107,255,.42),transparent 58%),
+               radial-gradient(700px 500px at 60% 120%,rgba(19,176,138,.30),transparent 60%),
+               linear-gradient(160deg,#0e1424 0%,#0b1020 100%)}
+  .hero-in{max-width:var(--maxw);margin:0 auto;padding:64px 26px 58px}
+  .eyebrow{font-family:"DM Mono",monospace;font-size:12.5px;letter-spacing:.34em;color:#9db3ff;text-transform:uppercase}
+  .hero h1{font-size:clamp(30px,5vw,52px);line-height:1.18;margin:.32em 0 .2em;font-weight:900;letter-spacing:.005em}
+  .hero h1 .g{background:linear-gradient(92deg,#7ea2ff,#b89bff 55%,#74e3c4);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero .lead{font-size:clamp(15px,2vw,18.5px);color:#c4cfe6;max-width:760px;font-weight:300}
+  .hero .meta{margin-top:28px;display:flex;flex-wrap:wrap;gap:10px 26px;font-size:13px;color:#9fb0cc}
+  .hero .meta b{color:#dde6f7;font-weight:500}
+  .hero .pill{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 13px;font-size:12px;color:#cdd7ea}
+
+  /* ---------- Layout ---------- */
+  main{max-width:var(--maxw);margin:0 auto;padding:10px 22px 80px}
+  section{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
+    padding:38px 40px;margin:26px 0;box-shadow:var(--shadow)}
+  section.flush{background:none;border:none;box-shadow:none;padding:14px 4px 0}
+  .sec-h{display:flex;align-items:baseline;gap:14px;margin:0 0 6px}
+  .sec-n{font-family:"DM Mono",monospace;font-size:14px;color:var(--imt);font-weight:500;letter-spacing:.06em}
+  h2{font-size:clamp(22px,3vw,30px);font-weight:800;margin:.1em 0 .35em;letter-spacing:.01em;line-height:1.3}
+  h3{font-size:18.5px;font-weight:700;margin:30px 0 10px;letter-spacing:.01em}
+  h4{font-size:15px;font-weight:700;margin:18px 0 6px;color:var(--ink)}
+  p{margin:.6em 0;color:#33405a}
+  .sub{color:var(--muted);font-size:15px;margin-top:-2px}
+  strong,b{color:var(--ink)}
+  .em{color:var(--imt-d);font-weight:700}
+  .em-mm{color:var(--mm-d);font-weight:700}
+  .em-ai{color:var(--ai-d);font-weight:700}
+  ul,ol{margin:.5em 0;padding-left:1.3em}
+  li{margin:.32em 0;color:#33405a}
+  hr{border:none;border-top:1px solid var(--line);margin:30px 0}
+
+  .lede{font-size:17px;border-left:4px solid var(--imt);
+    background:linear-gradient(90deg,var(--imt-bg),transparent);padding:14px 20px;border-radius:0 12px 12px 0;color:#23314e}
+
+  /* quote */
+  .quote{font-size:19px;font-weight:500;line-height:1.7;color:#1c2740;margin:22px 0;
+    padding:20px 26px;background:var(--soft);border-radius:14px;border:1px solid var(--line)}
+  .quote .mk{color:var(--ai);font-weight:900;font-size:26px;vertical-align:-2px;margin-right:6px}
+
+  /* cards grid */
+  .grid{display:grid;gap:16px;margin:18px 0}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:760px){.g2,.g3{grid-template-columns:1fr}}
+  .card{border:1px solid var(--line);border-radius:14px;padding:18px 20px;background:#fff}
+  .card .t{font-weight:700;font-size:15.5px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .card .d{font-size:13.5px;color:var(--muted);line-height:1.7}
+  .card.imt{background:var(--imt-bg);border-color:#cfe0ff}
+  .card.mm{background:var(--mm-bg);border-color:#bfeede}
+  .card.ai{background:var(--ai-bg);border-color:#ddd0fb}
+  .card.warn{background:var(--warn-bg);border-color:#f4dba6}
+
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
+  .dot.imt{background:var(--imt)} .dot.mm{background:var(--mm)} .dot.ai{background:var(--ai)} .dot.be{background:var(--be)}
+
+  /* table */
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;overflow:hidden;border-radius:12px}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--bg);color:#e6edfb;font-weight:600;font-size:13px;letter-spacing:.02em}
+  thead th:first-child{border-radius:0}
+  tr:last-child td{border-bottom:none}
+  td:first-child{font-weight:600;color:var(--ink)}
+  .tag{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:999px;line-height:1.6}
+  .tag.imt{background:var(--imt-bg);color:var(--imt-d)}
+  .tag.mm{background:var(--mm-bg);color:var(--mm-d)}
+  .tag.ai{background:var(--ai-bg);color:var(--ai-d)}
+  .tag.now{background:#e3f6ec;color:#0e7a44}
+  .tag.be{background:var(--be-bg);color:#33415c}
+  .tag.warn{background:var(--warn-bg);color:#8a5400}
+
+  /* diagram frame */
+  .fig{margin:22px 0;border:1px solid var(--line);border-radius:16px;background:
+    linear-gradient(180deg,#fbfcff,#f5f8ff);padding:20px 14px 10px;overflow:hidden}
+  .fig svg{width:100%;height:auto;display:block}
+  .fig .cap{font-size:12.5px;color:var(--muted);text-align:center;margin:10px 8px 6px;letter-spacing:.02em}
+
+  /* cascade pyramid */
+  .casc{display:flex;flex-direction:column;gap:10px;margin:20px auto;max-width:680px}
+  .casc .row{display:flex;align-items:center;gap:14px}
+  .casc .bar{flex:1;border-radius:12px;padding:14px 20px;color:#fff;position:relative}
+  .casc .lv1{background:linear-gradient(90deg,var(--imt-d),var(--imt))}
+  .casc .lv2{background:linear-gradient(90deg,#1f7d63,var(--mm))}
+  .casc .lv3{background:linear-gradient(90deg,#6d49c4,var(--ai))}
+  .casc .bar .h{font-weight:800;font-size:16px}
+  .casc .bar .s{font-size:12.5px;opacity:.92}
+  .casc .who{width:118px;font-size:12.5px;color:var(--muted);text-align:right;flex:none}
+  .casc .scope{width:150px;flex:none;font-size:11.5px}
+  @media(max-width:640px){.casc .who,.casc .scope{display:none}}
+
+  /* roadmap */
+  .road{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:22px 0}
+  @media(max-width:860px){.road{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.road{grid-template-columns:1fr}}
+  .ph{border:1px solid var(--line);border-radius:14px;padding:16px;background:#fff;position:relative;display:flex;flex-direction:column}
+  .ph .p{font-family:"DM Mono",monospace;font-weight:600;font-size:13px;color:var(--imt)}
+  .ph .pt{font-weight:700;font-size:14.5px;margin:3px 0 8px}
+  .ph .pd{font-size:12.5px;color:var(--muted);flex:1}
+  .ph .pf{margin-top:10px;font-size:11px}
+  .ph.now-ph{border-color:#bfeede;background:linear-gradient(180deg,#fff,var(--mm-bg))}
+  .ph.be-ph{border-color:#cdb8f5;background:linear-gradient(180deg,#fff,#f6f1ff)}
+
+  .note{font-size:13.5px;color:var(--muted);background:var(--soft);border-radius:12px;padding:14px 18px;margin:14px 0;border:1px solid var(--line)}
+  .key{display:inline-block;background:var(--ink);color:#fff;border-radius:6px;padding:1px 8px;font-family:"DM Mono",monospace;font-size:12.5px}
+
+  .callout{border-radius:14px;padding:18px 22px;margin:18px 0;border:1px solid}
+  .callout.warn{background:var(--warn-bg);border-color:#f1d28f}
+  .callout.ai{background:var(--ai-bg);border-color:#ddd0fb}
+  .callout .ct{font-weight:800;font-size:15px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+
+  footer{max-width:var(--maxw);margin:0 auto;padding:30px 26px 60px;color:var(--muted);font-size:12.5px}
+  footer .l{height:1px;background:var(--line);margin-bottom:18px}
+
+  @media print{
+    .nav{display:none} body{background:#fff}
+    section{box-shadow:none;break-inside:avoid;border-color:#ccc}
+    .hero{background:#0e1424 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .fig,.card,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-in">
+    <b>IMT × Mindmap</b>
+    <a href="#why" class="jl">為什麼</a>
+    <a href="#doctrine" class="jl">核心思想</a>
+    <a href="#roles" class="jl">兩工具分工</a>
+    <a href="#flow" class="jl">資料流</a>
+    <a href="#backend" class="jl">為何需後端</a>
+    <a href="#build" class="jl">為何自建</a>
+    <a href="#arch" class="jl">技術架構</a>
+    <a href="#road" class="jl">階段計畫</a>
+    <a href="#ask" class="jl">給IT的提問</a>
+    <span class="sp"></span>
+    <button class="pr" onclick="window.print()">列印 / PDF</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-in">
+    <div class="eyebrow">Technical Vision · 技術構想書</div>
+    <h1>讓經營課題<span class="g">確實地往下貫穿</span><br>到每個人的工作</h1>
+    <p class="lead">一個由「俯瞰儀表板（IMT）」與「思考工作台（Mindmap）」組成的內部業務平台。
+    以 Issue → Mission → Task 的正確級聯（cascade），把「該面對的經營課題」不靠口號、而靠設計，
+    自然地滲透到全公司 51 人的日常工作中——並讓 AI 成為經營的眼睛。</p>
+    <div class="meta">
+      <span class="pill">負責人：小沼和幸（總經理）</span>
+      <span class="pill">版本 v.1 · 2026-06-04</span>
+      <span class="pill">對象：資訊事業處 / 經營戰略組</span>
+      <span class="pill">語言：繁體中文</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ WHY ============ -->
+  <section id="why">
+    <div class="sec-h"><span class="sec-n">01</span></div>
+    <h2>為什麼現在需要這個開發？</h2>
+    <p class="sub">先談背景。沒有背景，這只是「又一個工具」；有了背景，它是結構改革的一個齒輪。</p>
+
+    <h3>① 事業的處境：在縮小的市場中，重建可持續的結構</h3>
+    <p>2025 年 3 月，支撐公司數十年的<strong>巧虎月刊講座正式停刊</strong>。少子化讓每年新進入市場的家庭持續減少（2025 年出生數約 10.7 萬人），而月刊模式的高獲客成本與固定製作成本難以隨會員減少而壓縮。停刊不是商品的結束，而是<strong>組織、成本結構與營運模式的全面重整</strong>。</p>
+    <p>我們選擇的方向是 <strong>TBBS</strong>（Taipei Branch Business Strategy）：以巧虎 IP 為軸，組合商品銷售、舞台劇、授權金三大支柱，並以數據驅動的 <strong>LC8T</strong> 行銷閉環，讓利益公式 <span class="key">P = O × N × CV − I</span> 的每個因子都「能被實際掌控」。</p>
+
+    <h3>② 組織的處境：一個必須誠實面對的文化問題</h3>
+    <p>過去我們相信「自主性」，先以寬鬆的管理取代嚴格的管控。但結果是——<strong>自由被誤解了</strong>：</p>
+    <div class="grid g2">
+      <div class="card warn">
+        <div class="t">⚠ 寬鬆管理的副作用</div>
+        <div class="d">「報告・相談・決裁」被輕視，形成一種<b>容易流向輕鬆選項、各自解讀</b>的文化。自主與自由，最終流向了「往安逸處走」。</div>
+      </div>
+      <div class="card">
+        <div class="t">✓ 我們真正要的</div>
+        <div class="d">在嚴峻環境中也能生存、持續成長的組織，需要一種<b>「對該面對的經營課題、確實去面對」</b>的文化。但——光喊口號不會改變，而增加「報告」負擔反而會降低生產力。</div>
+      </div>
+    </div>
+    <div class="lede">所以這不是嚴管 vs 放任的二選一。我們要的是<strong>「用設計，而非強制」</strong>——讓正確的級聯（Issue→Mission→Task）自然發生，讓人因為「<strong>用了反而更方便</strong>」而願意打開它。這需要經營上的巧思，而不只是一套軟體。</p></div>
+
+    <h3>③ 工具的由來：從個人備忘錄，長成全公司的平台</h3>
+    <p>這套工具最初只是經營幹部與我之間的報告／溝通備忘錄。但隨著思想成熟，它要升級為<strong>全體員工都能使用的業務平台</strong>。本構想書，就是這次升級的「設計圖」。</p>
+  </section>
+
+  <!-- ============ DOCTRINE ============ -->
+  <section id="doctrine">
+    <div class="sec-h"><span class="sec-n">02</span></div>
+    <h2>核心思想：四個不可動搖的原則</h2>
+    <div class="grid g2">
+      <div class="card imt">
+        <div class="t"><span class="dot imt"></span>正確的級聯（Cascade）</div>
+        <div class="d">經營課題（Issue）→ 部門任務（Mission）→ 個人行動（Task），目的與目標一路不走樣地往下貫穿。讓「為什麼做這件事」永遠看得見。</div>
+      </div>
+      <div class="card mm">
+        <div class="t"><span class="dot mm"></span>零負擔、且「用了更方便」</div>
+        <div class="d">不做成「報告表單」。記錄是一行短句，重的成果連結到 Confluence／SharePoint。導入門檻低，但因為同事與資訊都在這裡，結果它最快——像「來上班」一樣自然。</div>
+      </div>
+      <div class="card ai">
+        <div class="t"><span class="dot ai"></span>AI 時代：作業給 AI，人專注思考</div>
+        <div class="d">資料持續累積，成為餵給 AI 的燃料。「<b>AI 做判斷，人做關係與決策</b>」。讓 AI 從行動 log 與結果數據中，找出經營改善的洞察。</div>
+      </div>
+      <div class="card">
+        <div class="t"><span class="dot be"></span>貼合自家業務（全員多任務）</div>
+        <div class="d">對任何層級都有用，特別是幹部與組長的 IMT 管理。不是 Jira 那種重型規格，而是貼合「全員多任務」的實際工作方式。</div>
+      </div>
+    </div>
+    <div class="quote"><span class="mk">“</span>先陪伴、後推薦；AI 做判斷，人做關係。<br>這是 LC8T 對顧客的精神——我們把同樣的精神，用在對「組織內部」的經營管理上。</div>
+  </section>
+
+  <!-- ============ ROLES ============ -->
+  <section id="roles">
+    <div class="sec-h"><span class="sec-n">03</span></div>
+    <h2>兩個工具的分工：用「粒度」住分</h2>
+    <p class="sub">關鍵設計決策：不把兩者都做成資料庫，而是讓它們在不同的「層」各司其職。</p>
+
+    <table>
+      <thead><tr><th style="width:18%"></th><th style="width:41%">IMT — 入口 / 俯瞰儀表板</th><th style="width:41%">Mindmap（mm-app）— 思考工作台</th></tr></thead>
+      <tbody>
+        <tr><td>定位</td><td><span class="tag imt">經營的眼睛</span> 俯瞰、確認、經營判斷</td><td><span class="tag mm">現場的手</span> 思考、討論、分解、實作</td></tr>
+        <tr><td>粒度</td><td><b>Issue ＆ Mission 為止</b>（不含 Task，避免資訊過細）</td><td>Mission → <b>Task</b> 為止（細節都在這裡）</td></tr>
+        <tr><td>主要使用者</td><td>總經理・經營戰略組（俯瞰）／處長・組長（週一報告）</td><td><b>全體員工</b>（1 部門〔處〕= 1 檔案）</td></tr>
+        <tr><td>資料的「籍」</td><td><b>Issue 在此定義</b>；Mission 的「編號・狀態・DRI」索引在此</td><td><b>Mission / Task 的實體與內容</b>在此</td></tr>
+        <tr><td>負擔</td><td>看 + 一條連到 mm-app 的連結 + 幾行 DRI 留言</td><td>畫圖、寫定義、貼連結；重成果外連</td></tr>
+        <tr><td>AI 的角色</td><td>從 mm-app 的 AI 差分 log 判定「狀態」並上色；融合 PL／LC8T 找洞察</td><td>產生 prompt／context；對 Mission 最新狀況做 AI 分析</td></tr>
+      </tbody>
+    </table>
+
+    <h3>三個層級，三種人，一條鎖鏈</h3>
+    <div class="casc">
+      <div class="row">
+        <div class="who">DRI＝處長</div>
+        <div class="bar lv1"><div class="h">Issue　經營課題</div><div class="s">總經理定義並與處長握定，不讓人各自解讀</div></div>
+        <div class="scope"><span class="tag imt">IMT 定義</span></div>
+      </div>
+      <div class="row">
+        <div class="who">DRI＝組長</div>
+        <div class="bar lv2"><div class="h">Mission　部門任務</div><div class="s">在 mm-app 從 Issue 分解而生；狀態回傳 IMT</div></div>
+        <div class="scope"><span class="tag imt">IMT 索引</span> <span class="tag mm">mm 實體</span></div>
+      </div>
+      <div class="row">
+        <div class="who">DRI＝組員</div>
+        <div class="bar lv3"><div class="h">Task　個人行動</div><div class="s">在 mm-app 管理；自己設定截止日（助力，非鞭子）</div></div>
+        <div class="scope"><span class="tag mm">僅 mm-app</span></div>
+      </div>
+    </div>
+    <p class="note"><b>為什麼這樣分工最聰明：</b>把 Mindmap 做成資料庫，它的「輕快」會死；把 IMT 做成自由畫布，它的「俯瞰」會死。讓它們<b>在不同的層各活各的</b>，再用一座橋（<span class="key">編號</span>）相連，兩邊的長處都保住。這正是過去反覆糾結「source of truth 在哪邊」的解答——答案是<b>「按層分」</b>。</p>
+  </section>
+
+  <!-- ============ FLOW ============ -->
+  <section id="flow">
+    <div class="sec-h"><span class="sec-n">04</span></div>
+    <h2>資料如何流動：三條流</h2>
+    <p class="sub">整個平台的脊椎。理解這張圖，就理解了全部。</p>
+
+    <div class="fig">
+      <svg viewBox="0 0 980 560" role="img" aria-label="三條資料流圖">
+        <defs>
+          <marker id="ar" markerWidth="11" markerHeight="11" refX="8" refY="5" orient="auto">
+            <path d="M0,0 L9,5 L0,10 z" fill="#2f6bff"/></marker>
+          <marker id="ar2" markerWidth="11" markerHeight="11" refX="8" refY="5" orient="auto">
+            <path d="M0,0 L9,5 L0,10 z" fill="#13b08a"/></marker>
+          <marker id="ar3" markerWidth="11" markerHeight="11" refX="8" refY="5" orient="auto">
+            <path d="M0,0 L9,5 L0,10 z" fill="#8b5cf6"/></marker>
+          <linearGradient id="gimt" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#3f78ff"/><stop offset="1" stop-color="#1b3f9c"/></linearGradient>
+          <linearGradient id="gmm" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#1ac79b"/><stop offset="1" stop-color="#0a6b56"/></linearGradient>
+          <linearGradient id="gai" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#a07bf3"/><stop offset="1" stop-color="#5b2bb8"/></linearGradient>
+        </defs>
+
+        <!-- IMT box -->
+        <rect x="60" y="34" width="520" height="116" rx="18" fill="url(#gimt)"/>
+        <text x="84" y="70" fill="#fff" font-size="20" font-weight="800">IMT　俯瞰儀表板</text>
+        <text x="84" y="96" fill="#dce7ff" font-size="13.5">Issue ＆ Mission · 狀態色 · 週一幾行留言</text>
+        <text x="84" y="118" fill="#dce7ff" font-size="13.5">使用者：總經理 / 經營戰略組 / 處長 / 組長</text>
+        <text x="84" y="140" fill="#aec6ff" font-size="12">＋ 公司共通入口：PL 儀表板・KPI・連結集</text>
+
+        <!-- mm box -->
+        <rect x="60" y="410" width="520" height="120" rx="18" fill="url(#gmm)"/>
+        <text x="84" y="446" fill="#fff" font-size="20" font-weight="800">Mindmap　思考工作台</text>
+        <text x="84" y="472" fill="#d7f5ec" font-size="13.5">Mission → Task · 心智圖畫布 · 大綱 / 備忘 / 連結 / 看板</text>
+        <text x="84" y="494" fill="#d7f5ec" font-size="13.5">使用者：全體員工（1 處 = 1 檔案・即時協作）</text>
+        <text x="84" y="516" fill="#b7ecdb" font-size="12">＋ AI 匯入／匯出：prompt・context・狀態分析</text>
+
+        <!-- down arrow (cascade) -->
+        <line x1="190" y1="150" x2="190" y2="410" stroke="#2f6bff" stroke-width="3" marker-end="url(#ar)"/>
+        <rect x="206" y="232" width="186" height="50" rx="10" fill="#eaf1ff" stroke="#cfe0ff"/>
+        <text x="216" y="252" fill="#1b3f9c" font-size="12.5" font-weight="700">① 下行・級聯</text>
+        <text x="216" y="270" fill="#33415c" font-size="11.5">選 Issue → 開該處檔案 → 分解 Mission</text>
+
+        <!-- up arrow (import) -->
+        <line x1="450" y1="410" x2="450" y2="150" stroke="#13b08a" stroke-width="3" marker-end="url(#ar2)"/>
+        <rect x="206" y="320" width="220" height="50" rx="10" fill="#e6f7f1" stroke="#bfeede"/>
+        <text x="216" y="340" fill="#0a6b56" font-size="12.5" font-weight="700">② 上行・匯入</text>
+        <text x="216" y="358" fill="#33415c" font-size="11.5">Mission 狀態 + AI 差分 log → IMT 上色</text>
+
+        <!-- bridge label -->
+        <rect x="250" y="270" width="120" height="0" />
+        <text x="320" y="294" text-anchor="middle" fill="#5b6b86" font-size="12" font-style="italic">兩流共用同一把鑰匙</text>
+        <rect x="280" y="186" width="80" height="26" rx="13" fill="#1a2233"/>
+        <text x="320" y="204" text-anchor="middle" fill="#fff" font-size="13" font-family="DM Mono, monospace">編號</text>
+
+        <!-- AI engine -->
+        <rect x="650" y="150" width="270" height="260" rx="18" fill="url(#gai)"/>
+        <text x="672" y="188" fill="#fff" font-size="19" font-weight="800">③ AI 經營引擎</text>
+        <text x="672" y="214" fill="#ece3ff" font-size="13">行動 log（IMT＋mm）</text>
+        <text x="672" y="236" fill="#ece3ff" font-size="13">　　　×</text>
+        <text x="672" y="258" fill="#ece3ff" font-size="13">結果數據（PL・LC8T・CUBE）</text>
+        <line x1="690" y1="278" x2="880" y2="278" stroke="#d9ccfb" stroke-width="1"/>
+        <text x="672" y="306" fill="#fff" font-size="13.5" font-weight="600">→ 找出因果：</text>
+        <text x="672" y="328" fill="#ece3ff" font-size="12.5">打手 → 中間 KPI → PL 結果</text>
+        <text x="672" y="356" fill="#fff" font-size="13.5" font-weight="600">→ 支援經營判斷</text>
+        <text x="672" y="378" fill="#ece3ff" font-size="12.5">P = O × N × CV − I 的可控化</text>
+
+        <!-- arrows into AI -->
+        <line x1="580" y1="92" x2="650" y2="170" stroke="#8b5cf6" stroke-width="2.5" marker-end="url(#ar3)"/>
+        <line x1="580" y1="470" x2="650" y2="390" stroke="#8b5cf6" stroke-width="2.5" marker-end="url(#ar3)"/>
+      </svg>
+      <div class="cap">圖 1　三條流：① 下行（級聯）　② 上行（匯入）　③ AI 經營（融合 PL／LC8T 找洞察）。橋＝編號。</div>
+    </div>
+
+    <div class="grid g3">
+      <div class="card imt"><div class="t">① 下行・級聯</div><div class="d">在 IMT 選定 Issue → mm-app 對應「處」檔案開啟、DRI 自動帶入 → 組長在畫布上把 Issue 分解成 Mission、再到 Task。</div></div>
+      <div class="card mm"><div class="t">② 上行・匯入</div><div class="d">mm-app 的 Mission 最新狀況、幾行留言、<b>AI 差分 log</b> 回傳 IMT；IMT 不必細看，由 <b>AI 判定狀態</b>並上色。</div></div>
+      <div class="card ai"><div class="t">③ AI 經營</div><div class="d">把兩工具的「行動 log」與 PL／LC8T／CUBE 的「結果數據」對照，回答：我們做了什麼、哪個數字會動、下一步該做什麼。</div></div>
+    </div>
+
+    <h3>使用情境（誰、在什麼時候用）</h3>
+    <table>
+      <thead><tr><th style="width:22%">角色</th><th>情境</th></tr></thead>
+      <tbody>
+        <tr><td>總經理</td><td>俯瞰全公司、確認停滯，做「刺激・指導・中止」的經營判斷；向各部門提出具體報告請求。</td></tr>
+        <tr><td>經營戰略組（事務局）</td><td>掌握實態與課題真因；工作從「轉抄・代行」轉為「催促・方向指引」。</td></tr>
+        <tr><td>處長・組長</td><td>每週一就自己 DRI 的 Issue／Mission 寫幾行狀況（可參考 mm-app 的 AI 報告）；確認是否走向成果、而非安逸。</td></tr>
+        <tr><td>組員</td><td>在 mm-app 確認與管理自己的 Task，自訂截止日。</td></tr>
+        <tr><td>會議中</td><td>用心智圖邏輯地說明（免做報告書）；腦力激盪 → 直接設定 Task；上司向下級級聯 Task。</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ BACKEND ============ -->
+  <section id="backend">
+    <div class="sec-h"><span class="sec-n">05</span></div>
+    <h2>為什麼「後端」是必須的？</h2>
+    <p class="sub">這是給工程師最重要的一頁。我們誠實地把構想切成兩個世界。</p>
+
+    <p>目前兩個工具都是「<b>純前端</b>」：靜態單頁 HTML（Netlify）＋ Google 試算表（gviz 讀取）＋ Apps Script（doPost 寫入）；Mindmap 則是單一 JSON 檔＋ Google Drive 資料夾「一次一人」編輯。<b>這在「實證階段」很省、很好。但構想中的這幾項，純前端做不到</b>：</p>
+
+    <div class="grid g2">
+      <div class="card warn"><div class="t">① 全員同時共同編輯</div><div class="d">「1 處 1 檔案、全組同時編輯」——Drive 資料夾的「一次一人」做不到並發。需要<b>即時同步伺服器</b>（CRDT / Realtime）。</div></div>
+      <div class="card warn"><div class="t">② 真正的權限控管</div><div class="d">靜態站＋公開 gviz＝所有資料都送到瀏覽器，只能「藏 UI」。真正的閱覽權限需要<b>帶認證的後端</b>。</div></div>
+      <div class="card warn"><div class="t">③ 伺服器端 AI 自動分析</div><div class="d">差分 log → 狀態判定、Mission 最新狀況分析。API 金鑰<b>不能放在前端</b>，必須由後端排程執行。</div></div>
+      <div class="card warn"><div class="t">④ 備份與資安、自動匯入</div><div class="d">事業資料不能只靠 localStorage／Drive。自動（而非手按）把 mm-app 匯入 IMT，也需要伺服器來讀寫。</div></div>
+    </div>
+
+    <div class="callout warn">
+      <div class="ct">⚠ 誠實的分水嶺</div>
+      <p style="margin:.3em 0">構想中的<b>「全員同時編輯・AI 自動分析・權限・備份・資安」</b>，已經超出靜態工具的延長線。這一層，是與<b>資訊事業處</b>共同進行的正式開發。但——這不代表要等它做完才動：下一節的階段計畫，會先用純前端把「整個迴圈」跑通、證明思想可行，再投入後端。</p>
+    </div>
+  </section>
+
+  <!-- ============ BUILD VS BUY ============ -->
+  <section id="build">
+    <div class="sec-h"><span class="sec-n">06</span></div>
+    <h2>為什麼選「自建」而非 SaaS？</h2>
+    <p class="sub">這個決策已經拍板。理由要讓工程師認同，也要誠實面對風險。</p>
+
+    <div class="grid g2">
+      <div class="card">
+        <div class="t">💡 為什麼不買 SaaS</div>
+        <div class="d">
+          <b>1. 成本</b>：到目前為止，連非工程師都能自建到這個程度；客製化的外包費、SaaS 的訂閱費，都不想再增加。<br>
+          <b>2. AI 紅利</b>：在 AI 飛速進化的當下，<b>自建為主</b>最能吃到 AI 的恩惠（用 AI 寫、用 AI 改、用 AI 分析）。<br>
+          <b>3. 風險可控</b>：開發過程中的失敗，<b>影響範圍僅限內部</b>，不會給客戶添麻煩。<br>
+          <b>4. 整合價值</b>：IMT 級聯＋編號連結＋AI context 匯出＋繁中＋經營思想，是 SaaS 給不了的。
+        </div>
+      </div>
+      <div class="card ai">
+        <div class="t">🛡 工程上的誠實補充</div>
+        <div class="d">
+          自建唯一真正的工程難點是<b>「即時協作的衝突解決」</b>。建議<b>不要自己發明同步演算法</b>，而是站在成熟的開源肩膀上（如 <b>Yjs</b> 這類 CRDT、或 <b>Supabase</b> 的 Realtime）。<br>
+          這樣「自建」＝用開源元件組裝 + 我們自己寫業務邏輯與 UI，而不是從零造輪子。成本低、可自託管、可被 AI 協助維護。
+        </div>
+      </div>
+    </div>
+    <p class="note"><b>給 IT 的定調：</b>「自建為主、站在開源之上、漸進遷移」。先不追求一次到位，而是把現行（Sheet＋Apps Script）當作 Phase 0 的後端，逐步把<b>需要並發與權限的部分</b>搬到新的同步後端。</p>
+  </section>
+
+  <!-- ============ ARCH ============ -->
+  <section id="arch">
+    <div class="sec-h"><span class="sec-n">07</span></div>
+    <h2>技術架構提案</h2>
+    <p class="sub">給資訊事業處的具體藍圖。重點：與顧客資料（CUBE）明確分離、編號為全系統主鍵。</p>
+
+    <div class="fig">
+      <svg viewBox="0 0 980 470" role="img" aria-label="目標架構圖">
+        <defs>
+          <marker id="b" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0,0 L8,5 L0,10 z" fill="#475569"/></marker>
+        </defs>
+        <!-- clients -->
+        <rect x="40" y="40" width="220" height="120" rx="16" fill="#fff" stroke="#cfd8e6" stroke-width="1.5"/>
+        <text x="60" y="72" font-size="15" font-weight="800" fill="#1a2233">瀏覽器用戶端</text>
+        <text x="60" y="96" font-size="12.5" fill="#5b6b86">IMT 儀表板（前端）</text>
+        <text x="60" y="116" font-size="12.5" fill="#5b6b86">Mindmap 工作台（前端）</text>
+        <text x="60" y="140" font-size="11.5" fill="#94a3b8">全員 51 人 · 繁體中文 UI</text>
+
+        <!-- SSO -->
+        <rect x="40" y="200" width="220" height="62" rx="14" fill="#eef2f9" stroke="#cfd8e6"/>
+        <text x="60" y="228" font-size="13.5" font-weight="700" fill="#33415c">認證 · Google Workspace SSO</text>
+        <text x="60" y="248" font-size="11.5" fill="#7385a0">公司已在 Google 生態（Drive/Sheet）</text>
+
+        <!-- sync backend -->
+        <rect x="360" y="40" width="250" height="120" rx="16" fill="#13b08a"/>
+        <text x="382" y="72" font-size="15" font-weight="800" fill="#fff">即時同步後端</text>
+        <text x="382" y="96" font-size="12.5" fill="#d7f5ec">CRDT (Yjs) / Supabase Realtime</text>
+        <text x="382" y="116" font-size="12.5" fill="#d7f5ec">多人同時編輯 · 衝突自動合併</text>
+        <text x="382" y="140" font-size="11.5" fill="#b7ecdb">可自託管 · 開源元件</text>
+
+        <!-- DB -->
+        <rect x="360" y="200" width="250" height="120" rx="16" fill="#1a2233"/>
+        <text x="382" y="232" font-size="15" font-weight="800" fill="#fff">資料庫（Postgres）</text>
+        <text x="382" y="256" font-size="12.5" fill="#c9d4ea">結構化：Issue / Mission / Task</text>
+        <text x="382" y="276" font-size="12.5" fill="#c9d4ea">畫布內容：JSON 欄位</text>
+        <text x="382" y="300" font-size="12.5" fill="#8fb4ff">主鍵 = 編號（不變，版本進 log）</text>
+
+        <!-- AI service -->
+        <rect x="710" y="40" width="230" height="120" rx="16" fill="url(#gai)"/>
+        <text x="732" y="72" font-size="15" font-weight="800" fill="#fff">AI 服務（後端）</text>
+        <text x="732" y="96" font-size="12.5" fill="#ece3ff">Claude API（金鑰保管後端）</text>
+        <text x="732" y="116" font-size="12.5" fill="#ece3ff">差分 log → 狀態判定 / 摘要</text>
+        <text x="732" y="140" font-size="11.5" fill="#d9ccfb">prompt / context 產生</text>
+
+        <!-- legacy -->
+        <rect x="710" y="200" width="230" height="120" rx="16" fill="#fff" stroke="#cfd8e6" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="732" y="230" font-size="14" font-weight="700" fill="#475569">現行（Phase 0 沿用）</text>
+        <text x="732" y="254" font-size="12.5" fill="#5b6b86">Google Sheet（gviz 讀）</text>
+        <text x="732" y="274" font-size="12.5" fill="#5b6b86">Apps Script doPost（寫）</text>
+        <text x="732" y="298" font-size="11.5" fill="#94a3b8">逐步遷移至左側後端</text>
+
+        <!-- CUBE separated -->
+        <rect x="360" y="370" width="580" height="74" rx="14" fill="#fdf6e9" stroke="#e9cf94" stroke-dasharray="6 5"/>
+        <text x="382" y="400" font-size="14" font-weight="800" fill="#8a5400">顧客資料平台 CUBE / CDP（高機微・個資）</text>
+        <text x="382" y="422" font-size="12" fill="#9a6a16">明確分離：本平台僅以唯讀的 KPI／PL 報表「單向引用」，不混存顧客個資。</text>
+
+        <!-- arrows -->
+        <line x1="260" y1="100" x2="360" y2="100" stroke="#475569" stroke-width="2" marker-end="url(#b)"/>
+        <line x1="485" y1="160" x2="485" y2="200" stroke="#475569" stroke-width="2" marker-end="url(#b)"/>
+        <line x1="610" y1="100" x2="710" y2="100" stroke="#475569" stroke-width="2" marker-end="url(#b)"/>
+        <line x1="610" y1="260" x2="710" y2="260" stroke="#475569" stroke-width="2" marker-end="url(#b)"/>
+        <line x1="610" y1="300" x2="640" y2="360" stroke="#9a6a16" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#b)"/>
+        <line x1="150" y1="160" x2="150" y2="200" stroke="#475569" stroke-width="2" marker-end="url(#b)"/>
+      </svg>
+      <div class="cap">圖 2　目標架構。左側為新後端（即時同步＋DB＋SSO），右下為現行系統（Phase 0 沿用、漸進遷移），下方 CUBE 嚴格分離。</div>
+    </div>
+
+    <h3>連接標準（API / Webhook / DB）— 對應戴詠的職責</h3>
+    <ul>
+      <li><b>編號為全系統 join key</b>：Issue／Mission／Task 的編號不變；任何修改的版本進入事件 log（append-only），不在編號上加分枝。</li>
+      <li><b>IMT ⇄ mm-app 同步</b>：以 REST + Webhook，事件粒度＝「登錄／修改／進度／期日變更／封存／刪除」，每筆帶「何時・誰・改了什麼」。</li>
+      <li><b>兩面資料模型</b>：「現況（覆寫・一筆一列）」與「歷史（append-only 事件 log）」分離；現況供儀表板，log 供 AI 與稽核。</li>
+      <li><b>與 CUBE 的界線</b>：本平台是「內部營運系統（低機微）」，CUBE 是「顧客資料（高機微・個資）」。只透過唯讀報表單向引用，<b>不混存</b>——這讓本平台的法遵負擔輕、可以更快動。</li>
+    </ul>
+
+    <table>
+      <thead><tr><th style="width:26%">能力</th><th>現行（純前端）</th><th>目標（自建後端）</th></tr></thead>
+      <tbody>
+        <tr><td>多人同時編輯</td><td>一次一人（Drive）</td><td><span class="tag mm">CRDT / Realtime</span> 同時並發</td></tr>
+        <tr><td>權限</td><td>藏 UI（非真控管）</td><td><span class="tag be">SSO + 後端授權</span></td></tr>
+        <tr><td>AI 分析</td><td>手動投餵</td><td><span class="tag ai">後端排程 + 金鑰保管</span></td></tr>
+        <tr><td>備份 / 資安</td><td>localStorage / Drive</td><td><span class="tag be">受管 DB + 備份策略</span></td></tr>
+        <tr><td>IMT 匯入</td><td>手動按鈕（沿用 doPost）</td><td>自動同步（Webhook）</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ ROADMAP ============ -->
+  <section id="road">
+    <div class="sec-h"><span class="sec-n">08</span></div>
+    <h2>階段開發計畫</h2>
+    <p class="sub">原則：先用最低風險把「整個迴圈」跑通並證明思想，再投入後端。失敗只影響內部。</p>
+
+    <div class="road">
+      <div class="ph now-ph">
+        <div class="p">P0</div><div class="pt">連結 + 入口</div>
+        <div class="pd">以編號做 IMT⇄mm 雙向深連結；IMT 整理為 Issue/Mission 粒度 + 共通入口（PL/KPI/連結集）。</div>
+        <div class="pf"><span class="tag now">純前端 · 可立即</span></div>
+      </div>
+      <div class="ph now-ph">
+        <div class="p">P1</div><div class="pt">手動匯入</div>
+        <div class="pd">mm-app 的 Mission 狀態 + 幾行留言，用「送出到 IMT」按鈕（沿用現有 Apps Script doPost）寫回。迴圈成形。</div>
+        <div class="pf"><span class="tag now">純前端 · 沿用現行</span></div>
+      </div>
+      <div class="ph now-ph">
+        <div class="p">P2</div><div class="pt">AI context（前端）</div>
+        <div class="pd">由 Mission 內容產生 prompt／context（複製/下載），手動投餵 Claude/ChatGPT；差分 log 客戶端 diff → 文字。</div>
+        <div class="pf"><span class="tag now">純前端</span> <span class="tag ai">AI 半自動</span></div>
+      </div>
+      <div class="ph be-ph">
+        <div class="p">P3</div><div class="pt">即時協作後端</div>
+        <div class="pd">導入同步後端（Yjs/Supabase）+ SSO：1 處 1 檔案、全員同時編輯、真正權限、備份。</div>
+        <div class="pf"><span class="tag be">需後端 · IT 部門</span></div>
+      </div>
+      <div class="ph be-ph">
+        <div class="p">P4</div><div class="pt">AI 經營引擎</div>
+        <div class="pd">後端自動 AI 分析（狀態判定/摘要/停滯偵測）；融合 PL／LC8T／CUBE 找因果洞察。</div>
+        <div class="pf"><span class="tag be">需後端</span> <span class="tag ai">AI 自動</span></div>
+      </div>
+    </div>
+    <p class="note"><b>分水嶺在 P2 → P3 之間。</b>P0–P2 由現有靜態架構即可交付（我這邊可直接做），用來驗證「思想 + 編號連結」是否真的有效；拿著跑通的實物，再與資訊事業處決定 P3 的後端選型與投資。</p>
+  </section>
+
+  <!-- ============ ASK IT ============ -->
+  <section id="ask">
+    <div class="sec-h"><span class="sec-n">09</span></div>
+    <h2>給資訊事業處的提問（決策點）</h2>
+    <p class="sub">把要決定的事，整理成「容易回答的問題」。</p>
+
+    <div class="grid g2">
+      <div class="card"><div class="t">Q1 · 同步基盤選型</div><div class="d">即時協作以哪個為基礎？建議自建路線：<b>Yjs (CRDT)＋輕量 Node</b>，或 <b>Supabase（開源・可自託管・Postgres）</b>。評估維運成本與既有技能。</div></div>
+      <div class="card"><div class="t">Q2 · 認證</div><div class="d">採用 <b>Google Workspace SSO</b> 是否可行？（公司已在 Google 生態）權限模型：處／組／角色。</div></div>
+      <div class="card"><div class="t">Q3 · 資料的家</div><div class="d">本平台 DB 與 <b>CUBE 明確分離</b>（內部營運 vs 顧客個資）。確認界線、引用方式（唯讀 KPI/PL）、與戴詠的 API/DB 連接標準對齊。</div></div>
+      <div class="card"><div class="t">Q4 · AI 的伺服器執行</div><div class="d">後端呼叫 Claude API 的金鑰保管、用量、成本上限放在哪裡？由誰維運排程？</div></div>
+    </div>
+
+    <div class="callout ai">
+      <div class="ct">＃ 相談的運法（給總經理）</div>
+      <p style="margin:.3em 0">建議帶三樣去找 <b>白如雪（處長，定調與選型）／戴詠（API・Webhook・DB 連接標準）／吳家慶（DBA・備份）</b>：① 本構想書（這份）② 圖 1 資料流 + 圖 2 架構 ③ 第 08 節階段計畫的「P0–P2 先跑通、P3 再投資」提案。先給「<b>實證 → 再投資</b>」的節奏，IT 最容易往前站。法遵（個資）請鄧宏毅一併過目權限與資安要求。</p>
+    </div>
+  </section>
+
+  <section class="flush">
+    <div class="quote" style="border-left:4px solid var(--mm);background:linear-gradient(90deg,var(--mm-bg),transparent)">
+      <span class="mk" style="color:var(--mm)">“</span>不靠口號、不靠嚴管，而是讓「正確的級聯」自然發生，讓人因為方便而願意打開——<br>
+      這就是這個平台存在的理由，也是衡量每一個功能該不該做的尺。</div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="l"></div>
+  <p><b>IMT × Mindmap 整合平台 — 技術構想書 v.1</b> · 2026-06-04 · 負責人：小沼和幸（總經理）</p>
+  <p>本文件為內部技術構想，供資訊事業處與經營戰略組討論之用。重的成果與顧客資料分別存於 Confluence／SharePoint 與 CUBE，本平台僅以連結與唯讀引用相接。</p>
+</footer>
+
+<script>
+  // scrollspy for top nav
+  (function(){
+    var links=[].slice.call(document.querySelectorAll('.nav a.jl'));
+    var secs=links.map(function(a){return document.querySelector(a.getAttribute('href'));}).filter(Boolean);
+    function onScroll(){
+      var y=window.scrollY+120, cur=null;
+      secs.forEach(function(s){ if(s.offsetTop<=y) cur=s.id; });
+      links.forEach(function(a){ a.classList.toggle('on', a.getAttribute('href')==='#'+cur); });
+    }
+    window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+  })();
+</script>
+</body>
+</html>
