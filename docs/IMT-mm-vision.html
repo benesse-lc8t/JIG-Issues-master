@@ -64,7 +64,7 @@ body.lang-ja .zh{display:none !important}
 /* 區塊 */
 .section{margin-bottom:50px;scroll-margin-top:64px}
 .sec-label{font-size:11.5px;font-weight:700;letter-spacing:.18em;color:var(--ink-lite);text-transform:uppercase}
-.sec-title{font-size:23px;font-weight:900;color:var(--navy);margin:4px 0 6px;line-height:1.4}
+.sec-title{font-size:23px;font-weight:900;color:var(--navy);margin:4px 0 16px;line-height:1.4}
 .sec-intro{color:var(--ink-lite);font-size:14px;margin-bottom:20px;line-height:1.85}
 .sub-title{font-size:17px;font-weight:700;color:var(--navy);margin:26px 0 12px;padding-left:12px;border-left:4px solid var(--blue)}
 .sub-title.green-bar{border-left-color:var(--green)}
@@ -80,7 +80,6 @@ h4.mini-title{font-size:15px;font-weight:700;color:var(--navy);margin:18px 0 8px
 /* 卡片 */
 .card{background:var(--white);border:1px solid var(--border);border-radius:8px;box-shadow:0 2px 8px rgba(13,27,62,.05);overflow:hidden}
 .card-head{padding:13px 18px;font-weight:700;font-size:14.5px;color:var(--navy);border-bottom:1px solid var(--border);background:#FCFDFE;display:flex;align-items:center;gap:8px}
-.card-head .ic{width:9px;height:9px;border-radius:2px;flex-shrink:0}
 .card-body{padding:16px 18px}
 .card-body .d{font-size:13.5px;color:var(--ink-mid);line-height:1.85}
 .card-top{border-top:3px solid var(--blue)}
@@ -202,7 +201,7 @@ ul.clean.green-bullet li::before{background:var(--green)}
     <li><a href="#doctrine"><span class="nav-idx">02</span><span class="zh">核心思想</span><span class="ja">核心思想</span></a></li>
     <li><a href="#roles"><span class="nav-idx">03</span><span class="zh">兩工具分工</span><span class="ja">2ツールの分担</span></a></li>
     <li><a href="#flow"><span class="nav-idx">04</span><span class="zh">資料流</span><span class="ja">データフロー</span></a></li>
-    <li><a href="#backend"><span class="nav-idx">05</span><span class="zh">為何需後端</span><span class="ja">なぜ後端が要る</span></a></li>
+    <li><a href="#backend"><span class="nav-idx">05</span><span class="zh">為何需後端</span><span class="ja">なぜバックエンドが要る</span></a></li>
     <li><a href="#build"><span class="nav-idx">06</span><span class="zh">為何自建</span><span class="ja">なぜ自作</span></a></li>
     <li><a href="#arch"><span class="nav-idx">07</span><span class="zh">技術架構</span><span class="ja">アーキテクチャ</span></a></li>
     <li><a href="#road"><span class="nav-idx">08</span><span class="zh">階段計畫</span><span class="ja">段階計画</span></a></li>
@@ -234,8 +233,8 @@ ul.clean.green-bullet li::before{background:var(--green)}
         <span class="zh">✍ 負責人：小沼和幸</span><span class="ja">✍ 責任者：小沼和幸</span>
       </div>
       <div class="hero-note">
-        <span class="zh"><b style="color:#fff">本書的論理主線：</b>① 為什麼需要（事業×組織的背景）→ ② 思想（4 原則）→ ③ 兩工具如何分工 → ④ 資料如何流動 → ⑤ 為何需要後端 → ⑥ 為何自建 → ⑦ 技術架構 → ⑧ 階段計畫 → ⑨ 給 IT 的提問。每一頁都在回答「這對組織有什麼用、又該怎麼落地」。</span>
-        <span class="ja"><b style="color:#fff">本書の論理の背骨：</b>① なぜ必要か（事業×組織の背景）→ ② 思想（4原則）→ ③ 2ツールの分担 → ④ データの流れ → ⑤ なぜ後端が要る → ⑥ なぜ自作 → ⑦ アーキテクチャ → ⑧ 段階計画 → ⑨ ITへの問い。各頁が「組織に何の役に立ち、どう実装するか」に答える。</span>
+        <span class="zh"><b style="color:#fff">本書的論理主線：</b>① 為什麼需要（事業×組織的背景）→ ② 思想（4 原則）→ ③ 兩工具如何分工 → ④ 資料如何流動 → ⑤ 為何需要後端 → ⑥ 為何自建 → ⑦ 技術架構 → ⑧ 階段計畫 → ⑨ 給 IT 的提問。</span>
+        <span class="ja"><b style="color:#fff">本書の論理の背骨：</b>① なぜ必要か（事業×組織の背景）→ ② 思想（4原則）→ ③ 2ツールの分担 → ④ データの流れ → ⑤ なぜバックエンドが要る → ⑥ なぜ自作 → ⑦ アーキテクチャ → ⑧ 段階計画 → ⑨ ITへの問い。</span>
       </div>
     </div>
   </div>
@@ -246,13 +245,12 @@ ul.clean.green-bullet li::before{background:var(--green)}
     <section class="section" id="why">
       <div class="sec-label">01 ／ <span class="zh">背景</span><span class="ja">背景</span></div>
       <h2 class="sec-title"><span class="zh">為什麼需要這個開發？</span><span class="ja">なぜこの開発が必要か？</span></h2>
-      <p class="sec-intro"><span class="zh">沒有背景，這只是「又一個工具」；有了背景，它是結構改革的一個齒輪。</span><span class="ja">背景がなければ「ただの新ツール」。背景があれば、構造改革の歯車になる。</span></p>
 
-      <h3 class="sub-title"><span class="zh">事業的處境 — 在縮小的市場中重建結構</span><span class="ja">事業の状況 — 縮小市場で構造を再建する</span></h3>
+      <h3 class="sub-title"><span class="zh">事業的處境 — 在縮小的市場中重建結構</span><span class="ja">事業の状況 — 縮小する市場で構造を再建する</span></h3>
       <div class="grid-2 mb16">
         <div class="card card-top ct-b"><div class="card-body">
           <h4 class="mini-title"><span class="zh">📉 月刊講座停刊（2025年3月）</span><span class="ja">📉 月刊講座の停刊（2025年3月）</span></h4>
-          <div class="d"><span class="zh">支撐公司數十年的巧虎月刊講座正式停刊。它不只是商品的結束，而是<strong>組織、成本結構與營運模式的全面重整</strong>，目標是打造更精實、更具韌性的事業體質。</span><span class="ja">数十年会社を支えた巧虎月刊講座が正式に停刊。これは商品の終了ではなく、<strong>組織・コスト構造・営運モデルの全面再編</strong>であり、より筋肉質で強靭な事業体質をつくることが狙い。</span></div>
+          <div class="d"><span class="zh">支撐公司數十年的巧虎月刊講座正式停刊。它不只是商品的結束，而是<strong>組織、成本結構與營運模式的全面重整</strong>，目標是打造更精實、更具韌性的事業體質。</span><span class="ja">数十年会社を支えた巧虎月刊講座が正式に停刊。これは商品の終了ではなく、<strong>組織・コスト構造・事業運営モデルの全面再編</strong>であり、より筋肉質で強靭な事業体質をつくることが狙い。</span></div>
         </div></div>
         <div class="card card-top ct-r"><div class="card-body">
           <h4 class="mini-title"><span class="zh">📊 市場的現實 — 少子化</span><span class="ja">📊 市場の現実 — 少子化</span></h4>
@@ -261,7 +259,7 @@ ul.clean.green-bullet li::before{background:var(--green)}
       </div>
       <p>
         <span class="zh">我們選擇的方向是 <strong>TBBS</strong>（Taipei Branch Business Strategy）：以巧虎 IP 為軸，組合商品銷售、舞台劇、授權金三大支柱，並以數據驅動的 <strong>LC8T</strong> 行銷閉環，讓利益公式 <span class="key">P = O × N × CV − I</span> 的每個因子都「能被實際掌控」。</span>
-        <span class="ja">選んだ方向は <strong>TBBS</strong>（Taipei Branch Business Strategy）。巧虎IPを軸に、商品販売・舞台劇・ライセンスの三大支柱を組み合わせ、データ駆動の <strong>LC8T</strong> マーケ閉ループで、利益公式 <span class="key">P = O × N × CV − I</span> の各因子を「実際に制御できる」状態にする。</span>
+        <span class="ja">選んだ方向は <strong>TBBS</strong>（Taipei Branch Business Strategy）。巧虎IPを軸に、商品販売・舞台劇・ライセンスの三大支柱を組み合わせ、データ駆動の <strong>LC8T</strong> マーケティング閉ループで、利益公式 <span class="key">P = O × N × CV − I</span> の各因子を「実際に制御できる」状態にする。</span>
       </p>
 
       <h3 class="sub-title green-bar"><span class="zh">組織的目標 — 讓「該面對的課題」確實被面對</span><span class="ja">組織の目標 — 「向き合うべき課題」に確実に向き合う</span></h3>
@@ -285,7 +283,6 @@ ul.clean.green-bullet li::before{background:var(--green)}
     <section class="section" id="doctrine">
       <div class="sec-label">02 ／ <span class="zh">核心思想</span><span class="ja">核心思想</span></div>
       <h2 class="sec-title"><span class="zh">四個不可動搖的原則</span><span class="ja">揺るがない4原則</span></h2>
-      <p class="sec-intro"><span class="zh">每一個功能該不該做，都用這四把尺來量。</span><span class="ja">どの機能を作るかは、この4つの物差しで測る。</span></p>
       <div class="grid-2 mb16">
         <div class="card card-top ct-b"><div class="card-body">
           <h4 class="mini-title"><span class="zh">① 正確的級聯（Cascade）</span><span class="ja">① 正しいカスケード</span></h4>
@@ -293,11 +290,11 @@ ul.clean.green-bullet li::before{background:var(--green)}
         </div></div>
         <div class="card card-top ct-g"><div class="card-body">
           <h4 class="mini-title"><span class="zh">② 零負擔、且「用了更方便」</span><span class="ja">② ゼロ負担、かつ「使った方が便利」</span></h4>
-          <div class="d"><span class="zh">不做成「報告表單」。記錄是一行短句，重的成果連到 Confluence／SharePoint。門檻低，但因為同事與資訊都在這裡，結果它最快——像「來上班」一樣自然。</span><span class="ja">「報告フォーム」にしない。記入は一行短文、重い成果はConfluence/SharePointへリンク。敷居は低いが、仲間も情報もここにあるから結局これが速い——「出社」のように自然に。</span></div>
+          <div class="d"><span class="zh">不做成「報告表單」。記錄是一行短句，重的成果連到 Confluence／SharePoint。門檻低，但因為同事與資訊都在這裡，結果它最快——像「來上班」一樣自然。</span><span class="ja">「報告フォーム」にしない。記入は一行の短文、重い成果はConfluence/SharePointへリンク。敷居は低いが、仲間も情報もここにあるから結局これが速い——「出社」のように自然に。</span></div>
         </div></div>
         <div class="card card-top ct-a"><div class="card-body">
           <h4 class="mini-title"><span class="zh">③ AI 時代：作業給 AI，人專注思考</span><span class="ja">③ AI時代：作業はAI、人は思考</span></h4>
-          <div class="d"><span class="zh">資料持續累積，成為餵給 AI 的燃料。「<strong>AI 做判斷，人做關係與決策</strong>」。讓 AI 從行動 log 與結果數據中，找出經營改善的洞察。</span><span class="ja">データが蓄積し、AIの燃料になる。「<strong>AIが判断、人は関係と決断</strong>」。行動logと結果データからAIが経営改善のインサイトを見つける。</span></div>
+          <div class="d"><span class="zh">資料持續累積，成為餵給 AI 的燃料。「<strong>AI 做判斷，人做關係與決策</strong>」。讓 AI 從行動 log 與結果數據中，找出經營改善的洞察。</span><span class="ja">データが蓄積し、AIの燃料になる。「<strong>AIが判断し、人は関係と決断をつくる</strong>」。行動ログと結果データから、AIが経営改善のインサイトを見つける。</span></div>
         </div></div>
         <div class="card card-top ct-n"><div class="card-body">
           <h4 class="mini-title"><span class="zh">④ 貼合自家業務（全員多任務）</span><span class="ja">④ 自社業務に合う（全員マルチタスク）</span></h4>
@@ -317,7 +314,7 @@ ul.clean.green-bullet li::before{background:var(--green)}
     <section class="section" id="roles">
       <div class="sec-label">03 ／ <span class="zh">分工</span><span class="ja">分担</span></div>
       <h2 class="sec-title"><span class="zh">兩個工具的分工 — 用「粒度」住分</span><span class="ja">2ツールの分担 — 「粒度」で住み分ける</span></h2>
-      <p class="sec-intro"><span class="zh">關鍵設計決策：不把兩者都做成資料庫，而是讓它們在不同的「層」各司其職。</span><span class="ja">重要な設計判断：両方をDBにせず、異なる「層」で各々の役割を持たせる。</span></p>
+      <p class="sec-intro"><span class="zh">關鍵設計決策：不把兩者都做成資料庫，而是讓它們在不同的「層」各司其職。</span><span class="ja">重要な設計判断：両方をデータベースにせず、異なる「層」で各々の役割を持たせる。</span></p>
 
       <div class="tbl-wrap zh">
         <table class="data-tbl">
@@ -337,11 +334,11 @@ ul.clean.green-bullet li::before{background:var(--green)}
           <thead><tr><th style="width:14%"></th><th style="width:43%">IMT — 入口 / 俯瞰ダッシュボード</th><th style="width:43%">Mindmap（mm-app）— 思考ワークスペース</th></tr></thead>
           <tbody>
             <tr><td>位置づけ</td><td><span class="pill">経営の目</span> 俯瞰・確認・経営判断</td><td><span class="pill green">現場の手</span> 思考・議論・分解・実作業</td></tr>
-            <tr><td>粒度</td><td><strong>Issue ＆ Mission まで</strong>（Taskは持たない＝情報過多回避）</td><td>Mission → <strong>Task</strong> まで（細部はすべてここ）</td></tr>
+            <tr><td>粒度</td><td><strong>Issue ＆ Mission まで</strong>（Taskは持たない＝情報過多を回避）</td><td>Mission → <strong>Task</strong> まで（細部はすべてここ）</td></tr>
             <tr><td>主な使用者</td><td>総経理・経営戦略組（俯瞰）／處長・組長（週1報告）</td><td><strong>全社員</strong>（1部門〔處〕＝1ファイル）</td></tr>
-            <tr><td>データの「籍」</td><td><strong>Issueはここで定義</strong>。Missionの「編號・状態・DRI」索引がここ</td><td><strong>Mission / Task の実体と中身</strong>はここ</td></tr>
-            <tr><td>負担</td><td>見る ＋ mm-appへのリンク1本 ＋ 数行のDRI留言</td><td>作図・定義記入・リンク貼付。重い成果は外部リンク</td></tr>
-            <tr><td>AIの役割</td><td>mm-appのAI差分logから「状態」を判定し色付け。PL/LC8T融合で洞察</td><td>prompt/context生成。Mission最新状況のAI分析</td></tr>
+            <tr><td>データの「籍」</td><td><strong>Issueはここで定義</strong>。Missionの「編號・状態・DRI」の索引がここ</td><td><strong>Mission / Task の実体と中身</strong>はここ</td></tr>
+            <tr><td>負担</td><td>見る ＋ mm-appへのリンク1本 ＋ 数行のDRIコメント</td><td>作図・定義の記入・リンク貼付。重い成果は外部リンク</td></tr>
+            <tr><td>AIの役割</td><td>mm-appのAI差分ログから「状態」を判定し色付け。PL/LC8T融合で洞察</td><td>prompt/context生成。Mission最新状況のAI分析</td></tr>
           </tbody>
         </table>
       </div>
@@ -350,7 +347,7 @@ ul.clean.green-bullet li::before{background:var(--green)}
       <div class="casc">
         <div class="row">
           <div class="who">DRI＝處長</div>
-          <div class="bar l1"><div class="h">Issue　<span class="zh">經營課題</span><span class="ja">経営課題</span></div><div class="s"><span class="zh">總經理定義並與處長握定，不讓人各自解讀</span><span class="ja">総経理が定義し處長と握る。各自解釈を許さない</span></div></div>
+          <div class="bar l1"><div class="h">Issue　<span class="zh">經營課題</span><span class="ja">経営課題</span></div><div class="s"><span class="zh">由總經理定義，並與處長共同握定方向</span><span class="ja">総経理が定義し、處長と方向を握る</span></div></div>
           <div class="sc"><span class="pill">IMT</span></div>
         </div>
         <div class="row">
@@ -360,7 +357,7 @@ ul.clean.green-bullet li::before{background:var(--green)}
         </div>
         <div class="row">
           <div class="who">DRI＝組員</div>
-          <div class="bar l3"><div class="h">Task　<span class="zh">個人行動</span><span class="ja">個人の行動</span></div><div class="s"><span class="zh">在 mm-app 管理；自己設定截止日（助力，非鞭子）</span><span class="ja">mm-appで管理。締切は自分で設定（鞭でなく助け）</span></div></div>
+          <div class="bar l3"><div class="h">Task　<span class="zh">個人行動</span><span class="ja">個人の行動</span></div><div class="s"><span class="zh">在 mm-app 管理；自己設定截止日（助力，非鞭子）</span><span class="ja">mm-appで管理。締切は自分で設定（鞭ではなく助け）</span></div></div>
           <div class="sc"><span class="pill green"><span class="zh">僅 mm</span><span class="ja">mmのみ</span></span></div>
         </div>
       </div>
@@ -368,7 +365,7 @@ ul.clean.green-bullet li::before{background:var(--green)}
       <div class="note-box mt16">
         <span class="nb-title"><span class="zh">為什麼這樣分工最聰明</span><span class="ja">なぜこの分担が賢いか</span></span>
         <span class="zh">把 Mindmap 做成資料庫，它的「輕快」會死；把 IMT 做成自由畫布，它的「俯瞰」會死。讓它們<strong>在不同的層各活各的</strong>，再用一座橋（<span class="key">編號</span>）相連，兩邊的長處都保住。這正是反覆糾結「source of truth 在哪邊」的解答——答案是<strong>「按層分」</strong>。</span>
-        <span class="ja">Mindmapをデータベースにすると「軽快さ」が死ぬ。IMTを自由キャンバスにすると「俯瞰」が死ぬ。<strong>異なる層で各々を活かし</strong>、一本の橋（<span class="key">編號</span>）でつなぐ。両者の長所が保たれる。これが「source of truthはどっち？」という堂々巡りの答え——<strong>「層で分ける」</strong>。</span>
+        <span class="ja">Mindmapをデータベースにすると「軽快さ」が死ぬ。IMTを自由キャンバスにすると「俯瞰」が死ぬ。<strong>異なる層で各々を活かし</strong>、一本の橋（<span class="key">編號</span>）でつなぐ。両者の長所が保たれる。これが「source of truthはどちらか」という堂々巡りの答え——<strong>「層で分ける」</strong>。</span>
       </div>
     </section>
 
@@ -376,7 +373,6 @@ ul.clean.green-bullet li::before{background:var(--green)}
     <section class="section" id="flow">
       <div class="sec-label">04 ／ <span class="zh">資料流</span><span class="ja">データフロー</span></div>
       <h2 class="sec-title"><span class="zh">資料如何流動 — 三條流</span><span class="ja">データはどう流れるか — 3つの流れ</span></h2>
-      <p class="sec-intro"><span class="zh">整個平台的脊椎。理解這張圖，就理解了全部。</span><span class="ja">プラットフォームの背骨。この図を理解すれば全体が分かる。</span></p>
 
       <div class="fig">
         <svg viewBox="0 0 980 560" role="img" aria-label="three flows">
@@ -422,19 +418,19 @@ ul.clean.green-bullet li::before{background:var(--green)}
           </g>
           <g class="ja">
             <text x="84" y="70" fill="#fff" font-size="20" font-weight="800">IMT　俯瞰ダッシュボード</text>
-            <text x="84" y="96" fill="#cfe0ff" font-size="13.5">Issue ＆ Mission · 状態色 · 週1数行の留言</text>
+            <text x="84" y="96" fill="#cfe0ff" font-size="13.5">Issue ＆ Mission · 状態色 · 週1の数行コメント</text>
             <text x="84" y="118" fill="#cfe0ff" font-size="13.5">利用者：総経理 / 経営戦略組 / 處長 / 組長</text>
             <text x="84" y="140" fill="#9bb6e8" font-size="12">＋ 全社共通入口：PLダッシュ・KPI・リンク集</text>
             <text x="84" y="446" fill="#fff" font-size="20" font-weight="800">Mindmap　思考ワークスペース</text>
-            <text x="84" y="472" fill="#d7f3e3" font-size="13.5">Mission → Task · マインドマップ · 大綱/メモ/リンク/看板</text>
-            <text x="84" y="494" fill="#d7f3e3" font-size="13.5">利用者：全社員（1處=1ファイル・即時協作）</text>
+            <text x="84" y="472" fill="#d7f3e3" font-size="13.5">Mission → Task · マインドマップ · アウトライン/メモ/リンク/看板</text>
+            <text x="84" y="494" fill="#d7f3e3" font-size="13.5">利用者：全社員（1處=1ファイル・同時編集）</text>
             <text x="84" y="516" fill="#b3e6c8" font-size="12">＋ AI 入出力：prompt・context・状態分析</text>
             <text x="216" y="252" fill="#00569A" font-size="12.5" font-weight="700">① 下り・カスケード</text>
             <text x="216" y="270" fill="#1A1A1A" font-size="11.5">Issue選択 → 該当處ファイル → Mission分解</text>
             <text x="216" y="340" fill="#009944" font-size="12.5" font-weight="700">② 上り・インポート</text>
-            <text x="216" y="358" fill="#1A1A1A" font-size="11.5">Mission状態 + AI差分log → IMTを色付け</text>
+            <text x="216" y="358" fill="#1A1A1A" font-size="11.5">Mission状態 + AI差分ログ → IMTを色付け</text>
             <text x="672" y="188" fill="#fff" font-size="19" font-weight="800">③ AI 経営エンジン</text>
-            <text x="672" y="216" fill="#fbeecb" font-size="13">行動 log（IMT＋mm）</text>
+            <text x="672" y="216" fill="#fbeecb" font-size="13">行動ログ（IMT＋mm）</text>
             <text x="672" y="244" fill="#fbeecb" font-size="13">　×　結果データ（PL・LC8T・CUBE）</text>
             <text x="672" y="306" fill="#fff" font-size="13" font-weight="600">→ 因果発見：打ち手 → 中間KPI → PL</text>
             <text x="672" y="334" fill="#fff" font-size="13" font-weight="600">→ 経営判断を支援</text>
@@ -445,9 +441,9 @@ ul.clean.green-bullet li::before{background:var(--green)}
       </div>
 
       <div class="grid-3 mb16">
-        <div class="card card-top ct-b"><div class="card-body"><h4 class="mini-title"><span class="zh">① 下行・級聯</span><span class="ja">① 下り・カスケード</span></h4><div class="d"><span class="zh">在 IMT 選定 Issue → mm-app 對應「處」檔案開啟、DRI 自動帶入 → 組長把 Issue 分解成 Mission、再到 Task。</span><span class="ja">IMTでIssueを選択 → mm-appの該当「處」ファイルが開きDRI自動セット → 組長がIssueをMission、さらにTaskへ分解。</span></div></div></div>
-        <div class="card card-top ct-g"><div class="card-body"><h4 class="mini-title"><span class="zh">② 上行・匯入</span><span class="ja">② 上り・インポート</span></h4><div class="d"><span class="zh">mm-app 的 Mission 最新狀況、幾行留言、<strong>AI 差分 log</strong> 回傳 IMT；IMT 由 <strong>AI 判定狀態</strong>並上色。</span><span class="ja">mm-appのMission最新状況・数行留言・<strong>AI差分log</strong>をIMTへ返す。IMTは<strong>AIが状態判定</strong>して色付け。</span></div></div></div>
-        <div class="card card-top ct-a"><div class="card-body"><h4 class="mini-title"><span class="zh">③ AI 經營</span><span class="ja">③ AI 経営</span></h4><div class="d"><span class="zh">把兩工具的「行動 log」與 PL／LC8T／CUBE 的「結果數據」對照，回答：做了什麼、哪個數字會動、下一步該做什麼。</span><span class="ja">両ツールの「行動log」とPL/LC8T/CUBEの「結果データ」を突合し、何をした・どの数字が動く・次の一手は何か、に答える。</span></div></div></div>
+        <div class="card card-top ct-b"><div class="card-body"><h4 class="mini-title"><span class="zh">① 下行・級聯</span><span class="ja">① 下り・カスケード</span></h4><div class="d"><span class="zh">在 IMT 選定 Issue → mm-app 對應「處」檔案開啟、DRI 自動帶入 → 組長把 Issue 分解成 Mission、再到 Task。</span><span class="ja">IMTでIssueを選択 → mm-appの該当「處」ファイルが開きDRIが自動セット → 組長がIssueをMission、さらにTaskへ分解。</span></div></div></div>
+        <div class="card card-top ct-g"><div class="card-body"><h4 class="mini-title"><span class="zh">② 上行・匯入</span><span class="ja">② 上り・インポート</span></h4><div class="d"><span class="zh">mm-app 的 Mission 最新狀況、幾行留言、<strong>AI 差分 log</strong> 回傳 IMT；IMT 由 <strong>AI 判定狀態</strong>並上色。</span><span class="ja">mm-appのMission最新状況・数行のコメント・<strong>AI差分ログ</strong>をIMTへ返す。IMTは<strong>AIが状態を判定</strong>して色付け。</span></div></div></div>
+        <div class="card card-top ct-a"><div class="card-body"><h4 class="mini-title"><span class="zh">③ AI 經營</span><span class="ja">③ AI 経営</span></h4><div class="d"><span class="zh">把兩工具的「行動 log」與 PL／LC8T／CUBE 的「結果數據」對照，回答：做了什麼、哪個數字會動、下一步該做什麼。</span><span class="ja">両ツールの「行動ログ」とPL/LC8T/CUBEの「結果データ」を突き合わせ、何をした・どの数字が動く・次の一手は何か、に答える。</span></div></div></div>
       </div>
 
       <h3 class="sub-title"><span class="zh">使用情境（誰、在什麼時候用）</span><span class="ja">利用シーン（誰が・いつ）</span></h3>
@@ -479,23 +475,22 @@ ul.clean.green-bullet li::before{background:var(--green)}
 
     <!-- ═══ 05 為何需後端 ═══ -->
     <section class="section" id="backend">
-      <div class="sec-label">05 ／ <span class="zh">後端的必要性</span><span class="ja">後端の必要性</span></div>
+      <div class="sec-label">05 ／ <span class="zh">後端的必要性</span><span class="ja">バックエンドの必要性</span></div>
       <h2 class="sec-title"><span class="zh">為什麼「後端」是必須的？</span><span class="ja">なぜ「バックエンド」が必須か？</span></h2>
-      <p class="sec-intro"><span class="zh">給工程師最重要的一頁。我們誠實地把構想切成兩個世界：「現在就能做的」與「需要後端的」。</span><span class="ja">エンジニアに最も重要な一頁。構想を正直に2つの世界に分ける：「今できる」と「後端が要る」。</span></p>
       <p>
         <span class="zh">目前兩個工具都是「<strong>純前端</strong>」：靜態單頁 HTML（Netlify）＋ Google 試算表（gviz 讀取）＋ Apps Script（doPost 寫入）；Mindmap 則是單一 JSON 檔＋ Google Drive 資料夾「一次一人」編輯。這在「實證階段」很省、很好。<strong>但構想中的這幾項，純前端做不到</strong>：</span>
-        <span class="ja">現在、両ツールは「<strong>純フロントエンド</strong>」：静的単一HTML（Netlify）＋Googleスプレッドシート（gviz読取）＋Apps Script（doPost書込）。Mindmapは単一JSONファイル＋Google Driveフォルダの「一度に一人」編集。実証段階では安く・良い。<strong>だが構想中のこれらは、純フロントでは不可能</strong>：</span>
+        <span class="ja">現在、両ツールは「<strong>純フロントエンド</strong>」：静的な単一HTML（Netlify）＋Googleスプレッドシート（gviz読取）＋Apps Script（doPost書込）。Mindmapは単一のJSONファイル＋Google Driveフォルダの「一度に一人」編集。実証段階では安く・よい。<strong>だが構想中のこれらは、純フロントでは実現できない</strong>：</span>
       </p>
       <div class="grid-2 mb16">
-        <div class="card card-top ct-r"><div class="card-body"><h4 class="mini-title"><span class="zh">① 全員同時共同編輯</span><span class="ja">① 全員同時の共同編集</span></h4><div class="d"><span class="zh">「1 處 1 檔案、全組同時編輯」——Drive 的「一次一人」做不到並發。需要<strong>即時同步伺服器</strong>（CRDT / Realtime）。</span><span class="ja">「1處1ファイル・全組同時編集」——Driveの「一度に一人」では並行不可。<strong>即時同期サーバー</strong>（CRDT / Realtime）が必要。</span></div></div></div>
-        <div class="card card-top ct-r"><div class="card-body"><h4 class="mini-title"><span class="zh">② 真正的權限控管</span><span class="ja">② 本物の権限管理</span></h4><div class="d"><span class="zh">靜態站＋公開 gviz＝所有資料都送到瀏覽器，只能「藏 UI」。真正的閱覽權限需要<strong>帶認證的後端</strong>。</span><span class="ja">静的＋公開gviz＝全データがブラウザに来る＝「UI隠蔽」止まり。本物の閲覧権限には<strong>認証付きバックエンド</strong>が要る。</span></div></div></div>
-        <div class="card card-top ct-r"><div class="card-body"><h4 class="mini-title"><span class="zh">③ 伺服器端 AI 自動分析</span><span class="ja">③ サーバー側AI自動分析</span></h4><div class="d"><span class="zh">差分 log → 狀態判定、Mission 最新狀況分析。API 金鑰<strong>不能放在前端</strong>，必須由後端排程執行。</span><span class="ja">差分log→状態判定、Mission最新状況分析。APIキーは<strong>フロントに置けない</strong>。後端のスケジュール実行が必須。</span></div></div></div>
-        <div class="card card-top ct-r"><div class="card-body"><h4 class="mini-title"><span class="zh">④ 備份與資安、自動匯入</span><span class="ja">④ バックアップ・資安、自動インポート</span></h4><div class="d"><span class="zh">事業資料不能只靠 localStorage／Drive。自動（而非手按）把 mm-app 匯入 IMT，也需要伺服器。</span><span class="ja">事業データをlocalStorage/Drive任せにはできない。手動でなく自動でmm-app→IMT取込するにもサーバーが要る。</span></div></div></div>
+        <div class="card card-top ct-r"><div class="card-body"><h4 class="mini-title"><span class="zh">① 全員同時共同編輯</span><span class="ja">① 全員同時の共同編集</span></h4><div class="d"><span class="zh">「1 處 1 檔案、全組同時編輯」——Drive 的「一次一人」做不到並發。需要<strong>即時同步伺服器</strong>（CRDT / Realtime）。</span><span class="ja">「1處1ファイル・全組が同時編集」——Driveの「一度に一人」では並行できない。<strong>リアルタイム同期サーバー</strong>（CRDT / Realtime）が必要。</span></div></div></div>
+        <div class="card card-top ct-r"><div class="card-body"><h4 class="mini-title"><span class="zh">② 真正的權限控管</span><span class="ja">② 本物の権限管理</span></h4><div class="d"><span class="zh">靜態站＋公開 gviz＝所有資料都送到瀏覽器，只能「藏 UI」。真正的閱覽權限需要<strong>帶認證的後端</strong>。</span><span class="ja">静的サイト＋公開gviz＝全データがブラウザに届く＝「UIで隠す」止まり。本物の閲覧権限には<strong>認証付きのバックエンド</strong>が要る。</span></div></div></div>
+        <div class="card card-top ct-r"><div class="card-body"><h4 class="mini-title"><span class="zh">③ 伺服器端 AI 自動分析</span><span class="ja">③ サーバー側のAI自動分析</span></h4><div class="d"><span class="zh">差分 log → 狀態判定、Mission 最新狀況分析。API 金鑰<strong>不能放在前端</strong>，必須由後端排程執行。</span><span class="ja">差分ログ→状態判定、Mission最新状況の分析。APIキーは<strong>フロントに置けない</strong>。バックエンドのスケジュール実行が必須。</span></div></div></div>
+        <div class="card card-top ct-r"><div class="card-body"><h4 class="mini-title"><span class="zh">④ 備份與資安、自動匯入</span><span class="ja">④ バックアップ・セキュリティ、自動インポート</span></h4><div class="d"><span class="zh">事業資料不能只靠 localStorage／Drive。自動（而非手按）把 mm-app 匯入 IMT，也需要伺服器。</span><span class="ja">事業データをlocalStorage／Drive任せにはできない。手動ではなく自動でmm-app→IMTへ取り込むにもサーバーが要る。</span></div></div></div>
       </div>
       <div class="note-box orange-note">
         <span class="nb-title"><span class="zh">⚠️ 誠實的分水嶺</span><span class="ja">⚠️ 正直な分水嶺</span></span>
         <span class="zh">構想中的<strong>「全員同時編輯・AI 自動分析・權限・備份・資安」</strong>，已經超出靜態工具的延長線——這一層，是與<strong>資訊事業處</strong>共同進行的正式開發。但這不代表要等它做完才動：第 08 節的階段計畫，會先用純前端把「整個迴圈」跑通、證明思想可行，再投入後端。</span>
-        <span class="ja">構想中の<strong>「全員同時編集・AI自動分析・権限・バックアップ・資安」</strong>は、もう静的ツールの延長線を超える——この層は<strong>情報事業處</strong>と組む正式開発だ。だが完成を待つ必要はない：第08節の段階計画では、まず純フロントで「ループ全体」を回し、思想の有効性を証明してから後端へ投資する。</span>
+        <span class="ja">構想中の<strong>「全員同時編集・AI自動分析・権限・バックアップ・セキュリティ」</strong>は、もう静的ツールの延長線を超える——この層は<strong>情報事業處</strong>と組む正式な開発になる。ただし完成を待つ必要はない：第08節の段階計画では、まず純フロントで「ループ全体」を回して思想の有効性を証明し、その後にバックエンドへ投資する。</span>
       </div>
     </section>
 
@@ -503,7 +498,6 @@ ul.clean.green-bullet li::before{background:var(--green)}
     <section class="section" id="build">
       <div class="sec-label">06 ／ Build vs Buy</div>
       <h2 class="sec-title"><span class="zh">為什麼選「自建」而非 SaaS？</span><span class="ja">なぜ「自作」でSaaSではないか？</span></h2>
-      <p class="sec-intro"><span class="zh">這個決策已經拍板。理由要讓工程師認同，也要誠實面對風險。</span><span class="ja">この判断は確定済み。理由をエンジニアに納得させ、リスクにも正直に向き合う。</span></p>
       <div class="grid-2 mb16">
         <div class="card card-top ct-n"><div class="card-body">
           <h4 class="mini-title"><span class="zh">💡 為什麼不買 SaaS</span><span class="ja">💡 なぜSaaSを買わないか</span></h4>
@@ -514,21 +508,21 @@ ul.clean.green-bullet li::before{background:var(--green)}
             <li><strong>整合價值</strong>：IMT 級聯＋編號連結＋AI context＋繁中＋經營思想，是 SaaS 給不了的。</li>
           </ul>
           <ul class="clean ja">
-            <li><strong>コスト</strong>：ここまで非エンジニアでも自作できた。カスタマイズ外注費もSaaS購読費も増やしたくない。</li>
-            <li><strong>AI紅利</strong>：AIが急速進化する今、自作主軸が最もAIの恩恵を受ける（AIで書く・直す・分析）。</li>
-            <li><strong>リスク可制御</strong>：開発中の失敗は社内のみに影響、顧客に迷惑をかけない。</li>
-            <li><strong>統合価値</strong>：IMTカスケード＋編號連結＋AI context＋繁中＋経営思想は、SaaSでは得られない。</li>
+            <li><strong>コスト</strong>：ここまで非エンジニアでも自作できた。カスタマイズの外注費もSaaSの購読費も増やしたくない。</li>
+            <li><strong>AIの追い風</strong>：AIが急速に進化する今、自作主軸が最もAIの恩恵を受ける（AIで書く・直す・分析する）。</li>
+            <li><strong>リスクが制御できる</strong>：開発中の失敗は社内のみに影響し、顧客に迷惑をかけない。</li>
+            <li><strong>統合価値</strong>：IMTカスケード＋編號連結＋AI context＋繁体中文＋経営思想は、SaaSでは得られない。</li>
           </ul>
         </div></div>
         <div class="card card-top ct-a"><div class="card-body">
-          <h4 class="mini-title"><span class="zh">🛡 工程上的誠實補充</span><span class="ja">🛡 工学的に正直な補足</span></h4>
-          <div class="d"><span class="zh">自建唯一真正的工程難點是<strong>「即時協作的衝突解決」</strong>。建議<strong>不要自己發明同步演算法</strong>，而是站在成熟的開源肩膀上（如 <strong>Yjs</strong> 這類 CRDT、或 <strong>Supabase</strong> 的 Realtime）。這樣「自建」＝用開源元件組裝 ＋ 我們自己寫業務邏輯與 UI，而非從零造輪子。成本低、可自託管、可被 AI 協助維護。</span><span class="ja">自作で唯一の本当の難所は<strong>「即時協作の衝突解決」</strong>。<strong>同期アルゴリズムを自前で発明しない</strong>こと。成熟したOSSに乗る（<strong>Yjs</strong> のようなCRDT、または <strong>Supabase</strong> のRealtime）。こうすれば「自作」＝OSS部品の組み立て＋業務ロジックとUIを自分で書く、であって車輪の再発明ではない。低コスト・自己ホスト可・AIで保守可能。</span></div>
+          <h4 class="mini-title"><span class="zh">🛡 工程上的誠實補充</span><span class="ja">🛡 技術面の正直な補足</span></h4>
+          <div class="d"><span class="zh">自建唯一真正的工程難點是<strong>「即時協作的衝突解決」</strong>。建議<strong>不要自己發明同步演算法</strong>，而是站在成熟的開源肩膀上（如 <strong>Yjs</strong> 這類 CRDT、或 <strong>Supabase</strong> 的 Realtime）。這樣「自建」＝用開源元件組裝 ＋ 我們自己寫業務邏輯與 UI，而非從零造輪子。成本低、可自託管、可被 AI 協助維護。</span><span class="ja">自作で唯一の本当の難所は<strong>「リアルタイム共同編集の衝突解決」</strong>。<strong>同期アルゴリズムを自前で発明しない</strong>こと。成熟したオープンソースの肩に乗る（<strong>Yjs</strong> のようなCRDT、または <strong>Supabase</strong> のRealtime）。こうすれば「自作」＝オープンソース部品の組み立て ＋ 業務ロジックとUIを自分で書く、であって車輪の再発明ではない。低コスト・自己ホスト可・AIで保守できる。</span></div>
         </div></div>
       </div>
       <div class="note-box">
-        <span class="nb-title"><span class="zh">給 IT 的定調</span><span class="ja">ITへの定調</span></span>
+        <span class="nb-title"><span class="zh">給 IT 的定調</span><span class="ja">ITへの基本方針</span></span>
         <span class="zh">「自建為主、站在開源之上、漸進遷移」。先不追求一次到位，而是把現行（Sheet＋Apps Script）當作 Phase 0 的後端，逐步把<strong>需要並發與權限的部分</strong>搬到新的同步後端。</span>
-        <span class="ja">「自作主軸・OSSの上に立つ・漸進移行」。一度に完成を目指さず、現行（Sheet＋Apps Script）をPhase 0の後端として使い、<strong>並行と権限が要る部分</strong>から新しい同期後端へ段階的に移す。</span>
+        <span class="ja">「自作を主軸に・オープンソースの上に立ち・段階的に移行する」。一度に完成を目指さず、現行（Sheet＋Apps Script）をPhase 0のバックエンドとして使い、<strong>並行と権限が必要な部分</strong>から新しい同期バックエンドへ段階的に移す。</span>
       </div>
     </section>
 
@@ -536,7 +530,7 @@ ul.clean.green-bullet li::before{background:var(--green)}
     <section class="section" id="arch">
       <div class="sec-label">07 ／ <span class="zh">技術架構</span><span class="ja">アーキテクチャ</span></div>
       <h2 class="sec-title"><span class="zh">技術架構提案</span><span class="ja">技術アーキテクチャ提案</span></h2>
-      <p class="sec-intro"><span class="zh">給資訊事業處的具體藍圖。兩個原則：與顧客資料（CUBE）明確分離、編號為全系統主鍵。</span><span class="ja">情報事業處への具体的青写真。2原則：顧客データ（CUBE）と明確分離、編號が全系統の主キー。</span></p>
+      <p class="sec-intro"><span class="zh">給資訊事業處的具體藍圖。兩個原則：與顧客資料（CUBE）明確分離、編號為全系統主鍵。</span><span class="ja">情報事業處への具体的な青写真。2つの原則：顧客データ（CUBE）と明確に分離する／編號を全システムの主キーにする。</span></p>
 
       <div class="fig">
         <svg viewBox="0 0 980 470" role="img" aria-label="architecture">
@@ -560,8 +554,8 @@ ul.clean.green-bullet li::before{background:var(--green)}
             <text x="60" y="96" font-size="12.5" fill="#1A1A1A">IMT 儀表板（前端）</text>
             <text x="60" y="116" font-size="12.5" fill="#1A1A1A">Mindmap 工作台（前端）</text>
             <text x="60" y="140" font-size="11.5" fill="#5B6478">全員 51 人 · 繁體中文 UI</text>
-            <text x="60" y="228" font-size="13" font-weight="700" fill="#1A1A1A">認證 · Google Workspace SSO</text>
-            <text x="60" y="248" font-size="11.5" fill="#5B6478">公司已在 Google 生態</text>
+            <text x="60" y="226" font-size="13" font-weight="700" fill="#1A1A1A">認證 · 企業 SSO（單一登入）</text>
+            <text x="60" y="248" font-size="11.5" fill="#5B6478">以公司既有帳號整合</text>
             <text x="382" y="72" font-size="15" font-weight="800" fill="#fff">即時同步後端</text>
             <text x="382" y="96" font-size="12.5" fill="#d7f3e3">CRDT (Yjs) / Supabase Realtime</text>
             <text x="382" y="116" font-size="12.5" fill="#d7f3e3">多人同時編輯 · 衝突自動合併</text>
@@ -583,32 +577,32 @@ ul.clean.green-bullet li::before{background:var(--green)}
           </g>
           <g class="ja">
             <text x="60" y="72" font-size="15" font-weight="800" fill="#0D1B3E">ブラウザ・クライアント</text>
-            <text x="60" y="96" font-size="12.5" fill="#1A1A1A">IMT ダッシュボード（前端）</text>
-            <text x="60" y="116" font-size="12.5" fill="#1A1A1A">Mindmap ワークスペース（前端）</text>
+            <text x="60" y="96" font-size="12.5" fill="#1A1A1A">IMT ダッシュボード（フロント）</text>
+            <text x="60" y="116" font-size="12.5" fill="#1A1A1A">Mindmap ワークスペース（フロント）</text>
             <text x="60" y="140" font-size="11.5" fill="#5B6478">全員51人 · 繁体中文 UI</text>
-            <text x="60" y="228" font-size="13" font-weight="700" fill="#1A1A1A">認証 · Google Workspace SSO</text>
-            <text x="60" y="248" font-size="11.5" fill="#5B6478">会社は既にGoogle生態系</text>
-            <text x="382" y="72" font-size="15" font-weight="800" fill="#fff">即時同期バックエンド</text>
+            <text x="60" y="226" font-size="13" font-weight="700" fill="#1A1A1A">認証 · 企業 SSO（シングルサインオン）</text>
+            <text x="60" y="248" font-size="11.5" fill="#5B6478">既存アカウント基盤で統合</text>
+            <text x="382" y="72" font-size="15" font-weight="800" fill="#fff">リアルタイム同期バックエンド</text>
             <text x="382" y="96" font-size="12.5" fill="#d7f3e3">CRDT (Yjs) / Supabase Realtime</text>
-            <text x="382" y="116" font-size="12.5" fill="#d7f3e3">多人同時編集 · 衝突自動マージ</text>
+            <text x="382" y="116" font-size="12.5" fill="#d7f3e3">多人同時編集 · 衝突を自動マージ</text>
             <text x="382" y="140" font-size="11.5" fill="#b3e6c8">自己ホスト可 · OSS部品</text>
             <text x="382" y="232" font-size="15" font-weight="800" fill="#fff">データベース（Postgres）</text>
             <text x="382" y="256" font-size="12.5" fill="#C9D2E3">構造化：Issue / Mission / Task</text>
             <text x="382" y="276" font-size="12.5" fill="#C9D2E3">キャンバス内容：JSON 列</text>
-            <text x="382" y="300" font-size="12.5" fill="#9BC8E8">主キー = 編號（不変、版はlogへ）</text>
-            <text x="732" y="72" font-size="15" font-weight="800" fill="#fff">AI サービス（後端）</text>
-            <text x="732" y="96" font-size="12.5" fill="#fbeecb">Claude API（鍵は後端で保管）</text>
-            <text x="732" y="116" font-size="12.5" fill="#fbeecb">差分log → 状態判定 / 要約</text>
+            <text x="382" y="300" font-size="12.5" fill="#9BC8E8">主キー = 編號（不変、版は log へ）</text>
+            <text x="732" y="72" font-size="15" font-weight="800" fill="#fff">AI サービス（バックエンド）</text>
+            <text x="732" y="96" font-size="12.5" fill="#fbeecb">Claude API（鍵はバックエンドで保管）</text>
+            <text x="732" y="116" font-size="12.5" fill="#fbeecb">差分ログ → 状態判定 / 要約</text>
             <text x="732" y="140" font-size="11.5" fill="#ecd9a8">prompt / context 生成</text>
             <text x="732" y="230" font-size="14" font-weight="700" fill="#1A1A1A">現行（Phase 0 流用）</text>
             <text x="732" y="254" font-size="12.5" fill="#1A1A1A">Google Sheet（gviz 読）</text>
             <text x="732" y="274" font-size="12.5" fill="#1A1A1A">Apps Script doPost（書）</text>
-            <text x="732" y="298" font-size="11.5" fill="#5B6478">左の後端へ段階移行</text>
+            <text x="732" y="298" font-size="11.5" fill="#5B6478">左のバックエンドへ段階移行</text>
             <text x="382" y="400" font-size="14" font-weight="800" fill="#7a5a00">顧客データ基盤 CUBE / CDP（高機微・個人情報）</text>
-            <text x="382" y="422" font-size="12" fill="#9a7a16">明確分離：本platformは読取専用のKPI/PLを「単方向参照」、顧客個人情報は混在させない。</text>
+            <text x="382" y="422" font-size="12" fill="#9a7a16">明確に分離：本プラットフォームは読取専用のKPI/PLを「単方向で参照」、顧客個人情報は混在させない。</text>
           </g>
         </svg>
-        <div class="cap"><span class="zh">圖 2　目標架構。左為新後端（即時同步＋DB＋SSO），右下為現行（Phase 0 沿用），下方 CUBE 嚴格分離。</span><span class="ja">図2　目標アーキテクチャ。左が新後端（即時同期＋DB＋SSO）、右下が現行（Phase 0流用）、下のCUBEは厳格分離。</span></div>
+        <div class="cap"><span class="zh">圖 2　目標架構。左為新後端（即時同步＋DB＋SSO），右下為現行（Phase 0 沿用），下方 CUBE 嚴格分離。</span><span class="ja">図2　目標アーキテクチャ。左が新バックエンド（リアルタイム同期＋DB＋SSO）、右下が現行（Phase 0流用）、下のCUBEは厳格に分離。</span></div>
       </div>
 
       <h3 class="sub-title"><span class="zh">連接標準（API / Webhook / DB）</span><span class="ja">接続標準（API / Webhook / DB）</span></h3>
@@ -619,10 +613,10 @@ ul.clean.green-bullet li::before{background:var(--green)}
         <li><strong>與 CUBE 的界線</strong>：本平台是「內部營運系統（低機微）」，CUBE 是「顧客資料（高機微・個資）」。只透過唯讀報表單向引用，<strong>不混存</strong>——讓本平台法遵負擔輕、可以更快動。</li>
       </ul>
       <ul class="clean ja">
-        <li><strong>編號が全系統のjoin key</strong>：Issue／Mission／Taskの編號は不変。修正の版はイベントlog（append-only）へ。編號に枝番を付けない。</li>
-        <li><strong>IMT ⇄ mm-app 同期</strong>：REST + Webhook。イベント粒度＝「登録／修正／進度／期日変更／封存／削除」、各々に「いつ・誰・何を」を持たせる。</li>
-        <li><strong>2面データモデル</strong>：「現況（上書き・1件1行）」と「履歴（append-only イベントlog）」を分離。現況はダッシュボード、logはAIと監査へ。</li>
-        <li><strong>CUBEとの境界</strong>：本platformは「社内営運系（低機微）」、CUBEは「顧客データ（高機微・個人情報）」。読取専用レポートで単方向参照のみ、<strong>混在させない</strong>——法遵負担が軽く速く動ける。</li>
+        <li><strong>編號を全システムのjoin keyにする</strong>：Issue／Mission／Taskの編號は不変。修正の版はイベントログ（append-only）へ。編號に枝番を付けない。</li>
+        <li><strong>IMT ⇄ mm-app の同期</strong>：REST + Webhook で。イベント粒度＝「登録／修正／進捗／期日変更／アーカイブ／削除」、各々に「いつ・誰が・何を」を持たせる。</li>
+        <li><strong>2面のデータモデル</strong>：「現況（上書き・1件1行）」と「履歴（append-only のイベントログ）」を分離。現況はダッシュボード、ログはAIと監査へ。</li>
+        <li><strong>CUBEとの境界</strong>：本プラットフォームは「社内の運営系（機微度が低い）」、CUBEは「顧客データ（機微度が高い・個人情報）」。読取専用レポートで単方向に参照するだけで、<strong>混在させない</strong>——コンプライアンス負担が軽く、速く動ける。</li>
       </ul>
 
       <div class="tbl-wrap zh mt16">
@@ -642,10 +636,10 @@ ul.clean.green-bullet li::before{background:var(--green)}
           <thead><tr><th style="width:26%">能力</th><th>現行（純フロント）</th><th>目標（自作バックエンド）</th></tr></thead>
           <tbody>
             <tr><td>多人同時編集</td><td>一度に一人（Drive）</td><td><span class="pill green">CRDT / Realtime</span> 同時並行</td></tr>
-            <tr><td>権限</td><td>UI隠蔽（本物でない）</td><td><span class="pill navy">SSO + 後端認可</span></td></tr>
-            <tr><td>AI分析</td><td>手動投入</td><td><span class="pill gold">後端スケジュール + 鍵保管</span></td></tr>
-            <tr><td>バックアップ/資安</td><td>localStorage / Drive</td><td><span class="pill navy">受託管理DB + バックアップ方針</span></td></tr>
-            <tr><td>IMT取込</td><td>手動ボタン（doPost流用）</td><td>自動同期（Webhook）</td></tr>
+            <tr><td>権限</td><td>UIで隠す（本物でない）</td><td><span class="pill navy">SSO + バックエンド認可</span></td></tr>
+            <tr><td>AI分析</td><td>手動で投入</td><td><span class="pill gold">バックエンドのスケジュール + 鍵保管</span></td></tr>
+            <tr><td>バックアップ/セキュリティ</td><td>localStorage / Drive</td><td><span class="pill navy">受託管理DB + バックアップ方針</span></td></tr>
+            <tr><td>IMTへの取込</td><td>手動ボタン（doPost流用）</td><td>自動同期（Webhook）</td></tr>
           </tbody>
         </table>
       </div>
@@ -655,49 +649,42 @@ ul.clean.green-bullet li::before{background:var(--green)}
     <section class="section" id="road">
       <div class="sec-label">08 ／ <span class="zh">階段計畫</span><span class="ja">段階計画</span></div>
       <h2 class="sec-title"><span class="zh">階段開發計畫</span><span class="ja">段階開発計画</span></h2>
-      <p class="sec-intro"><span class="zh">原則：先用最低風險把「整個迴圈」跑通並證明思想，再投入後端。失敗只影響內部。</span><span class="ja">原則：まず最低リスクで「ループ全体」を回し思想を証明、その後に後端へ投資。失敗は社内のみ。</span></p>
+      <p class="sec-intro"><span class="zh">原則：先用最低風險把「整個迴圈」跑通並證明思想，再投入後端。失敗只影響內部。</span><span class="ja">原則：まず最小のリスクで「ループ全体」を回して思想を証明し、その後にバックエンドへ投資する。失敗は社内のみに収まる。</span></p>
       <div class="grid-5 mb16">
-        <div class="ph now"><div class="pn">P0</div><div class="pt"><span class="zh">連結 + 入口</span><span class="ja">連結 + 入口</span></div><div class="pd"><span class="zh">以編號做 IMT⇄mm 雙向深連結；IMT 整理為 Issue/Mission 粒度 + 共通入口（PL/KPI/連結集）。</span><span class="ja">編號でIMT⇄mm双方向ディープリンク。IMTをIssue/Mission粒度＋共通入口（PL/KPI/リンク集）に整理。</span></div><div class="pf"><span class="pill green"><span class="zh">純前端 · 即</span><span class="ja">純フロント · 即</span></span></div></div>
-        <div class="ph now"><div class="pn">P1</div><div class="pt"><span class="zh">手動匯入</span><span class="ja">手動インポート</span></div><div class="pd"><span class="zh">mm-app 的 Mission 狀態 + 幾行留言，用「送出到 IMT」按鈕（沿用 doPost）寫回。迴圈成形。</span><span class="ja">mm-appのMission状態＋数行留言を「IMTへ送出」ボタン（doPost流用）で書戻し。ループ成立。</span></div><div class="pf"><span class="pill green"><span class="zh">純前端</span><span class="ja">純フロント</span></span></div></div>
-        <div class="ph now"><div class="pn">P2</div><div class="pt"><span class="zh">AI context</span><span class="ja">AI context</span></div><div class="pd"><span class="zh">由 Mission 內容產生 prompt／context（複製/下載）手動投餵 AI；差分 log 客戶端 diff → 文字。</span><span class="ja">Mission内容からprompt/context生成（コピー/DL）し手動でAIへ。差分logはクライアントdiff→テキスト。</span></div><div class="pf"><span class="pill green"><span class="zh">純前端</span><span class="ja">純フロント</span></span></div></div>
-        <div class="ph be"><div class="pn">P3</div><div class="pt"><span class="zh">即時協作後端</span><span class="ja">即時協作後端</span></div><div class="pd"><span class="zh">導入同步後端（Yjs/Supabase）+ SSO：1 處 1 檔案、全員同時編輯、真正權限、備份。</span><span class="ja">同期後端（Yjs/Supabase）＋SSO導入：1處1ファイル、全員同時編集、本物の権限、バックアップ。</span></div><div class="pf"><span class="pill"><span class="zh">需後端 · IT</span><span class="ja">要後端 · IT</span></span></div></div>
-        <div class="ph be"><div class="pn">P4</div><div class="pt"><span class="zh">AI 經營引擎</span><span class="ja">AI 経営エンジン</span></div><div class="pd"><span class="zh">後端自動 AI 分析（狀態判定/摘要/停滯偵測）；融合 PL／LC8T／CUBE 找因果洞察。</span><span class="ja">後端で自動AI分析（状態判定/要約/停滞検知）。PL/LC8T/CUBEを融合し因果洞察。</span></div><div class="pf"><span class="pill"><span class="zh">需後端</span><span class="ja">要後端</span></span></div></div>
+        <div class="ph now"><div class="pn">P0</div><div class="pt"><span class="zh">連結 + 入口</span><span class="ja">連結 + 入口</span></div><div class="pd"><span class="zh">以編號做 IMT⇄mm 雙向深連結；IMT 整理為 Issue/Mission 粒度 + 共通入口（PL/KPI/連結集）。</span><span class="ja">編號でIMT⇄mmを双方向ディープリンク。IMTをIssue/Mission粒度＋共通入口（PL/KPI/リンク集）に整理。</span></div><div class="pf"><span class="pill green"><span class="zh">純前端 · 即</span><span class="ja">純フロント · 即着手</span></span></div></div>
+        <div class="ph now"><div class="pn">P1</div><div class="pt"><span class="zh">手動匯入</span><span class="ja">手動インポート</span></div><div class="pd"><span class="zh">mm-app 的 Mission 狀態 + 幾行留言，用「送出到 IMT」按鈕（沿用 doPost）寫回。迴圈成形。</span><span class="ja">mm-appのMission状態＋数行のコメントを「IMTへ送出」ボタン（doPost流用）で書き戻す。ループが成立。</span></div><div class="pf"><span class="pill green"><span class="zh">純前端</span><span class="ja">純フロント</span></span></div></div>
+        <div class="ph now"><div class="pn">P2</div><div class="pt"><span class="zh">AI context</span><span class="ja">AI context</span></div><div class="pd"><span class="zh">由 Mission 內容產生 prompt／context（複製/下載）手動投餵 AI；差分 log 客戶端 diff → 文字。</span><span class="ja">Mission内容からprompt/contextを生成（コピー/DL）し手動でAIへ。差分ログはクライアント側diff→テキスト。</span></div><div class="pf"><span class="pill green"><span class="zh">純前端</span><span class="ja">純フロント</span></span></div></div>
+        <div class="ph be"><div class="pn">P3</div><div class="pt"><span class="zh">即時協作後端</span><span class="ja">リアルタイム共同編集バックエンド</span></div><div class="pd"><span class="zh">導入同步後端（Yjs/Supabase）+ SSO：1 處 1 檔案、全員同時編輯、真正權限、備份。</span><span class="ja">同期バックエンド（Yjs/Supabase）＋SSOを導入：1處1ファイル、全員同時編集、本物の権限、バックアップ。</span></div><div class="pf"><span class="pill"><span class="zh">需後端 · IT</span><span class="ja">要バックエンド · IT</span></span></div></div>
+        <div class="ph be"><div class="pn">P4</div><div class="pt"><span class="zh">AI 經營引擎</span><span class="ja">AI 経営エンジン</span></div><div class="pd"><span class="zh">後端自動 AI 分析（狀態判定/摘要/停滯偵測）；融合 PL／LC8T／CUBE 找因果洞察。</span><span class="ja">バックエンドで自動AI分析（状態判定/要約/停滞検知）。PL/LC8T/CUBEを融合し因果のインサイトを見つける。</span></div><div class="pf"><span class="pill"><span class="zh">需後端</span><span class="ja">要バックエンド</span></span></div></div>
       </div>
       <div class="note-box green-note">
         <span class="zh"><strong>分水嶺在 P2 → P3 之間。</strong>P0–P2 由現有靜態架構即可交付，用來驗證「思想 + 編號連結」是否真的有效；拿著跑通的實物，再與資訊事業處決定 P3 的後端選型與投資。</span>
-        <span class="ja"><strong>分水嶺はP2→P3の間。</strong>P0–P2は現行の静的アーキで提供でき、「思想＋編號連結」が本当に効くか検証する。回った実物を持って、情報事業處とP3の後端選定・投資を決める。</span>
+        <span class="ja"><strong>分水嶺はP2→P3の間にある。</strong>P0–P2は現行の静的アーキテクチャで提供でき、「思想＋編號連結」が本当に効くかを検証する。回った実物を持って、情報事業處とP3のバックエンド選定・投資を決める。</span>
       </div>
     </section>
 
     <!-- ═══ 09 給IT的提問 ═══ -->
     <section class="section" id="ask">
       <div class="sec-label">09 ／ <span class="zh">給 IT 的提問</span><span class="ja">ITへの問い</span></div>
-      <h2 class="sec-title"><span class="zh">給資訊事業處的提問（決策點）</span><span class="ja">情報事業處への提問（決定点）</span></h2>
-      <p class="sec-intro"><span class="zh">把要決定的事，整理成「容易回答的問題」。<strong>具體由誰負責、如何分工，全權交由資訊事業處（IT 責任者）裁量。</strong></span><span class="ja">決めるべき事を「答えやすい問い」に整理。<strong>誰が担当し、どう分担するかは、情報事業處（IT 責任者）の裁量に全面的に委ねる。</strong></span></p>
+      <h2 class="sec-title"><span class="zh">給資訊事業處的提問（決策點）</span><span class="ja">情報事業處への問い（決定点）</span></h2>
       <div class="grid-2 mb16">
-        <div class="card card-top ct-b"><div class="card-body"><h4 class="mini-title">Q1 · <span class="zh">同步基盤選型</span><span class="ja">同期基盤の選定</span></h4><div class="d"><span class="zh">即時協作以哪個為基礎？建議自建路線：<strong>Yjs (CRDT)＋輕量 Node</strong>，或 <strong>Supabase（開源・可自託管・Postgres）</strong>。評估維運成本與既有技能。</span><span class="ja">即時協作の基盤は？自作路線の推奨：<strong>Yjs (CRDT)＋軽量Node</strong>、または <strong>Supabase（OSS・自己ホスト可・Postgres）</strong>。運用コストと既存スキルを評価。</span></div></div></div>
-        <div class="card card-top ct-b"><div class="card-body"><h4 class="mini-title">Q2 · <span class="zh">認證</span><span class="ja">認証</span></h4><div class="d"><span class="zh">採用 <strong>Google Workspace SSO</strong> 是否可行？（公司已在 Google 生態）權限模型：處／組／角色。</span><span class="ja"><strong>Google Workspace SSO</strong> は可能か？（会社は既にGoogle生態系）権限モデル：處／組／役割。</span></div></div></div>
-        <div class="card card-top ct-b"><div class="card-body"><h4 class="mini-title">Q3 · <span class="zh">資料的家</span><span class="ja">データの居場所</span></h4><div class="d"><span class="zh">本平台 DB 與 <strong>CUBE 明確分離</strong>（內部營運 vs 顧客個資）。確認界線、引用方式（唯讀 KPI/PL），並與既有的 API/DB 連接標準對齊。</span><span class="ja">本platformのDBと<strong>CUBEを明確分離</strong>（社内営運 vs 顧客個人情報）。境界・参照方式（読取専用KPI/PL）を確認し、既存のAPI/DB接続標準と整合。</span></div></div></div>
-        <div class="card card-top ct-b"><div class="card-body"><h4 class="mini-title">Q4 · <span class="zh">AI 的伺服器執行</span><span class="ja">AIのサーバー実行</span></h4><div class="d"><span class="zh">後端呼叫 Claude API 的金鑰保管、用量、成本上限放在哪裡？由誰維運排程？</span><span class="ja">後端でClaude APIを呼ぶ鍵の保管・使用量・コスト上限はどこに？運用は誰が？</span></div></div></div>
-      </div>
-
-      <div class="note-box gold-note">
-        <span class="nb-title"># <span class="zh">相談的運法（給總經理）</span><span class="ja">相談の運び方（総経理へ）</span></span>
-        <span class="zh">建議帶三樣去找<strong>資訊事業處（IT 責任者）</strong>：① 本構想書 ② 圖 1 資料流 + 圖 2 架構 ③ 階段計畫的「P0–P2 先跑通、P3 再投資」提案。先給「<em>實證 → 再投資</em>」的節奏，IT 最容易往前站。<strong>內部如何分工、由誰主責，交由 IT 責任者決定。</strong>權限・資安・個資的合規要求，請一併請法務確認。</span>
-        <span class="ja"><strong>情報事業處（IT 責任者）</strong>へ三つを持参：① 本構想書 ② 図1データフロー＋図2アーキ ③ 段階計画の「P0–P2先行・P3で投資」提案。「<em>実証→投資</em>」のリズムを示すとITが前に出やすい。<strong>社内の分担・主担当はIT責任者の判断に委ねる。</strong>権限・資安・個人情報の法遵要件は法務にも確認を。</span>
+        <div class="card card-top ct-b"><div class="card-body"><h4 class="mini-title">Q1 · <span class="zh">同步基盤選型</span><span class="ja">同期基盤の選定</span></h4><div class="d"><span class="zh">即時協作以哪個為基礎？建議自建路線：<strong>Yjs (CRDT)＋輕量 Node</strong>，或 <strong>Supabase（開源・可自託管・Postgres）</strong>。評估維運成本與既有技能。</span><span class="ja">リアルタイム共同編集の基盤は何にするか？自作路線の推奨：<strong>Yjs (CRDT)＋軽量なNode</strong>、または <strong>Supabase（OSS・自己ホスト可・Postgres）</strong>。運用コストと既存スキルで評価。</span></div></div></div>
+        <div class="card card-top ct-b"><div class="card-body"><h4 class="mini-title">Q2 · <span class="zh">認證</span><span class="ja">認証</span></h4><div class="d"><span class="zh">採用<strong>企業 SSO（單一登入）</strong>是否可行？以公司既有帳號整合。權限模型：處／組／角色。</span><span class="ja"><strong>企業SSO（シングルサインオン）</strong>は可能か？既存アカウントで統合する。権限モデル：處／組／役割。</span></div></div></div>
+        <div class="card card-top ct-b"><div class="card-body"><h4 class="mini-title">Q3 · <span class="zh">資料的家</span><span class="ja">データの居場所</span></h4><div class="d"><span class="zh">本平台 DB 與 <strong>CUBE 明確分離</strong>（內部營運 vs 顧客個資）。確認界線、引用方式（唯讀 KPI/PL），並與既有的 API/DB 連接標準對齊。</span><span class="ja">本プラットフォームのDBと<strong>CUBEを明確に分離</strong>（社内運営 vs 顧客個人情報）。境界・参照方式（読取専用のKPI/PL）を確認し、既存のAPI/DB接続標準と整合させる。</span></div></div></div>
+        <div class="card card-top ct-b"><div class="card-body"><h4 class="mini-title">Q4 · <span class="zh">AI 的伺服器執行</span><span class="ja">AIのサーバー実行</span></h4><div class="d"><span class="zh">後端呼叫 Claude API 的金鑰保管、用量、成本上限放在哪裡？由誰維運排程？</span><span class="ja">バックエンドからClaude APIを呼ぶ際の鍵の保管・使用量・コスト上限はどこに置くか？運用は誰が担うか？</span></div></div></div>
       </div>
 
       <div class="result-box mt24">
         <div class="rb-label">Why this exists</div>
         <div class="rb-big">
           <span class="zh">不靠口號、不靠嚴管，而是讓「<em>正確的級聯</em>」自然發生，讓人因為方便而願意打開——這就是這個平台存在的理由，也是衡量每一個功能該不該做的尺。</span>
-          <span class="ja">口号でも厳管でもなく、「<em>正しいカスケード</em>」を自然に起こし、人が便利だから開く——これがこのプラットフォームの存在理由であり、各機能の採否を測る物差しだ。</span>
+          <span class="ja">かけ声でも締めつけでもなく、「<em>正しいカスケード</em>」を自然に起こし、人が便利だから開く——これがこのプラットフォームの存在理由であり、各機能の採否を測る物差しになる。</span>
         </div>
       </div>
 
       <div class="page-footer">
         <p><strong>IMT × Mindmap — <span class="zh">技術構想書 v.1</span><span class="ja">技術構想書 v.1</span></strong> · 2026-06-04 · <span class="zh">負責人：小沼和幸（總經理）</span><span class="ja">責任者：小沼和幸（総経理）</span></p>
-        <p><span class="zh">本文件為內部技術構想。重的成果與顧客資料分別存於 Confluence／SharePoint 與 CUBE，本平台僅以連結與唯讀引用相接。</span><span class="ja">本書は社内技術構想。重い成果と顧客データはConfluence／SharePointとCUBEに置き、本platformはリンクと読取専用参照で接続する。</span></p>
+        <p><span class="zh">本文件為內部技術構想。重的成果與顧客資料分別存於 Confluence／SharePoint 與 CUBE，本平台僅以連結與唯讀引用相接。</span><span class="ja">本書は社内の技術構想です。重い成果物と顧客データはConfluence／SharePointとCUBEに置き、本プラットフォームはリンクと読取専用の参照で接続します。</span></p>
       </div>
     </section>
 
@@ -706,7 +693,6 @@ ul.clean.green-bullet li::before{background:var(--green)}
 
 <script>
 (function(){
-  // scrollspy
   var navLinks=document.querySelectorAll('#sbNav a');
   var sections=[];
   for(var i=0;i<navLinks.length;i++){var s=document.querySelector(navLinks[i].getAttribute('href'));if(s)sections.push({link:navLinks[i],sec:s});}
@@ -716,7 +702,6 @@ ul.clean.green-bullet li::before{background:var(--green)}
     for(var j=0;j<sections.length;j++){sections[j].link.classList.toggle('active',j===idx);}
   }
   window.addEventListener('scroll',update);window.addEventListener('resize',update);update();
-  // mobile menu
   var btn=document.getElementById('menuBtn'),sb=document.getElementById('sidebar');
   if(btn)btn.addEventListener('click',function(){sb.classList.toggle('open');});
 })();
