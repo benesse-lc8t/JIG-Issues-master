@@ -36,7 +36,7 @@
 // Sheet 紐づけ型（Bound Script）なら空欄のままでも動く。
 const SHEET_ID = '1C1dVsZ_7vfWO3fFUH9pHk1MCCNglAQxAaF5cHwjYo_4';
 // 再公開が反映されたか確認するための目印。doGet が返す。変更のたびに上げる。
-const CODE_VERSION = 'gs-2026-06-02-taskdef1';
+const CODE_VERSION = 'gs-2026-06-04-orgcols1';
 
 // ===== 状態（2026-06-01 リデザイン：Mission/Task は7状態）=====
 // REDESIGN-PLAN.md D3。Issue は7状態を付けない（D2）。
@@ -53,19 +53,24 @@ const STATUS_COLORS = {
 };
 // 旧状態（移行期の互換。ドロップダウンには出さないが、書込は許容して弾かない）
 const LEGACY_STATUS = ['未開始', '需確認'];
-const ISSUE_NEW_COLS = ['Confluence URL', '狀態', '事務局備註', '更新日', 'Issue定義', '協作'];
+// 2026-06-04 IMT修正依頼②：組織データ（處/組）を Issue/Mission に再増設、IMT_AI分析 列を追加。
+// いずれも includes チェックで非破壊に append（既存があれば触らない）。
+const ISSUE_NEW_COLS = ['處', '組', 'Confluence URL', '狀態', '事務局備註', '更新日', 'Issue定義', '協作', 'IMT_AI分析'];
 const MISSION_HEADERS = [
   '編號',          // A
   'Mission',       // B
   '親編號',        // C
-  '戰略負責人',    // D
-  '狀態',          // E
-  'Mission進度',   // F
-  '更新日',        // G
-  'Confluence URL',// H
-  'Mission定義'    // I（2026-06-01 追加：カスケード健全性の言語化＝D8）
+  '處',            // D（2026-06-04 再増設：組織カスケード）
+  '組',            // E（2026-06-04 再増設）
+  '戰略負責人',    // F
+  '狀態',          // G
+  'Mission進度',   // H
+  '更新日',        // I
+  'Confluence URL',// J
+  'Mission定義',   // K（2026-06-01 追加：カスケード健全性の言語化）
+  'IMT_AI分析'     // L（2026-06-04 追加：AI 分析テキスト）
 ];
-const MISSION_COL_WIDTHS = { 1: 100, 2: 320, 3: 90, 4: 90, 5: 80, 6: 220, 7: 90, 8: 240, 9: 320 };
+const MISSION_COL_WIDTHS = { 1: 100, 2: 320, 3: 90, 4: 90, 5: 100, 6: 90, 7: 80, 8: 220, 9: 90, 10: 240, 11: 320, 12: 320 };
 
 // ===== Task一覽（2026-06-01 リデザイン：3層目の実体）=====
 // REDESIGN-PLAN.md §3.2。親 Mission 編號の配下に -K{n} で採番。
@@ -1021,10 +1026,11 @@ function setupJIG() {
     });
   }
 
-  // 既存 Mission一覽 に不足列（Mission定義＝カスケード健全性の言語化）を追記（非破壊）
+  // 既存 Mission一覽 に不足列を追記（非破壊）。
+  // Mission定義＝カスケード健全性の言語化。處/組＝組織カスケード（2026-06-04 再増設）。IMT_AI分析＝AI分析テキスト。
   {
     const mh = readHeaders(taskSheet);
-    ['Mission定義'].forEach(name => {
+    ['處', '組', 'Mission定義', 'IMT_AI分析'].forEach(name => {
       if (!mh.includes(name)) {
         const col = taskSheet.getLastColumn() + 1;
         taskSheet.getRange(1, col).setValue(name).setFontWeight('bold').setBackground('#F7F4EC');

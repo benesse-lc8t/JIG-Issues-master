@@ -586,13 +586,13 @@
   .my-table td { padding: 3px 8px; border-right: 1px solid #E6EAF0; border-bottom: 1px solid #E6EAF0; vertical-align: middle; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .my-table th:first-child, .my-table td:first-child { border-left: 1px solid #E6EAF0; }
   /* 行レベルの地色（薄め2色ブルー） */
-  .my-table tr.my-row-issue   > td { background: #E3F0FA; } /* Issue=濃いめ */
-  .my-table tr.my-row-mission > td { background: #E8F5FE; } /* Mission=薄い */
+  .my-table tr.my-row-issue   > td { background: #EAF2FB; } /* Issue=淡いブルー（macOS風） */
+  .my-table tr.my-row-mission > td { background: #FFFFFF; } /* Mission=白（2026-06-04 IMT修正依頼②） */
   .my-table tr.my-row-task    > td { background: #FFFFFF; } /* Task=白 */
   /* 列ベースの色付け：NO.・Issue 列は常に Issue 色／Mission 列は Issue 行以外で Mission 色（重複はテキスト無し） */
   .my-table tr.my-row td.my-c-no,
-  .my-table tr.my-row td.my-col-issue   { background: #E3F0FA; }
-  .my-table tr.my-row td.my-col-mission { background: #E8F5FE; }
+  .my-table tr.my-row td.my-col-issue   { background: #EAF2FB; }
+  .my-table tr.my-row td.my-col-mission { background: #FFFFFF; }
   /* ヘッダートグルによるレベル表示切替（mission を隠すと配下 task も隠す） */
   /* レベルトグル OFF → その層の行を隠し、かつ列ごと消す（① 列ごと非表示） */
   /* レベルトグル OFF → その層の行を隠す（列統合後は行のみ。Mission OFF でも Task は残す） */
@@ -625,8 +625,12 @@
   .my-table .my-c-name { font-size: var(--fs-xs); }
   /* Issue/Mission の名称ウェイトを Task と同じ（標準）に揃える */
   .my-table tr.my-row-task .my-c-name { color: #3C4043; }
-  /* 行ホバー：グレーの暗転ではなく薄ピンクのウォッシュ（地色を残してピンクを重ねる） */
-  .my-table tr.my-row:hover > td { box-shadow: inset 0 0 0 9999px rgba(233, 30, 99, 0.08); }
+  /* 行ホバー：macOS 風の淡いブルーウォッシュ（地色を残してブルーを重ねる） */
+  .my-table tr.my-row:hover > td { box-shadow: inset 0 0 0 9999px rgba(0, 122, 255, 0.06); }
+  /* 處タグ（部門色の小バッジ）／組テキスト（淡色） */
+  .my-table .my-c-dept, .my-table .my-c-grp { white-space: nowrap; text-align: center; }
+  .my-dept-tag { display: inline-block; font-size: 9.5px; font-weight: var(--fw-medium); padding: 1px 7px; border-radius: 999px; line-height: 1.5; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .my-grp-txt { font-size: 9.5px; color: #6B7280; }
   /* 選択中の自分のチップを光らせる */
   .person-chip.my-chip-me { font-weight: 700; position: relative; animation: chipGlow 1.5s ease-in-out infinite; }
   @keyframes chipGlow {
@@ -677,39 +681,64 @@
   .my-table th { position: sticky; }
   .my-col-rz { position: absolute; top: 0; right: -3px; width: 7px; height: 100%; cursor: col-resize; z-index: 4; }
   .ctrl-bar .my-reset-col { padding: 3px 9px; font-size: 9px; border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer; color: var(--g-grey); }
-  /* ===== 快速一覽（俯瞰ビューワー・2026-06-04 §1.7 ③）=====
-     テキスト羅列・情報密度優先。處（組織）→ Issue → Mission をカスケードで列挙。 */
-  .qv-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(15,22,40,.55); display: none; }
+  /* ===== 快速一覽 → IMT_AI 進度分析（2026-06-04 IMT修正依頼②）=====
+     全社 → 處 → 組 の進度を AI 分析（デモ用モック）。macOS 風・白／ブルー基調。 */
+  .qv-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(15,22,40,.42); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); display: none; }
   .qv-overlay.open { display: block; }
-  .qv-panel { position: absolute; inset: 24px; background: #fff; border-radius: 12px; box-shadow: 0 24px 60px -16px rgba(0,0,0,.5); display: flex; flex-direction: column; overflow: hidden; }
-  .qv-head { flex: none; display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--border); background: #0D1B3E; color: #fff; }
-  .qv-head .qv-title { font-weight: 700; font-size: 14px; letter-spacing: .03em; }
-  .qv-head .qv-sub { font-size: 11.5px; color: #9bb0d4; }
+  .qv-panel { position: absolute; inset: 26px; background: #F5F7FB; border-radius: 16px; box-shadow: 0 30px 70px -18px rgba(20,40,80,.5); display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(255,255,255,.6); }
+  .qv-head { flex: none; display: flex; align-items: center; gap: 10px; padding: 13px 20px; background: rgba(255,255,255,.78); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid #E3E8F0; }
+  .qv-badge-ai { font-size: 10px; font-weight: 800; letter-spacing: .06em; color: #fff; background: linear-gradient(135deg,#0A84FF,#5E5CE6); padding: 3px 8px; border-radius: 7px; }
+  .qv-head .qv-title { font-weight: 700; font-size: 15px; color: #1D1D1F; letter-spacing: .02em; }
+  .qv-head .qv-sub { font-size: 11.5px; color: #8A9099; }
   .qv-head .qv-sp { flex: 1; }
-  .qv-filter { height: 26px; padding: 0 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1); color: #fff; font-size: 12px; font-family: inherit; outline: none; width: 220px; }
-  .qv-filter::placeholder { color: #9bb0d4; }
-  .qv-close { border: 1px solid rgba(255,255,255,.3); background: none; color: #dbe4f3; border-radius: 6px; width: 26px; height: 26px; cursor: pointer; font-size: 15px; line-height: 1; }
-  .qv-close:hover { background: rgba(255,255,255,.14); }
-  .qv-body { flex: 1; overflow: auto; padding: 6px 0 24px; font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.65; color: #1f2733; }
-  .qv-dept { display: flex; align-items: baseline; gap: 8px; padding: 9px 18px 3px; margin-top: 6px; position: sticky; top: 0; background: #fff; z-index: 1; border-bottom: 1px solid var(--border); }
-  .qv-dept .qv-dept-name { font-weight: 700; font-size: 13px; padding: 1px 9px; border-radius: 5px; }
-  .qv-dept .qv-dept-cnt { font-size: 11px; color: var(--g-grey); }
-  .qv-issue { padding: 2px 18px 2px 30px; }
-  .qv-issue .qv-id { color: #5F6368; }
-  .qv-issue .qv-name { font-weight: 700; }
-  .qv-mi { padding: 1px 18px 1px 56px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .qv-mi:hover { background: #E8F0FE; }
-  .qv-mi .qv-tree { color: #BDC1C6; }
-  .qv-mi .qv-id { color: #5F6368; }
-  .qv-mi.qv-closed { color: #9AA0A6; }
-  .qv-mi .qv-dri { color: #137333; }
-  .qv-mi .qv-prog { color: #80868B; }
-  .qv-tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 0 6px; border-radius: 8px; vertical-align: middle; }
-  .qv-tag.st-doing { background: #E6F4EA; color: #137333; }
-  .qv-tag.st-wait  { background: #FEF7E0; color: #B06000; }
-  .qv-tag.st-idea  { background: #F1F3F4; color: #5F6368; }
-  .qv-tag.st-plan  { background: #E8F0FE; color: #1967D2; }
-  .qv-tag.st-done  { background: #F1F3F4; color: #9AA0A6; }
+  .qv-filter { height: 28px; padding: 0 12px; border-radius: 8px; border: 1px solid #D7DCE5; background: #fff; color: #1D1D1F; font-size: 12px; font-family: inherit; outline: none; width: 200px; transition: border-color .15s, box-shadow .15s; }
+  .qv-filter:focus { border-color: #0A84FF; box-shadow: 0 0 0 3px rgba(10,132,255,.15); }
+  .qv-filter::placeholder { color: #AEB4BD; }
+  .qv-close { border: 1px solid #D7DCE5; background: #fff; color: #6B7280; border-radius: 8px; width: 28px; height: 28px; cursor: pointer; font-size: 14px; line-height: 1; transition: background .15s; }
+  .qv-close:hover { background: #EEF1F6; color: #1D1D1F; }
+  .qv-body { flex: 1; overflow: auto; padding: 18px 20px 28px; }
+  /* 全社サマリー */
+  .qv-h { font-size: 12px; font-weight: 700; color: #6B7280; letter-spacing: .08em; text-transform: uppercase; margin: 4px 2px 10px; display: flex; align-items: center; gap: 8px; }
+  .qv-h::after { content: ""; flex: 1; height: 1px; background: #E3E8F0; }
+  .qv-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .qv-kpi { background: #fff; border: 1px solid #E6EAF1; border-radius: 12px; padding: 13px 15px; box-shadow: 0 1px 2px rgba(20,40,80,.04); }
+  .qv-kpi .v { font-size: 25px; font-weight: 800; color: #1D1D1F; line-height: 1.1; letter-spacing: -.02em; }
+  .qv-kpi .v small { font-size: 13px; font-weight: 600; color: #AEB4BD; margin-left: 2px; }
+  .qv-kpi .l { font-size: 11.5px; color: #8A9099; margin-top: 3px; }
+  .qv-kpi .d { font-size: 11px; font-weight: 700; margin-top: 5px; }
+  .qv-kpi .d.up { color: #1A8A4A; } .qv-kpi .d.down { color: #C0392B; } .qv-kpi .d.flat { color: #AEB4BD; }
+  /* AI 總結パネル */
+  .qv-ai { background: linear-gradient(180deg,#F3F1FF,#FBFAFF); border: 1px solid #E2DCFB; border-radius: 14px; padding: 14px 16px; margin-bottom: 20px; }
+  .qv-ai .ai-t { font-size: 12px; font-weight: 700; color: #4B2F86; display: flex; align-items: center; gap: 7px; margin-bottom: 7px; }
+  .qv-ai .ai-t .spark { width: 14px; height: 14px; }
+  .qv-ai p { font-size: 13px; color: #3A3550; line-height: 1.7; margin: 0; }
+  .qv-ai .ai-note { font-size: 10.5px; color: #9C93B8; margin-top: 7px; }
+  /* 處カード */
+  .qv-cards { display: flex; flex-direction: column; gap: 12px; }
+  .qv-card { background: #fff; border: 1px solid #E6EAF1; border-radius: 14px; padding: 14px 16px; box-shadow: 0 1px 2px rgba(20,40,80,.04); }
+  .qv-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .qv-card-name { font-size: 13.5px; font-weight: 700; padding: 2px 11px; border-radius: 999px; }
+  .qv-card-cnt { font-size: 11.5px; color: #8A9099; }
+  .qv-card-cnt b { color: #1D1D1F; font-weight: 700; }
+  .qv-card-sp { flex: 1; }
+  .qv-mini { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
+  .qv-mini.up { background: #E6F4EA; color: #1A8A4A; } .qv-mini.down { background: #FCE8E6; color: #C0392B; } .qv-mini.warn { background: #FEF3DC; color: #B06000; }
+  /* 進度バー（積層） */
+  .qv-bar { display: flex; height: 9px; border-radius: 999px; overflow: hidden; background: #EEF1F6; margin: 4px 0 9px; }
+  .qv-bar i { display: block; height: 100%; }
+  .qv-bar i.s-doing { background: #0A84FF; } .qv-bar i.s-done { background: #34C759; }
+  .qv-bar i.s-wait { background: #FF9F0A; } .qv-bar i.s-plan { background: #5AC8FA; }
+  .qv-bar i.s-idea { background: #C7CCD6; } .qv-bar i.s-stop { background: #E0563A; }
+  .qv-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 10.5px; color: #6B7280; margin-bottom: 9px; }
+  .qv-legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .qv-legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+  /* 組チップ行 */
+  .qv-grps { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .qv-grp { font-size: 11px; color: #3A4453; background: #F2F5FA; border: 1px solid #E6EAF1; border-radius: 8px; padding: 3px 9px; }
+  .qv-grp b { color: #1D1D1F; }
+  .qv-grp .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+  .qv-card-ai { font-size: 12px; color: #5A6270; line-height: 1.6; margin-top: 9px; padding: 9px 11px; background: #F7F9FC; border-radius: 9px; border-left: 3px solid #C9D6EA; }
+  .qv-card-ai b { color: #3A4453; }
   .qv-empty { padding: 40px; text-align: center; color: var(--g-grey); }
   .qv-hidden { display: none !important; }
   .ctrl-bar .my-reset-col:hover { background: #F5F5F7; color: #1D1D1F; }
@@ -1656,10 +1685,11 @@
   <div class="qv-overlay" id="qvOverlay">
     <div class="qv-panel">
       <div class="qv-head">
-        <span class="qv-title">快速一覽</span>
-        <span class="qv-sub">處 → Issue → Mission　全覽</span>
+        <span class="qv-badge-ai">IMT_AI</span>
+        <span class="qv-title">進度分析</span>
+        <span class="qv-sub">全社 → 處 → 組　管理者の状況把握ビュー</span>
         <span class="qv-sp"></span>
-        <input type="search" class="qv-filter" id="qvFilter" placeholder="篩選（名稱／編號／人名）…" autocomplete="off">
+        <input type="search" class="qv-filter" id="qvFilter" placeholder="篩選處／組…" autocomplete="off">
         <button type="button" class="qv-close" id="qvClose" title="關閉">✕</button>
       </div>
       <div class="qv-body" id="qvBody"></div>
@@ -1721,7 +1751,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.54.0';
+const APP_VERSION = '0.55.0';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
@@ -1807,7 +1837,7 @@ const GROUP_DEF = {
 const AXIS_CLASS = { 'O':'ax-O','N':'ax-N','CV':'ax-CV','I':'ax-I','P':'ax-P' };
 const COLS = ['區分','軸','編號','Issue','Issue短縮','處','組','戰略負責人','管理頁面','確認會議','會議時間'];
 // 拡張列：Sheet に存在すれば読み込む。欠けていてもエラーにせず空文字とする。
-const OPTIONAL_COLS = ['種別','親編號','擔當','Confluence URL','狀態','事務局備註','Mission進度','更新日','Issue定義','Mission定義'];
+const OPTIONAL_COLS = ['種別','親編號','擔當','Confluence URL','狀態','事務局備註','Mission進度','更新日','Issue定義','Mission定義','IMT_AI分析'];
 // ===== 状態（2026-06-01 リデザイン P2：Mission/Task は7状態）=====
 // 表示順（ピッカー・凡例の並び）。Issue は7状態を付けない（粗く運用）。
 const STATUS_ORDER = ['構想中','策劃中','待審核','進行中','結案','凍結','中止'];
@@ -4754,8 +4784,8 @@ function _myRestoreView() {
   if (v.lv) window._myLevelShow = { issue: v.lv.issue !== false, mission: v.lv.mission !== false, task: v.lv.task !== false };
 }
 // ⑦ 列幅（px・12列）。保存/デフォルト/リサイズ配線。
-const MY_COLW_KEY = 'imt:myColW2'; // 列順変更で旧保存幅を無効化（DRI を Item の隣へ移動）
-const MY_COLW_DEF = [64, 210, 64, 38, 44, 80, 200, 78, 84, 66]; // NO/IMT/DRI/Link/folder/Status/Progress(可変)/Collab/Supporter/Updated
+const MY_COLW_KEY = 'imt:myColW3'; // 列再編で旧保存幅を無効化（處/組 挿入・資料夾/戰略支援 撤去）
+const MY_COLW_DEF = [60, 210, 66, 72, 64, 44, 80, 200, 78, 92]; // NO/IMT/處/組/DRI/Link/Status/Progress(可変)/Collab/進度更新日
 function _myColW() { try { const a = JSON.parse(localStorage.getItem(MY_COLW_KEY)); if (Array.isArray(a) && a.length === MY_COLW_DEF.length) return a; } catch (e) {} return MY_COLW_DEF.slice(); }
 function _mySaveColW(a) { localStorage.setItem(MY_COLW_KEY, JSON.stringify(a)); }
 function _myWireColResize() {
@@ -4858,6 +4888,17 @@ function _myCommentCell(kind, id, row) {
   return `<td class="my-c-comment" data-kind="${kind}" data-id="${escapeAttr(id)}" title="點一下：記錄／詳情　點兩下：直接編輯">${body}</td>`;
 }
 function _myDateCell(v) { return `<td class="my-c-date">${_myLastHtml(v)}</td>`; }
+// 處（部門）セル：部門色の小タグ。組セル：淡色テキスト。（2026-06-04 IMT修正依頼②）
+function _myDeptCell(dept) {
+  const d = (dept || '').trim();
+  if (!d) return `<td class="my-c-dept"></td>`;
+  const c = deptChipColor(d);
+  return `<td class="my-c-dept"><span class="my-dept-tag" style="background:${c.bg};color:${c.fg}">${escapeHtml(d)}</span></td>`;
+}
+function _myGrpCell(grp) {
+  const g = (grp || '').trim();
+  return `<td class="my-c-grp">${g ? `<span class="my-grp-txt">${escapeHtml(g)}</span>` : ''}</td>`;
+}
 
 function renderMyView() {
   const wrap = document.getElementById('myWrap');
@@ -4929,13 +4970,13 @@ function renderMyView() {
     rows += `<tr class="my-row my-row-issue${issMine ? ' my-mine' : ''}${issDri ? ' my-is-dri' : ''}" data-kind="issue" data-id="${escapeAttr(inum)}">`
       + `<td class="my-c-no">${_myDispNo(ii, null, null)}</td>`
       + `<td class="my-c-name my-c-item my-name lvl-0" data-kind="issue" data-id="${escapeAttr(inum)}" data-iref="${ii}" data-name="${escapeAttr(iss['Issue'] || '')}" title="在 mm-app 開啟（思考工作台）"><span class="my-lvl-badge lv-i">I</span>${escapeHtml(iss['Issue'] || '')}<span class="my-add my-add-m" data-id="${escapeAttr(inum)}" title="新增 Mission">＋M</span></td>`
+      + _myDeptCell(iss['處'])
+      + _myGrpCell(iss['組'])
       + `<td class="my-c-dri">${_myChips(iss['擔當'])}</td>`
       + _myLinkCell(iss['Confluence URL'], inum, 'issue')
-      + `<td class="my-c-folder"></td>`
       + _myStCell('issue', inum, iss['狀態'])
       + _myCommentCell('issue', inum, iss)
       + `<td class="my-c-collab"></td>`
-      + `<td class="my-c-lead">${_myChips(iss['戰略負責人'])}</td>`
       + _myDateCell(iss['更新日'])
       + `</tr>`;
     totalCount++; if (issMine) mineCount++; if (issDri) driCount++;
@@ -4946,13 +4987,13 @@ function renderMyView() {
       rows += `<tr class="my-row my-row-mission${mb.mMine ? ' my-mine' : ''}${mb.mDri ? ' my-is-dri' : ''}" data-kind="mission" data-id="${escapeAttr(mid)}">`
         + `<td class="my-c-no">${_myDispNo(ii, mn, null)}</td>`
         + `<td class="my-c-name my-c-item my-name lvl-1" data-kind="mission" data-id="${escapeAttr(mid)}" data-name="${escapeAttr(mb.m['Mission'] || mb.m['Issue'] || '')}" title="在 mm-app 開啟（思考工作台）"><span class="my-lvl-badge lv-m">M</span>${escapeHtml(mb.m['Mission'] || mb.m['Issue'] || '')}</td>`
+        + _myDeptCell(mb.m['處'] || iss['處'])
+        + _myGrpCell(mb.m['組'] || iss['組'])
         + `<td class="my-c-dri">${_myChips(mb.m['擔當'])}</td>`
         + _myLinkCell(mb.m['Confluence URL自身'] || mb.m['Confluence URL'], mid, 'mission')
-        + `<td class="my-c-folder"></td>`
         + _myStCell('mission', mid, mb.m['狀態'])
         + _myCommentCell('mission', mid, mb.m)
         + `<td class="my-c-collab"></td>`
-        + `<td class="my-c-lead">${_myChips(mb.m['戰略負責人'])}</td>`
         + _myDateCell(mb.m['更新日'])
         + `</tr>`;
       totalCount++; if (mb.mMine) mineCount++; if (mb.mDri) driCount++;
@@ -4962,13 +5003,13 @@ function renderMyView() {
         rows += `<tr class="my-row my-row-task${tr.tMine ? ' my-mine' : ''}${tr.tDri ? ' my-is-dri' : ''}" data-kind="task" data-id="${escapeAttr(tid)}">`
           + `<td class="my-c-no">${_myDispNo(ii, mn, tn)}</td>`
           + `<td class="my-c-name my-c-item my-task-name lvl-2" data-id="${escapeAttr(tid)}" title="點兩下改名"><span class="my-lvl-badge lv-t">T</span>${escapeHtml(tr.t['Task'] || '')}</td>`
+          + _myDeptCell(mb.m['處'] || iss['處'])
+          + _myGrpCell(mb.m['組'] || iss['組'])
           + `<td class="my-c-dri">${_myChips(tr.t['DRI'])}</td>`
           + _myLinkCell(tr.t['連結'], tid, 'task')
-          + `<td class="my-c-folder"></td>`
           + _myStCell('task', tid, tr.t['狀態'])
           + _myCommentCell('task', tid, tr.t)
           + `<td class="my-c-collab">${_myChips(tr.t['協作'])}</td>`
-          + `<td class="my-c-lead"></td>`
           + _myDateCell(tr.t['更新日'])
           + `</tr>`;
         totalCount++; if (tr.tMine) mineCount++; if (tr.tDri) driCount++;
@@ -4981,13 +5022,13 @@ function renderMyView() {
   const onlyDri = !!document.getElementById('myOnlyDri')?.checked;
   const tcls = 'my-table' + (LV.issue === false ? ' hide-issue' : '') + (LV.mission === false ? ' hide-mission' : '') + (LV.task === false ? ' hide-task' : '') + (onlyDri ? ' only-dri' : '');
   const rz = '<span class="my-col-rz"></span>';
-  // 進度（index 6）は幅指定なし＝残り幅を吸収する可変列。これで表は常に 100% に収まり右あふれしない。
-  const cols = _myColW().map((w, i) => i === 6 ? '<col>' : `<col style="width:${w}px">`).join('');
+  // 進度（index 7）は幅指定なし＝残り幅を吸収する可変列。これで表は常に 100% に収まり右あふれしない。
+  const cols = _myColW().map((w, i) => i === 7 ? '<col>' : `<col style="width:${w}px">`).join('');
   wrap.innerHTML = `<table class="${tcls}">`
     + `<colgroup>${cols}</colgroup>`
     + `<thead><tr>`
-    + `<th>NO.${rz}</th><th>IMT${rz}</th><th>DRI${rz}</th><th>連結${rz}</th><th>資料夾${rz}</th>`
-    + `<th>狀態${rz}</th><th>進度${rz}</th><th>協作${rz}</th><th>戰略支援${rz}</th><th>更新日${rz}</th>`
+    + `<th>NO.${rz}</th><th>IMT${rz}</th><th>處${rz}</th><th>組${rz}</th><th>DRI${rz}</th>`
+    + `<th>連結${rz}</th><th>狀態${rz}</th><th>進度${rz}</th><th>協作${rz}</th><th>進度更新日${rz}</th>`
     + `</tr></thead><tbody>${rows}</tbody></table>`;
   if (countEl) countEl.textContent = showAll ? `全部 ${totalCount}` : (onlyDri ? `僅我DRI ${driCount}` : `DRI ${mineCount}（含上下層 ${totalCount}）`);
   _myWireColResize();
@@ -5046,34 +5087,63 @@ function _myCommentPrimary(cm) {
   _myStartCommentEdit(cm);
 }
 
-// ===== 快速一覽（俯瞰ビューワー・2026-06-04 §1.7 ③）=====
-// 處（組織）→ Issue → Mission をテキストでカスケード列挙。情報密度優先・羅列。
-// Mission 行クリックで mm-app（ダミー）へ遷移＝メイン画面と同じ動線。
-const _QV_TAG = {
-  '構想中': 'st-idea', '策劃中': 'st-plan', '待審核': 'st-wait',
-  '進行中': 'st-doing', '結案': 'st-done', '凍結': 'st-done', '中止': 'st-done', '完成': 'st-done',
-};
-function _qvTag(status) {
-  const v = normalizeStatus(status);
-  if (!v) return '';
-  return `<span class="qv-tag ${_QV_TAG[v] || 'st-idea'}">${escapeHtml(v)}</span>`;
+// ===== 快速一覽 → IMT_AI 進度分析（2026-06-04 IMT修正依頼②）=====
+// 全社 → 處 → 組 の進度を AI が分析した体のダッシュボード。管理者が状況を把握する用途。
+// ⚠️ 静的サイト＋ダミーデータのため AI は未接続：分析文・本週増減は「デモ用モック」（決定的に生成）。
+//    実 AI 接続時は _qvAiText / 本週増減の算出を差し替える。
+const _QV_STAT_CLASS = { '進行中': 's-doing', '結案': 's-done', '完成': 's-done', '待審核': 's-wait', '策劃中': 's-plan', '構想中': 's-idea', '凍結': 's-stop', '中止': 's-stop' };
+function _qvHash(s) { let h = 2166136261; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0); }
+function _qvPseudo(seed, min, max) { const r = (_qvHash(seed) % 997) / 997; return Math.round(min + r * (max - min)); }
+function _qvAgg(missions, tasksByParent) {
+  const stat = { 's-doing': 0, 's-done': 0, 's-wait': 0, 's-plan': 0, 's-idea': 0, 's-stop': 0 };
+  let stale = 0, taskN = 0, taskDone = 0;
+  missions.forEach(m => {
+    const v = normalizeStatus(m['狀態']);
+    stat[_QV_STAT_CLASS[v] || 's-idea']++;
+    const dt = parseDateLoose(m['更新日']);
+    if (dt && (Date.now() - dt.getTime()) / 86400000 > 14 && !CLOSED_STATES.has(v)) stale++;
+    const ts = tasksByParent[(m['編號'] || '').trim()] || [];
+    taskN += ts.length;
+    ts.forEach(t => { if (CLOSED_STATES.has(normalizeStatus(t['狀態']))) taskDone++; });
+  });
+  return { stat, stale, taskN, taskDone, mN: missions.length };
+}
+function _qvBar(stat, total) {
+  if (!total) return '<div class="qv-bar"></div>';
+  const seg = ['s-done', 's-doing', 's-wait', 's-plan', 's-idea', 's-stop']
+    .map(k => stat[k] ? `<i class="${k}" style="width:${(stat[k] / total * 100).toFixed(1)}%"></i>` : '').join('');
+  return `<div class="qv-bar">${seg}</div>`;
+}
+// デモ用モックの AI コメント（決定的・繁中）。実 AI 接続時に差し替える。
+function _qvAiText(name, a, addN, doneN) {
+  const seed = _qvHash(name);
+  const rate = a.mN ? Math.round((a.stat['s-done'] / a.mN) * 100) : 0;
+  const tone = a.stale >= 2 ? '需關注' : (a.stat['s-doing'] >= a.mN * 0.5 ? '動能良好' : '穩定推進');
+  const frag = [];
+  frag.push(`本週新增 Task ${addN} 件、結案 ${doneN} 件，Mission 結案率約 ${rate}%`);
+  if (a.stale > 0) frag.push(`有 ${a.stale} 個 Mission 逾兩週未更新，建議優先催辦`);
+  else frag.push('各 Mission 更新節奏正常');
+  const tail = (seed % 2 === 0) ? '整體朝結案收斂' : '部分項目仍待審核釐清方向';
+  return `<b>${tone}。</b>${frag.join('；')}。${tail}。`;
 }
 function renderQuickView() {
   const body = document.getElementById('qvBody');
   if (!body) return;
   const issues = issueData.filter(r => (r['種別'] || 'Issue') !== 'Mission');
-  const missionsByParent = {};
-  issueData.filter(r => r['種別'] === 'Mission').forEach(m => {
-    const p = (m['親編號'] || '').trim();
-    (missionsByParent[p] = missionsByParent[p] || []).push(m);
-  });
-  // 處ごとにグループ化（DEPT_COLOR_MAP の並びを優先、その他は出現順、空は末尾）
+  const missions = issueData.filter(r => r['種別'] === 'Mission');
+  const tasksByParent = window.tasksByParent || {};
+
+  // 處ごとに Mission をまとめる（Mission は 處 を継承済み。空は「未分類」）
   const order = Object.keys(DEPT_COLOR_MAP);
   const byDept = new Map();
-  issues.forEach(iss => {
-    const d = (iss['處'] || '').trim() || '（未分類）';
-    if (!byDept.has(d)) byDept.set(d, []);
-    byDept.get(d).push(iss);
+  const ensure = d => { if (!byDept.has(d)) byDept.set(d, { missions: [], groups: new Map(), issueNums: new Set() }); return byDept.get(d); };
+  issues.forEach(iss => { const d = (iss['處'] || '').trim() || '（未分類）'; ensure(d).issueNums.add((iss['編號'] || '').trim()); });
+  missions.forEach(m => {
+    const d = (m['處'] || '').trim() || '（未分類）';
+    const e = ensure(d); e.missions.push(m);
+    const g = (m['組'] || '').trim() || '（未分組）';
+    if (!e.groups.has(g)) e.groups.set(g, []);
+    e.groups.get(g).push(m);
   });
   const depts = Array.from(byDept.keys()).sort((a, b) => {
     const ia = order.indexOf(a), ib = order.indexOf(b);
@@ -5081,57 +5151,71 @@ function renderQuickView() {
     const rb = ib < 0 ? (b === '（未分類）' ? 9999 : 500) : ib;
     return ra - rb || a.localeCompare(b);
   });
-  let html = '';
+
+  // 全社集計
+  const all = _qvAgg(missions, tasksByParent);
+  const allAdd = depts.reduce((s, d) => s + _qvPseudo('add' + d, 1, 6), 0);
+  const allDone = depts.reduce((s, d) => s + _qvPseudo('done' + d, 0, 4), 0);
+  const doingTotal = all.stat['s-doing'];
+
+  // ① 全社 KPI
+  let html = '<div class="qv-h">全社 概況（OVERVIEW）</div><div class="qv-kpis">';
+  html += `<div class="qv-kpi"><div class="v">${issues.length}</div><div class="l">Issue 總數</div></div>`;
+  html += `<div class="qv-kpi"><div class="v">${all.mN}<small>件</small></div><div class="l">Mission（進行中 ${doingTotal}）</div></div>`;
+  html += `<div class="qv-kpi"><div class="v">${all.taskN}<small>件</small></div><div class="l">Task 累計（結案 ${all.taskDone}）</div></div>`;
+  html += `<div class="qv-kpi"><div class="v">+${allAdd}</div><div class="l">本週 Task 新增</div><div class="d up">▲ 較上週</div></div>`;
+  html += `<div class="qv-kpi"><div class="v">${allDone}</div><div class="l">本週 Task 結案</div><div class="d ${allDone ? 'up' : 'flat'}">${allDone ? '▲ 收斂中' : '— 無變化'}</div></div>`;
+  html += `<div class="qv-kpi"><div class="v" style="color:${all.stale ? '#C0392B' : '#1A8A4A'}">${all.stale}</div><div class="l">停滯 Mission（>14天）</div></div>`;
+  html += '</div>';
+
+  // ② 全社 AI 總結
+  html += `<div class="qv-ai"><div class="ai-t"><svg class="spark" viewBox="0 0 24 24" fill="#7C5CE6"><path d="M12 2l2.2 5.8L20 10l-5.8 2.2L12 18l-2.2-5.8L4 10l5.8-2.2z"/></svg>IMT_AI 全社總結</div>`
+    + `<p>${_qvAiText('全社', all, allAdd, allDone)}　目前共 ${depts.length} 個處在推進；${all.stale ? `其中停滯項目集中需逐處檢視` : '無明顯停滯，維持現有節奏即可'}。</p>`
+    + `<div class="ai-note">＊本分析與「本週」增減為示意（模擬）數值。實際 AI 分析將讀取 Mission進度ログ 後生成。</div></div>`;
+
+  // ③ 處別カード
+  html += '<div class="qv-h">處別 分析（BY DEPARTMENT）</div><div class="qv-cards">';
   depts.forEach(dept => {
-    const list = byDept.get(dept);
+    const e = byDept.get(dept);
     const cc = deptChipColor(dept);
-    let mCount = 0;
-    let inner = '';
-    list.forEach(iss => {
-      const inum = (iss['編號'] || '').trim();
-      inner += `<div class="qv-issue" data-blob="${escapeAttr((inum + ' ' + (iss['Issue'] || '') + ' ' + (iss['戰略負責人'] || '')).toLowerCase())}">`
-        + `<span class="qv-id">${escapeHtml(inum)}</span> <span class="qv-name">${escapeHtml(iss['Issue'] || '')}</span></div>`;
-      const ms = (missionsByParent[inum] || []).slice().sort((a, b) => {
-        const na = (String(a['編號']).match(/-M(\d+)/) || [])[1], nb = (String(b['編號']).match(/-M(\d+)/) || [])[1];
-        return (+na || 0) - (+nb || 0);
-      });
-      ms.forEach((m, k) => {
-        mCount++;
-        const mid = (m['編號'] || '').trim();
-        const name = m['Mission'] || m['Issue'] || '';
-        const dri = (m['擔當'] || m['戰略負責人'] || '').trim();
-        const closed = CLOSED_STATES.has(normalizeStatus(m['狀態']));
-        const tree = (k === ms.length - 1) ? '└ ' : '├ ';
-        const prog = (_myCommentText(m, 'mission') || '').trim();
-        inner += `<div class="qv-mi${closed ? ' qv-closed' : ''}" data-id="${escapeAttr(mid)}" data-name="${escapeAttr(name)}"`
-          + ` data-blob="${escapeAttr((mid + ' ' + name + ' ' + dri + ' ' + prog).toLowerCase())}">`
-          + `<span class="qv-tree">${tree}</span><span class="qv-id">${escapeHtml(mid)}</span> ${escapeHtml(name)} ${_qvTag(m['狀態'])}`
-          + (dri ? ` <span class="qv-dri">@${escapeHtml(dri)}</span>` : '')
-          + (prog ? ` <span class="qv-prog">— ${escapeHtml(prog)}</span>` : '')
-          + `</div>`;
-      });
-    });
-    html += `<div class="qv-dept"><span class="qv-dept-name" style="background:${cc.bg};color:${cc.fg}">${escapeHtml(dept)}</span>`
-      + `<span class="qv-dept-cnt">Issue ${list.length}・Mission ${mCount}</span></div>` + inner;
+    const a = _qvAgg(e.missions, tasksByParent);
+    const addN = _qvPseudo('add' + dept, 1, 6), doneN = _qvPseudo('done' + dept, 0, 4);
+    const mini = a.stale >= 2 ? `<span class="qv-mini warn">⚠ 停滯 ${a.stale}</span>`
+      : (addN >= 3 ? `<span class="qv-mini up">▲ 本週 +${addN}</span>` : `<span class="qv-mini up">本週 +${addN}</span>`);
+    const grpChips = Array.from(e.groups.entries()).sort((x, y) => y[1].length - x[1].length).map(([g, ms]) => {
+      const ga = _qvAgg(ms, tasksByParent);
+      return `<span class="qv-grp"><span class="dot" style="background:${cc.fg}"></span>${escapeHtml(g)} <b>${ms.length}</b>　進行 ${ga.stat['s-doing']}・結案 ${ga.stat['s-done']}</span>`;
+    }).join('');
+    const blob = (dept + ' ' + Array.from(e.groups.keys()).join(' ')).toLowerCase();
+    html += `<div class="qv-card" data-blob="${escapeAttr(blob)}">`
+      + `<div class="qv-card-top"><span class="qv-card-name" style="background:${cc.bg};color:${cc.fg}">${escapeHtml(dept)}</span>`
+      + `<span class="qv-card-cnt">Issue <b>${e.issueNums.size}</b>・Mission <b>${a.mN}</b>・Task <b>${a.taskN}</b></span>`
+      + `<span class="qv-card-sp"></span>${mini}</div>`
+      + _qvBar(a.stat, a.mN)
+      + `<div class="qv-legend">`
+      + `<span><i style="background:#34C759"></i>結案 ${a.stat['s-done']}</span>`
+      + `<span><i style="background:#0A84FF"></i>進行中 ${a.stat['s-doing']}</span>`
+      + `<span><i style="background:#FF9F0A"></i>待審核 ${a.stat['s-wait']}</span>`
+      + `<span><i style="background:#5AC8FA"></i>策劃中 ${a.stat['s-plan']}</span>`
+      + `<span><i style="background:#C7CCD6"></i>構想中 ${a.stat['s-idea']}</span>`
+      + (a.stat['s-stop'] ? `<span><i style="background:#E0563A"></i>凍結/中止 ${a.stat['s-stop']}</span>` : '')
+      + `</div>`
+      + `<div class="qv-card-ai">${_qvAiText(dept, a, addN, doneN)}</div>`
+      + (grpChips ? `<div class="qv-grps">${grpChips}</div>` : '')
+      + `</div>`;
   });
-  body.innerHTML = html || '<div class="qv-empty">尚無資料。</div>';
+  html += '</div>';
+
+  body.innerHTML = depts.length ? html : '<div class="qv-empty">尚無資料。</div>';
   _qvApplyFilter();
 }
 function _qvApplyFilter() {
   const q = (document.getElementById('qvFilter')?.value || '').trim().toLowerCase();
   const body = document.getElementById('qvBody');
   if (!body) return;
-  body.querySelectorAll('.qv-issue, .qv-mi').forEach(el => {
+  body.querySelectorAll('.qv-card').forEach(el => {
     el.classList.toggle('qv-hidden', !!q && !(el.dataset.blob || '').includes(q));
   });
-  // 行が全て隠れた處ヘッダーも畳む
-  let cur = null, curHasVisible = false;
-  const flush = () => { if (cur) cur.classList.toggle('qv-hidden', !!q && !curHasVisible); };
-  body.querySelectorAll('.qv-dept, .qv-issue, .qv-mi').forEach(el => {
-    if (el.classList.contains('qv-dept')) { flush(); cur = el; curHasVisible = false; }
-    else if (!el.classList.contains('qv-hidden')) curHasVisible = true;
-  });
-  flush();
 }
 function openQuickView() {
   renderQuickView();
@@ -5400,7 +5484,7 @@ async function loadMissionsAndMerge(issues) {
         continue;
       }
       const idx = {};
-      ['編號','Mission','Task','Issue','親編號','擔當','戰略負責人','狀態','Mission進度','事務局備註','更新日','Confluence URL','Mission定義']
+      ['編號','Mission','Task','Issue','親編號','處','組','擔當','戰略負責人','狀態','Mission進度','事務局備註','更新日','Confluence URL','Mission定義','IMT_AI分析']
         .forEach(c => { idx[c] = headers.indexOf(c); });
       const issueByNum = new Map();
       issues.forEach(r => issueByNum.set((r['編號']||'').trim(), r));
@@ -5423,8 +5507,8 @@ async function loadMissionsAndMerge(issues) {
           '編號':       num,
           'Issue':      content,
           'Issue短縮':  '',
-          '處':         (parentRow && parentRow['處']) || '',
-          '組':         (parentRow && parentRow['組']) || '',
+          '處':         get('處') || (parentRow && parentRow['處']) || '',
+          '組':         get('組') || (parentRow && parentRow['組']) || '',
           '擔當':       get('擔當'),   // Mission の擔當は親から継承しない。未入力なら空欄表示
           '戰略負責人': get('戰略負責人') || (parentRow && parentRow['戰略負責人']) || '',
           '管理頁面':   (parentRow && parentRow['管理頁面']) || '',
@@ -5440,6 +5524,7 @@ async function loadMissionsAndMerge(issues) {
           'Mission進度': get('Mission進度'),
           '事務局備註':  get('事務局備註'),
           'Mission定義': get('Mission定義'),
+          'IMT_AI分析':  get('IMT_AI分析'),
           '更新日':      get('更新日'),
         });
       }
