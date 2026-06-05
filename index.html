@@ -742,6 +742,10 @@
   .qv-empty { padding: 40px; text-align: center; color: var(--g-grey); }
   .qv-hidden { display: none !important; }
   .ctrl-bar .my-reset-col:hover { background: #F5F5F7; color: #1D1D1F; }
+  /* 進度 Dashboard ボタン：濃い青・白文字・右端（2026-06-05 修正④） */
+  .ctrl-bar .my-dash-btn { margin-left: auto; padding: 6px 16px; font-size: 11px; font-weight: 700; border: none; border-radius: 8px; background: #0B57D0; color: #fff; cursor: pointer; letter-spacing: .03em; white-space: nowrap; box-shadow: 0 1px 3px rgba(11,87,208,.35); transition: background .15s, box-shadow .15s; }
+  .ctrl-bar .my-dash-btn:hover { background: #0A4DBB; box-shadow: 0 2px 7px rgba(11,87,208,.45); }
+  .ctrl-bar .my-dash-btn:active { background: #0942A0; }
   /* ⑤ Only my DRI スライド（明るい ctrl-bar 用の配色） */
   .my-slide { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
   .ctrl-bar .my-lv-label { font-size: 9px; color: var(--g-grey); font-weight: 600; }
@@ -1657,19 +1661,18 @@
         <div class="author-menu-chips" id="myWhoPickChips"></div>
       </div>
     </span>
+    <label class="my-slide"><span>僅我DRI</span><span class="ios-sw"><input type="checkbox" id="myOnlyDri"><span class="ios-track"></span></span></label>
     <input type="search" id="mySearch" class="my-search" placeholder="" autocomplete="off">
     <span class="ctrl-sep"></span>
-    <label class="my-slide"><span>僅我DRI</span><span class="ios-sw"><input type="checkbox" id="myOnlyDri"><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>顯示全部</span><span class="ios-sw"><input type="checkbox" id="myShowAll"><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>顯示結案</span><span class="ios-sw"><input type="checkbox" id="myShowClosed"><span class="ios-track"></span></span></label>
     <span class="ctrl-sep"></span>
     <span class="my-lv-label">層級</span>
     <label class="my-slide"><span>Issue</span><span class="ios-sw"><input type="checkbox" id="myLvIssue" checked><span class="ios-track"></span></span></label>
     <label class="my-slide"><span>Mission</span><span class="ios-sw"><input type="checkbox" id="myLvMission" checked><span class="ios-track"></span></span></label>
-    <label class="my-slide"><span>Task</span><span class="ios-sw"><input type="checkbox" id="myLvTask"><span class="ios-track"></span></span></label>
     <button type="button" class="my-reset-col" id="myAddIssue">＋ Issue</button>
-    <button type="button" class="my-reset-col" id="myQuickView">快速一覽</button>
     <button type="button" class="my-reset-col" id="myResetCol">重設欄寬</button>
+    <button type="button" class="my-dash-btn" id="myQuickView">進度 Dashboard</button>
     <span class="ctrl-count" id="myCount"></span>
   </div>
   <div class="my-wrap" id="myWrap">
@@ -1751,7 +1754,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ===== バージョン情報（変更履歴は CHANGELOG.md と同期）=====
-const APP_VERSION = '0.55.0';
+const APP_VERSION = '0.56.0';
 const APP_BUILD = '2026-06-02';
 const APP_NOTE  = '旧タブ撤去：A=Issue&Mission / B=會議議程 / C=Mission進度 / D=詩雅 / E=育菱 / F=DASHBOARD のパネル・タブ・管理者ランチャーを削除し、メイン画面を「我的（My Work）」へ一本化。rowsToData の必須列から 區分/軸 を除外し、レガシー列（區分/軸/處/組/確認會議/會議時間/管理頁面/Issue短縮）への稼働コード依存を解消＝スプレッドシート側で削除可能に。事務局備註 は My Work が使用継続のため残す。show() を null 安全化。対照表は docs/data-dictionary.md。';
 
@@ -4952,18 +4955,18 @@ function renderMyView() {
         const tDri  = !showAll && M(t['DRI']);
         const tQ = qHit(t['Task'], t['DRI'], t['協作'], t['狀態'], t['編號']);
         let vis = showAll || issMine || mMine || tMine;
-        if (vis && !showClosed && isClosed(t['狀態']) && !tMine) vis = false;
+        if (vis && !showClosed && isClosed(t['狀態'])) vis = false; // 結案/凍結/中止 は既定で隠す（本人所有でも）
         if (vis && !(issQ || mQ || tQ)) vis = false; // ③ 検索で絞り込み
         if (vis) tRows.push({ t, tMine, tDri });
       });
       let mVis = showAll || issMine || mMine || tRows.length > 0;
-      if (mVis && !showClosed && isClosed(m['狀態']) && !mMine && tRows.length === 0) mVis = false;
+      if (mVis && !showClosed && isClosed(m['狀態']) && tRows.length === 0) mVis = false; // 結案系は既定で隠す（本人所有でも／可視の子があれば残す）
       if (mVis && !(issQ || mQ || tRows.length > 0)) mVis = false; // ③
       if (mVis) mBlocks.push({ m, mMine, mDri, tRows });
     });
     const issueRelevant = showAll || issMine || mBlocks.length > 0;
     if (!issueRelevant) return;
-    if (issueRelevant && !showClosed && isClosed(iss['狀態']) && !issMine && mBlocks.length === 0) return;
+    if (issueRelevant && !showClosed && isClosed(iss['狀態']) && mBlocks.length === 0) return; // 結案系 Issue は既定で隠す（可視 Mission があれば残す）
     if (!(issQ || mBlocks.length > 0)) return; // ③ 検索で絞り込み
 
     // Issue 行
@@ -5368,8 +5371,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mi) { _myOpenInMm('mission', mi.dataset.id, mi.dataset.name || ''); return; }
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeQuickView(); });
-  // レベル表示トグル（ctrl-bar に常設＝列を消しても復活できる）
-  [['myLvIssue', 'issue'], ['myLvMission', 'mission'], ['myLvTask', 'task']].forEach(([id, lv]) => {
+  // レベル表示トグル（ctrl-bar に常設）。Task は IMT 非表示方針（§1.7）によりトグル自体を撤去。
+  [['myLvIssue', 'issue'], ['myLvMission', 'mission']].forEach(([id, lv]) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.checked = window._myLevelShow[lv] !== false;
